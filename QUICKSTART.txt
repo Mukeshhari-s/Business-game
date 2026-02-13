@@ -1,0 +1,154 @@
+┌─────────────────────────────────────────────┐
+│  🎲 MULTIPLAYER MONOPOLY - QUICK START 🎲   │
+└─────────────────────────────────────────────┘
+
+📋 STEP-BY-STEP GUIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  INSTALL DEPENDENCIES
+   Open terminal in project folder and run:
+   
+   npm install
+
+2️⃣  START THE SERVER
+   Run from project root:
+   
+   npm start
+   
+   You should see:
+   "Monopoly server listening on port 3000"
+
+3️⃣  OPEN IN BROWSER
+   Navigate to:
+   
+   http://localhost:3000
+
+4️⃣  CREATE A GAME
+   • Enter your name
+   • Click "Create New Room"
+   • You'll get a 4-letter code (e.g., "AB3D")
+   • You are now the HOST
+
+5️⃣  JOIN FROM OTHER DEVICES
+   • Open http://localhost:3000 in another browser/device
+   • Enter name and the room code
+   • Click "Join Room"
+   
+6️⃣  START THE GAME
+   • HOST clicks "START GAME" button (appears when 2+ players join)
+   • Other players wait for host to start
+   
+7️⃣  PLAY!
+   • Wait for your turn
+   • Click "Roll Dice"
+   • Buy properties when available
+   • Click "End Turn" when done
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎮 CONTROLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎲 Roll Dice     → Roll and move
+💰 Buy Property  → Purchase unowned property
+➡️  End Turn     → Pass to next player
+☑️  Pay Bail     → Exit jail for $50 (checkbox)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌐 MULTIPLAYER SETUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SAME COMPUTER:
+  → Open multiple browser windows/tabs
+  → Each window = 1 player
+
+DIFFERENT DEVICES (Same WiFi):
+  1. Find your IP address:
+     Windows: ipconfig
+     Mac/Linux: ifconfig
+     
+     Look for "IPv4 Address" (e.g., 192.168.1.100)
+     
+  2. On other devices, open:
+     http://YOUR_IP_ADDRESS:3000
+     Example: http://192.168.1.100:3000
+     
+  3. Join the same room code
+  
+  4. HOST starts the game with "START GAME" button
+
+⚠️  IMPORTANT FOR NETWORK PLAY:
+  • Both devices MUST be on SAME WiFi
+  • Windows Firewall may block port 3000
+  • Allow Node.js through firewall if needed
+  • Server MUST be running on host computer
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ "Cannot find module"
+   → Run: npm install
+
+❌ "Port 3000 already in use"
+   → Change port: PORT=3001 npm start
+   → Or kill process using port 3000
+
+❌ "Cannot connect to server"
+   → Make sure server is running (npm start)
+   → Check firewall settings
+   → Verify correct IP/port
+
+❌ Room code doesn't work
+   → Codes are case-insensitive
+   → Make sure room still exists
+   → Create a new room if needed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📁 PROJECT STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+monopoly/
+├── server/              # Backend code
+│   ├── index.js         # Server entry point
+│   ├── socket.js        # WebSocket handlers
+│   ├── rooms/           # Room management
+│   └── game/            # Game engine
+│
+├── client/              # Frontend code
+│   ├── index.html       # UI
+│   ├── app.js           # Client logic
+│   └── style.css        # Styling
+│
+└── package.json         # Dependencies
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 GAME RULES (Quick Reference)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+START: Each player begins with $1,500
+
+TURN:
+  1. Roll dice
+  2. Move forward
+  3. Land on property:
+     • Unowned → Buy or skip
+     • Owned by other → Pay rent
+  4. End turn
+
+JAIL:
+  • Sent by "Go To Jail" space
+  • Pay $50 bail OR wait 3 turns
+  • Cannot move while in jail
+
+BANKRUPTCY:
+  • Balance < $0 = Game Over for you
+  • Properties return to bank
+  • Last player standing wins!
+
+GO: Collect $200 when passing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ Enjoy your game! ✨
+
+Need help? Check README.md for detailed info.

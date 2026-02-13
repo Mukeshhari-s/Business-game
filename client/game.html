@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Monopoly Elite - Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
+
+<!-- Background blobs -->
+<div class="fixed inset-0 pointer-events-none">
+  <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-20"></div>
+  <div class="absolute top-0 right-1/4 w-96 h-96 bg-pink-500 rounded-full blur-3xl opacity-20"></div>
+  <div class="absolute bottom-0 left-1/3 w-96 h-96 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
+</div>
+
+<div class="container mx-auto px-4 py-6 max-w-[1800px] relative z-10">
+
+  <!-- HEADER -->
+  <div class="text-center mb-6">
+    <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200"
+        style="font-family: 'Montserrat', sans-serif;">
+      MONOPOLY ELITE
+    </h1>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- ================= BOARD SECTION ================= -->
+    <div class="relative flex justify-center board-wrapper">
+
+      <div id="monopoly-board"
+        class="relative w-[85vmin] h-[85vmin] max-w-[900px] max-h-[900px]">
+
+        <div class="absolute inset-0 bg-green-800 rounded-3xl shadow-2xl"></div>
+
+        <!-- CENTER OVERLAY -->
+        <div class="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+
+          <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-6 w-[85%] max-w-md pointer-events-auto">
+
+            <div class="text-center mb-4">
+              <h2 class="font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-pink-600 to-red-600">
+                MONOPOLY
+              </h2>
+              <div id="currentTurn"
+                   class="mt-2 text-sm font-bold text-indigo-600">
+                Waiting...
+              </div>
+            </div>
+
+            <!-- DICE -->
+            <div class="flex justify-center gap-4 mb-4">
+              <div id="die1"
+                   class="w-16 h-16 bg-white border-4 border-gray-800 rounded-2xl flex items-center justify-center text-3xl font-black shadow-xl">?</div>
+              <div id="die2"
+                   class="w-16 h-16 bg-white border-4 border-gray-800 rounded-2xl flex items-center justify-center text-3xl font-black shadow-xl">?</div>
+            </div>
+
+            <div id="diceTotal"
+                 class="text-center text-sm font-bold text-purple-600 mb-4"></div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="grid grid-cols-2 gap-3">
+
+              <button id="rollBtn"
+                      class="bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-xl font-bold transition">
+                🎲 Roll Dice
+              </button>
+
+              <button id="buyBtn"
+                      class="bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl font-bold transition">
+                🏠 Buy Property
+              </button>
+
+              <button id="endTurnBtn"
+                      class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl font-bold transition col-span-2">
+                ⏭ End Turn
+              </button>
+
+              <label id="bailWrapper"
+                     class="col-span-2 hidden items-center gap-3 bg-yellow-100 border border-yellow-400 rounded-xl p-3">
+                <input type="checkbox" id="bailCheckbox" class="w-4 h-4 text-yellow-600">
+                <span class="text-sm font-bold text-yellow-800">Pay Rs 50 bail</span>
+              </label>
+
+              <div id="startGameContainer" class="col-span-2 hidden">
+                <button id="startGameBtn"
+                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 rounded-xl font-bold">
+                  ▶️ Waiting To Start
+                </button>
+              </div>
+
+            </div>
+
+            <!-- GAME LOG -->
+            <div id="gameLog"
+                 class="mt-4 max-h-24 overflow-y-auto text-xs bg-gray-100 rounded-lg p-2">
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= RIGHT SIDEBAR ================= -->
+    <div class="space-y-6 sidebar-panel">
+
+      <!-- GAME INFO -->
+      <div class="bg-white rounded-2xl p-5 shadow-xl">
+        <h3 class="text-xl font-black mb-4">Game Info</h3>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between">
+            <span>Room Code</span>
+            <span id="roomCode" class="font-bold">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Your ID</span>
+            <span id="playerId" class="font-mono">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Status</span>
+            <span id="gameStatus" class="font-bold text-green-600">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRADE + PROPERTY SIDE BY SIDE -->
+      <div class="grid md:grid-cols-2 gap-6">
+
+        <!-- TRADE INBOX -->
+        <div class="bg-white rounded-2xl p-5 shadow-xl">
+          <h3 class="text-xl font-black mb-4">Trade Inbox</h3>
+          <div id="tradeInboxList"
+               class="space-y-3 max-h-64 overflow-y-auto">
+            <p class="text-sm text-gray-500 italic">No pending trades</p>
+          </div>
+        </div>
+
+        <!-- PROPERTY -->
+        <div class="bg-white rounded-2xl p-5 shadow-xl">
+          <h3 class="text-xl font-black mb-4">Property</h3>
+          <div id="propertyStatus"
+               class="p-3 bg-gray-100 rounded-xl text-sm text-gray-600">
+            No property action pending
+          </div>
+
+          <button id="openTradeBtn"
+                  class="w-full mt-4 py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] transition">
+            TRADE ASSETS
+          </button>
+        </div>
+
+      </div>
+
+      <!-- PLAYERS -->
+      <div class="bg-white rounded-2xl p-5 shadow-xl">
+        <h3 class="text-xl font-black mb-4">Players</h3>
+        <div id="playersList" class="space-y-3"></div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

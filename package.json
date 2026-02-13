@@ -1,0 +1,18 @@
+{
+  "name": "monopoly-multiplayer",
+  "version": "1.0.0",
+  "description": "Multiplayer Monopoly with Socket.IO and Express",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

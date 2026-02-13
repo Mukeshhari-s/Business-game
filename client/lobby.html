@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Monopoly Elite - Lobby</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-x-hidden">
+  <!-- Animated Background -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+    <div class="absolute top-0 right-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div class="absolute bottom-0 left-1/3 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8 max-w-[1900px] relative z-10">
+    <!-- Premium Header -->
+    <div class="text-center mb-12 relative">
+      <div class="inline-block relative">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 blur-2xl opacity-50 animate-pulse"></div>
+        <h1 class="text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 relative" style="font-family: 'Montserrat', sans-serif; letter-spacing: -0.02em;">
+          MONOPOLY <span class="text-5xl md:text-6xl lg:text-7xl">ELITE</span>
+        </h1>
+      </div>
+      <div class="mt-4 flex items-center justify-center gap-3">
+        <div class="h-px w-20 bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
+        <p class="text-purple-200 text-lg font-semibold tracking-wide" style="font-family: 'Poppins', sans-serif;">Build Your Empire in Real-Time</p>
+        <div class="h-px w-20 bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
+      </div>
+      <div class="mt-6 flex justify-center gap-2">
+        <span class="px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs text-purple-200 font-medium">🎮 Multiplayer</span>
+        <span class="px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs text-purple-200 font-medium">🏆 Real-Time</span>
+        <span class="px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs text-purple-200 font-medium">🎲 Strategic</span>
+      </div>
+    </div>
+    
+    <!-- Premium Connection Screen -->
+    <div id="connection" class="max-w-lg mx-auto glass-card rounded-3xl p-10 relative overflow-hidden" style="font-family: 'Poppins', sans-serif;">
+      <!-- Decorative Elements -->
+      <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl opacity-20"></div>
+      <div class="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full blur-3xl opacity-20"></div>
+      
+      <div class="relative z-10">
+        <div class="text-center mb-8">
+          <div class="inline-block p-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-xl">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+          </div>
+          <h2 class="text-3xl font-black mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Join the Game
+          </h2>
+          <p class="text-gray-500 text-sm">Create a new room or join an existing one</p>
+        </div>
+      
+        <div class="space-y-6">
+          <div class="form-group">
+            <label for="nameInput" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <span class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg text-white text-xs">👤</span>
+              Your Name
+            </label>
+            <div class="relative">
+              <input 
+                id="nameInput" 
+                type="text" 
+                placeholder="Enter your player name" 
+                maxlength="20"
+                class="w-full px-5 py-4 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 hover:border-purple-300 text-gray-800 font-medium placeholder:text-gray-400"
+              />
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        
+          <div class="form-group">
+            <label for="roomInput" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <span class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg text-white text-xs">🔑</span>
+              Room Code
+              <span class="text-xs text-gray-400 font-normal">(optional)</span>
+            </label>
+            <div class="relative">
+              <input 
+                id="roomInput" 
+                type="text" 
+                placeholder="AB3D" 
+                maxlength="4"
+                class="w-full px-5 py-4 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 hover:border-purple-300 text-gray-800 font-mono text-lg tracking-wider placeholder:text-gray-400 uppercase text-center"
+              />
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
+            <button 
+              id="createBtn" 
+              class="group premium-btn px-8 py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 hover:from-purple-700 hover:via-purple-600 hover:to-pink-600 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-2xl relative overflow-hidden">
+              <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <span class="relative flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                CREATE ROOM
+              </span>
+            </button>
+            <button 
+              id="joinBtn" 
+              class="group premium-btn px-8 py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-emerald-600 via-green-500 to-teal-500 hover:from-emerald-700 hover:via-green-600 hover:to-teal-600 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-2xl relative overflow-hidden">
+              <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <span class="relative flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                </svg>
+                JOIN ROOM
+              </span>
+            </button>
+          </div>
+        
+          <div id="roomStatus" class="mt-6 text-center text-sm font-semibold empty:hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="lobby.js"></script>
+</body>
+</html>
