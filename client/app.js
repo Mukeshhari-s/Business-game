@@ -1,4 +1,4 @@
-const socket = io();
+const socket = io('http://localhost:3000');
 let currentRoomId = null;
 let myPlayerId = null;
 let gameState = null;
@@ -226,32 +226,32 @@ socket.on('turn_changed', ({ playerId }) => {
 
 socket.on('dice_rolled', ({ playerId, dice }) => {
   lastDiceRoll = dice;
-  
+
   // Add 3D rolling animation to dice
   die1.classList.add('rolling');
   die2.classList.add('rolling');
-  
+
   // Set initial state
   die1.textContent = '?';
   die2.textContent = '?';
   diceTotal.textContent = '';
-  
+
   // Show result after animation
   setTimeout(() => {
     die1.textContent = dice.die1;
     die2.textContent = dice.die2;
   }, 600);
-  
+
   setTimeout(() => {
     diceTotal.innerHTML = `<span style="font-size: 1.2em; font-weight: 900;">Total: ${dice.total}</span>`;
     // Remove rolling class after animation
     die1.classList.remove('rolling');
     die2.classList.remove('rolling');
   }, 1000);
-  
+
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   const playerName = player ? player.name : 'Player';
-  
+
   setTimeout(() => {
     showToast(`🎲 ${playerName} rolled ${dice.die1} + ${dice.die2} = ${dice.total}`, 'info');
   }, 1000);
@@ -262,7 +262,7 @@ socket.on('player_moved', ({ playerId, from, to }) => {
   if (player) {
     // Animate token movement with 3D effect
     animateTokenMovement(playerId, from, to);
-    
+
     setTimeout(() => {
       showToast(`${player.name} moved from ${boardData[from].name} to ${boardData[to].name}`, 'info');
     }, 400);
@@ -325,7 +325,7 @@ socket.on('trade_created', ({ trade }) => {
 
   const fromPlayer = gameState.players.find((p) => p.playerId === trade.fromPlayerId);
   const toPlayer = gameState.players.find((p) => p.playerId === trade.toPlayerId);
-  
+
   if (trade.toPlayerId === myPlayerId) {
     showToast(`💼 Trade offer received from ${fromPlayer?.name || 'Unknown'}!`, 'info');
   } else if (trade.fromPlayerId === myPlayerId) {
@@ -391,7 +391,7 @@ function initBoard() {
   if (center) {
     gameLog = center.querySelector('#gameLog');
   }
-  
+
   // Create all 40 cells with grid positioning
   for (let i = 0; i < 40; i++) {
     const cell = document.createElement('div');
@@ -446,61 +446,61 @@ function initBoard() {
 // Render buildable properties UI
 function renderBuildableProperties(state) {
   if (!buildablePropertiesEl || !state || !gameState) return;
-  
+
   const me = state.players.find(p => p.playerId === myPlayerId);
   if (!me || me.isBankrupt) {
     buildablePropertiesEl.innerHTML = '<p class="text-sm text-gray-500 italic">Not available</p>';
     return;
   }
-  
-  const myProperties = state.board.cells.filter(cell => 
+
+  const myProperties = state.board.cells.filter(cell =>
     cell.type === 'property' && cell.ownerId === myPlayerId && cell.buildable
   );
-  
+
   if (myProperties.length === 0) {
     buildablePropertiesEl.innerHTML = '<p class="text-sm text-gray-500 italic">You don\'t own any buildable properties</p>';
     return;
   }
-  
+
   buildablePropertiesEl.innerHTML = '';
-  
+
   myProperties.forEach(cell => {
     const houseCost = calcHouseCost(cell);
     const hotelCost = calcHotelCost(cell);
 
     const propertyDiv = document.createElement('div');
     propertyDiv.className = 'p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200';
-    
+
     const nameDiv = document.createElement('div');
     nameDiv.className = 'font-bold text-sm text-gray-800 mb-1';
     nameDiv.textContent = cell.name;
-    
+
     const statusDiv = document.createElement('div');
     statusDiv.className = 'text-xs text-gray-600 mb-2';
     statusDiv.innerHTML = `Houses: ${cell.houses || 0} | Hotels: ${cell.hotels || 0}<br>House cost: Rs ${houseCost} | Hotel cost: Rs ${hotelCost}`;
-    
+
     const btnContainer = document.createElement('div');
     btnContainer.className = 'flex gap-2';
-    
+
     const houseBtn = document.createElement('button');
     houseBtn.className = 'flex-1 px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed';
     houseBtn.textContent = `🏠 +House (-Rs ${houseCost})`;
     houseBtn.disabled = cell.hotels > 0 || cell.houses >= 4 || me.balance < houseCost;
     houseBtn.onclick = () => buildHouse(cell.index);
-    
+
     const hotelBtn = document.createElement('button');
     hotelBtn.className = 'flex-1 px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed';
     hotelBtn.textContent = `🏨 Hotel (-Rs ${hotelCost})`;
     hotelBtn.disabled = cell.hotels >= 1 || cell.houses !== 4 || me.balance < hotelCost;
     hotelBtn.onclick = () => buildHotel(cell.index);
-    
+
     btnContainer.appendChild(houseBtn);
     btnContainer.appendChild(hotelBtn);
-    
+
     propertyDiv.appendChild(nameDiv);
     propertyDiv.appendChild(statusDiv);
     propertyDiv.appendChild(btnContainer);
-    
+
     buildablePropertiesEl.appendChild(propertyDiv);
   });
 }
@@ -509,33 +509,35 @@ function renderBuildableProperties(state) {
 // Render game state
 function renderState(state) {
   if (!state) return;
-  
+
   gameSection.classList.remove('hidden');
   connectionScreen?.classList.add('hidden');
-  
+
   currentRoomId = state.roomId;
   roomCode.textContent = state.roomId;
   gameStatusEl.textContent = state.gameStatus.toUpperCase();
-  
+
   // Update supplies
   if (houseSupplyEl) houseSupplyEl.textContent = state.houseSupply || 32;
   if (hotelSupplyEl) hotelSupplyEl.textContent = state.hotelSupply || 12;
-  
+
   // Show/hide start button for host in waiting state
   if (state.gameStatus === 'waiting' && state.hostId === myPlayerId) {
     startGameContainer.classList.remove('hidden');
     const minPlayers = 2;
     const canStart = state.players.filter(p => !p.isBankrupt).length >= minPlayers;
     startGameBtn.disabled = !canStart;
+
+    // Update button title/tooltip to show why it's disabled
     if (!canStart) {
-      startGameBtn.textContent = `Need ${minPlayers} Players to Start`;
+      startGameBtn.title = `Need ${minPlayers} players to start (${state.players.filter(p => !p.isBankrupt).length}/${minPlayers})`;
     } else {
-      startGameBtn.textContent = '🎮 START GAME';
+      startGameBtn.title = 'Click to start the game';
     }
   } else {
     startGameContainer.classList.add('hidden');
   }
-  
+
   const currentPlayer = state.players.find(p => p.playerId === state.currentTurnPlayerId);
   if (currentPlayer) {
     currentTurnEl.textContent = currentPlayer.name;
@@ -546,26 +548,26 @@ function renderState(state) {
       currentTurnEl.textContent = 'Waiting...';
     }
   }
-  
+
   // Rebuild board each state update so cell colors reflect country groups
   initBoard();
-  
+
   // Update ownership indicators
   state.board.cells.forEach((cell, index) => {
     const cellEl = document.getElementById(`cell-${index}`);
     if (!cellEl) return;
-    
+
     // Remove old owner indicator
     const oldIndicator = cellEl.querySelector('.owner-indicator');
     if (oldIndicator) oldIndicator.remove();
-    
+
     // Add owner indicator for owned properties
     if (cell.type === 'property' && cell.ownerId) {
       const playerIndex = state.players.findIndex(p => p.playerId === cell.ownerId);
       if (playerIndex !== -1) {
         // Add has-owner class for pulse animation
         cellEl.classList.add('has-owner');
-        
+
         const indicator = document.createElement('div');
         indicator.className = 'owner-indicator';
         indicator.style.background = playerColors[playerIndex % playerColors.length];
@@ -580,7 +582,7 @@ function renderState(state) {
           cellEl.appendChild(ownerBar);
         }
         ownerBar.style.background = playerColors[playerIndex % playerColors.length];
-        
+
         // Add house/hotel indicators
         if (cell.buildable && (cell.houses > 0 || cell.hotels > 0)) {
           let buildingIndicator = cellEl.querySelector('.building-indicator');
@@ -590,7 +592,7 @@ function renderState(state) {
             cellEl.appendChild(buildingIndicator);
           }
           buildingIndicator.innerHTML = '';
-          
+
           if (cell.hotels > 0) {
             const hotelIcon = document.createElement('div');
             hotelIcon.className = 'hotel-icon';
@@ -614,35 +616,35 @@ function renderState(state) {
       if (buildingInd) buildingInd.remove();
     }
   });
-  
+
   // Update player tokens
   document.querySelectorAll('.player-token').forEach(token => token.remove());
-  
+
   state.players.forEach((player, index) => {
     if (player.isBankrupt) return;
-    
+
     const cellEl = document.getElementById(`cell-${player.position}`);
     if (cellEl) {
       const token = document.createElement('div');
       token.className = 'player-token';
       token.style.background = playerColors[index % playerColors.length];
       token.title = player.name;
-      
+
       // Position token within cell
       const offset = index * 20;
       token.style.left = `${5 + offset}px`;
       token.style.top = `${5}px`;
-      
+
       cellEl.appendChild(token);
     }
   });
-  
+
   // Update players list - Premium Design
   playersList.innerHTML = '';
   state.players.forEach((player, index) => {
     const card = document.createElement('div');
     card.className = 'player-card-premium rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] relative overflow-hidden group';
-    
+
     if (player.playerId === state.currentTurnPlayerId) {
       card.classList.add('bg-gradient-to-br', 'from-indigo-100', 'via-purple-100', 'to-pink-100', 'border-2', 'border-indigo-400', 'shadow-xl', 'ring-2', 'ring-indigo-300', 'ring-opacity-50');
       // Add animated pulse
@@ -654,15 +656,15 @@ function renderState(state) {
     } else {
       card.classList.add('bg-gradient-to-br', 'from-white', 'to-gray-50', 'border', 'border-gray-200', 'hover:border-gray-300', 'shadow-md', 'hover:shadow-lg');
     }
-    
+
     const header = document.createElement('div');
     header.className = 'flex justify-between items-center mb-3 relative z-10';
-    
+
     const tokenColor = document.createElement('div');
     tokenColor.className = 'w-10 h-10 rounded-xl border-3 border-white shadow-lg flex items-center justify-center font-black text-white text-sm';
     tokenColor.style.background = `linear-gradient(135deg, ${playerColors[index % playerColors.length]}, ${adjustBrightness(playerColors[index % playerColors.length], -20)})`;
     tokenColor.textContent = player.name[0].toUpperCase();
-    
+
     const nameSpan = document.createElement('span');
     nameSpan.className = 'font-black text-gray-800 text-base';
     nameSpan.textContent = player.name;
@@ -672,7 +674,7 @@ function renderState(state) {
       youBadge.textContent = 'YOU';
       nameSpan.appendChild(youBadge);
     }
-    
+
     const balanceDiv = document.createElement('div');
     balanceDiv.className = 'text-right';
     const balanceLabel = document.createElement('div');
@@ -683,25 +685,25 @@ function renderState(state) {
     balanceAmount.textContent = `$${player.balance}`;
     balanceDiv.appendChild(balanceLabel);
     balanceDiv.appendChild(balanceAmount);
-    
+
     const nameContainer = document.createElement('div');
     nameContainer.className = 'flex items-center gap-3';
     nameContainer.appendChild(tokenColor);
     nameContainer.appendChild(nameSpan);
-    
+
     header.appendChild(nameContainer);
     header.appendChild(balanceDiv);
-    
+
     const stats = document.createElement('div');
     stats.className = 'grid grid-cols-2 gap-3 text-xs relative z-10';
-    
+
     const statItems = [
       { icon: '📍', label: 'Position', value: boardData[player.position].name },
       { icon: '🏠', label: 'Properties', value: player.properties.length },
       { icon: player.inJail ? '🔒' : '🔓', label: 'Jail', value: player.inJail ? `Turn ${player.jailTurns}/3` : 'Free' },
       { icon: player.isBankrupt ? '💀' : '✨', label: 'Status', value: player.isBankrupt ? 'Bankrupt' : 'Active' }
     ];
-    
+
     statItems.forEach(item => {
       const statDiv = document.createElement('div');
       statDiv.className = 'p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200/50';
@@ -714,12 +716,12 @@ function renderState(state) {
       `;
       stats.appendChild(statDiv);
     });
-    
+
     card.appendChild(header);
     card.appendChild(stats);
     playersList.appendChild(card);
   });
-  
+
   // Update game log
   if (gameLog) {
     gameLog.innerHTML = '';
@@ -731,7 +733,7 @@ function renderState(state) {
     });
     gameLog.scrollTop = gameLog.scrollHeight;
   }
-  
+
   // Update property status
   if (state.pendingPropertyIndex !== null) {
     const cell = state.board.cells[state.pendingPropertyIndex];
@@ -745,10 +747,10 @@ function renderState(state) {
     propertyStatus.innerHTML = 'No property action pending';
     propertyStatus.className = 'p-4 bg-gray-50 rounded-lg text-sm text-gray-600 font-medium';
   }
-  
+
   // Update buildable properties
   renderBuildableProperties(state);
-  
+
   // Update button states
   const isMyTurn = state.currentTurnPlayerId === myPlayerId;
   const me = state.players.find(p => p.playerId === myPlayerId);
@@ -771,17 +773,17 @@ function renderState(state) {
   } else if (hasRolled) {
     // After rolling: hide roll button, show buy (if property available) and end turn
     rollBtn.style.display = 'none';
-    
+
     if (state.pendingPropertyIndex !== null) {
       buyBtn.style.display = 'block';
       buyBtn.textContent = '💰 BUY PROPERTY';
     } else {
       buyBtn.style.display = 'none';
     }
-    
+
     endTurnBtnCenter.style.display = 'block';
     endTurnBtnCenter.innerHTML = '<span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span><span class="relative flex items-center justify-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>END TURN</span>';
-    
+
     // Hide bail checkbox after rolling
     if (bailWrapper) bailWrapper.style.display = 'none';
   } else {
@@ -790,7 +792,7 @@ function renderState(state) {
     rollBtn.textContent = '🎲 ROLL DICE';
     buyBtn.style.display = 'none';
     endTurnBtnCenter.style.display = 'none';
-    
+
     // Show bail checkbox only if player is in jail
     if (bailWrapper) {
       bailWrapper.style.display = me?.inJail ? 'block' : 'none';
@@ -864,9 +866,9 @@ window.closeTradeModal = closeTradeModal;
 // Populate player dropdown
 function populatePlayerDropdown() {
   if (!gameState) return;
-  
+
   tradePlayerSelect.innerHTML = '<option value="">Select a player...</option>';
-  
+
   gameState.players.forEach(player => {
     if (player.playerId === myPlayerId) return;
     if (player.isBankrupt) return;
@@ -881,28 +883,28 @@ function populatePlayerDropdown() {
 // Populate offer properties (your properties)
 function populateOfferProperties() {
   if (!gameState) return;
-  
+
   const myPlayer = gameState.players.find(p => p.playerId === myPlayerId);
   if (!myPlayer) return;
-  
+
   const myProperties = gameState.board.cells
     .filter(cell => cell.type === 'property' && cell.ownerId === myPlayerId && cell.price)
     .map(cell => ({ ...cell, index: cell.index }));
-  
+
   // Update jail cards max
   offerJailCards.max = myPlayer.jailCards || 0;
-  
+
   if (myProperties.length === 0) {
     offerProperties.innerHTML = '<p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">No properties available</p>';
     return;
   }
-  
+
   offerProperties.innerHTML = '';
   myProperties.forEach(prop => {
     const div = document.createElement('div');
     div.className = 'property-checkbox-item';
     const colorClass = prop.group ? `color-${prop.group}` : 'bg-gray-200';
-    
+
     div.innerHTML = `
       <label class="flex items-center gap-3 p-3 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:border-purple-400 transition-all duration-300 hover:shadow-md group">
         <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500" 
@@ -914,7 +916,7 @@ function populateOfferProperties() {
         </div>
       </label>
     `;
-    
+
     const checkbox = div.querySelector('input[type="checkbox"]');
     if (selectedOfferProperties.has(prop.index)) {
       checkbox.checked = true;
@@ -929,7 +931,7 @@ function populateOfferProperties() {
         div.querySelector('label').classList.remove('border-purple-500', 'bg-purple-50');
       }
     });
-    
+
     offerProperties.appendChild(div);
   });
 }
@@ -940,28 +942,28 @@ function populateRequestProperties(targetPlayerId) {
     requestProperties.innerHTML = '<p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">Select a player first</p>';
     return;
   }
-  
+
   const targetPlayer = gameState.players.find(p => p.playerId === targetPlayerId);
   if (!targetPlayer) return;
-  
+
   const theirProperties = gameState.board.cells
     .filter(cell => cell.type === 'property' && cell.ownerId === targetPlayerId && cell.price)
     .map(cell => ({ ...cell, index: cell.index }));
-  
+
   // Update jail cards max
   requestJailCards.max = targetPlayer.jailCards || 0;
-  
+
   if (theirProperties.length === 0) {
     requestProperties.innerHTML = '<p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">Player has no properties</p>';
     return;
   }
-  
+
   requestProperties.innerHTML = '';
   theirProperties.forEach(prop => {
     const div = document.createElement('div');
     div.className = 'property-checkbox-item';
     const colorClass = prop.group ? `color-${prop.group}` : 'bg-gray-200';
-    
+
     div.innerHTML = `
       <label class="flex items-center gap-3 p-3 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:border-pink-400 transition-all duration-300 hover:shadow-md group">
         <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500" 
@@ -973,7 +975,7 @@ function populateRequestProperties(targetPlayerId) {
         </div>
       </label>
     `;
-    
+
     const checkbox = div.querySelector('input[type="checkbox"]');
     if (selectedRequestProperties.has(prop.index)) {
       checkbox.checked = true;
@@ -988,7 +990,7 @@ function populateRequestProperties(targetPlayerId) {
         div.querySelector('label').classList.remove('border-pink-500', 'bg-pink-50');
       }
     });
-    
+
     requestProperties.appendChild(div);
   });
 }
@@ -1006,25 +1008,25 @@ submitTradeBtn.addEventListener('click', () => {
     showToast('Please select a player to trade with', 'error');
     return;
   }
-  
+
   const offerMoneyVal = parseInt(offerMoney.value) || 0;
   const requestMoneyVal = parseInt(requestMoney.value) || 0;
   const offerJailCardsVal = parseInt(offerJailCards.value) || 0;
   const requestJailCardsVal = parseInt(requestJailCards.value) || 0;
-  
+
   const normalizedOfferMoney = Math.max(0, offerMoneyVal);
   const normalizedRequestMoney = Math.max(0, requestMoneyVal);
   const normalizedOfferJail = Math.max(0, offerJailCardsVal);
   const normalizedRequestJail = Math.max(0, requestJailCardsVal);
-  
+
   // Check if trade has any substance
-  if (selectedOfferProperties.size === 0 && selectedRequestProperties.size === 0 && 
-      normalizedOfferMoney === 0 && normalizedRequestMoney === 0 && 
-      normalizedOfferJail === 0 && normalizedRequestJail === 0) {
+  if (selectedOfferProperties.size === 0 && selectedRequestProperties.size === 0 &&
+    normalizedOfferMoney === 0 && normalizedRequestMoney === 0 &&
+    normalizedOfferJail === 0 && normalizedRequestJail === 0) {
     showToast('Trade must include at least one item', 'error');
     return;
   }
-  
+
   const tradeData = {
     toPlayerId: targetPlayerId,
     offered: {
@@ -1038,7 +1040,7 @@ submitTradeBtn.addEventListener('click', () => {
       jailCards: normalizedRequestJail,
     },
   };
-  
+
   socket.emit('trade_create', tradeData);
   showToast('Trade offer sent!', 'success');
   closeTradeModal();
@@ -1142,7 +1144,7 @@ function showToast(message, type = 'info') {
   toast.className = `toast ${type} font-semibold`;
   toast.textContent = message;
   document.body.appendChild(toast);
-  
+
   setTimeout(() => {
     toast.style.animation = 'slideIn 0.3s ease-out reverse';
     setTimeout(() => toast.remove(), 300);
@@ -1151,27 +1153,27 @@ function showToast(message, type = 'info') {
 
 // Helper function to adjust color brightness
 function adjustBrightness(color, percent) {
-  const num = parseInt(color.replace('#',''), 16);
+  const num = parseInt(color.replace('#', ''), 16);
   const amt = Math.round(2.55 * percent);
   const R = (num >> 16) + amt;
   const G = (num >> 8 & 0x00FF) + amt;
   const B = (num & 0x0000FF) + amt;
-  return '#' + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
-    (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+  return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255))
     .toString(16).slice(1);
 }
 
 // 3D Token Movement Animation
 function animateTokenMovement(playerId, fromIndex, toIndex) {
   if (!gameState) return;
-  
+
   const playerIndex = gameState.players.findIndex(p => p.playerId === playerId);
   if (playerIndex === -1) return;
-  
+
   const fromCell = document.getElementById(`cell-${fromIndex}`);
   const toCell = document.getElementById(`cell-${toIndex}`);
   if (!fromCell || !toCell) return;
-  
+
   // Find the token
   const tokens = fromCell.querySelectorAll('.player-token');
   let token = null;
@@ -1180,14 +1182,14 @@ function animateTokenMovement(playerId, fromIndex, toIndex) {
       token = t;
     }
   });
-  
+
   if (token) {
     // Add moving class for 3D animation
     token.classList.add('moving');
-    
+
     // Create trail effect
     createTokenTrail(fromCell, playerColors[playerIndex % playerColors.length]);
-    
+
     // Remove moving class after animation
     setTimeout(() => {
       token.classList.remove('moving');
@@ -1204,7 +1206,7 @@ function createTokenTrail(cell, color) {
       trail.style.borderColor = color;
       trail.style.boxShadow = `0 0 10px ${color}`;
       cell.appendChild(trail);
-      
+
       // Remove trail after animation
       setTimeout(() => {
         trail.remove();
