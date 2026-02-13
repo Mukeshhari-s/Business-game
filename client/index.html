@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -7,105 +8,127 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-x-hidden">
   <!-- Animated Background -->
   <div class="fixed inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-    <div class="absolute top-0 right-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-    <div class="absolute bottom-0 left-1/3 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+    <div
+      class="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+    </div>
+    <div
+      class="absolute top-0 right-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+    </div>
+    <div
+      class="absolute bottom-0 left-1/3 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000">
+    </div>
   </div>
   <div class="container mx-auto px-4 py-8 max-w-[1900px] relative z-10">
     <!-- Premium Header -->
     <div class="text-center mb-12 relative">
       <div class="inline-block relative">
-        <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 blur-2xl opacity-50 animate-pulse"></div>
-        <h1 class="text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 relative" style="font-family: 'Montserrat', sans-serif; letter-spacing: -0.02em;">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 blur-2xl opacity-50 animate-pulse">
+        </div>
+        <h1
+          class="text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 relative"
+          style="font-family: 'Montserrat', sans-serif; letter-spacing: -0.02em;">
           MONOPOLY <span class="text-5xl md:text-6xl lg:text-7xl">ELITE</span>
         </h1>
       </div>
       <div class="mt-4 flex items-center justify-center gap-3">
         <div class="h-px w-20 bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
-        <p class="text-purple-200 text-lg font-semibold tracking-wide" style="font-family: 'Poppins', sans-serif;">Build Your Empire in Real-Time</p>
+        <p class="text-purple-200 text-lg font-semibold tracking-wide" style="font-family: 'Poppins', sans-serif;">Build
+          Your Empire in Real-Time</p>
         <div class="h-px w-20 bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
       </div>
       <div class="mt-6 flex justify-center gap-2">
-        <span class="px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs text-purple-200 font-medium">🎮 Multiplayer</span>
-        <span class="px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs text-purple-200 font-medium">🏆 Real-Time</span>
-        <span class="px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs text-purple-200 font-medium">🎲 Strategic</span>
+        <span
+          class="px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs text-purple-200 font-medium">🎮
+          Multiplayer</span>
+        <span
+          class="px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs text-purple-200 font-medium">🏆
+          Real-Time</span>
+        <span
+          class="px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs text-purple-200 font-medium">🎲
+          Strategic</span>
       </div>
     </div>
-    
+
     <!-- Premium Connection Screen -->
-    <div id="connection" class="max-w-lg mx-auto glass-card rounded-3xl p-10 relative overflow-hidden" style="font-family: 'Poppins', sans-serif;">
+    <div id="connection" class="max-w-lg mx-auto glass-card rounded-3xl p-10 relative overflow-hidden"
+      style="font-family: 'Poppins', sans-serif;">
       <!-- Decorative Elements -->
-      <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl opacity-20"></div>
-      <div class="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full blur-3xl opacity-20"></div>
-      
+      <div
+        class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl opacity-20">
+      </div>
+      <div
+        class="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full blur-3xl opacity-20">
+      </div>
+
       <div class="relative z-10">
         <div class="text-center mb-8">
           <div class="inline-block p-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-xl">
             <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+              </path>
             </svg>
           </div>
-          <h2 class="text-3xl font-black mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h2
+            class="text-3xl font-black mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             Join the Game
           </h2>
           <p class="text-gray-500 text-sm">Create a new room or join an existing one</p>
         </div>
-      
+
         <div class="space-y-6">
           <div class="form-group">
             <label for="nameInput" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <span class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg text-white text-xs">👤</span>
+              <span
+                class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg text-white text-xs">👤</span>
               Your Name
             </label>
             <div class="relative">
-              <input 
-                id="nameInput" 
-                type="text" 
-                placeholder="Enter your player name" 
-                maxlength="20"
-                class="w-full px-5 py-4 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 hover:border-purple-300 text-gray-800 font-medium placeholder:text-gray-400"
-              />
+              <input id="nameInput" type="text" placeholder="Enter your player name" maxlength="20"
+                class="w-full px-5 py-4 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 hover:border-purple-300 text-gray-800 font-medium placeholder:text-gray-400" />
               <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
               </div>
             </div>
           </div>
-        
+
           <div class="form-group">
             <label for="roomInput" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <span class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg text-white text-xs">🔑</span>
+              <span
+                class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg text-white text-xs">🔑</span>
               Room Code
               <span class="text-xs text-gray-400 font-normal">(optional)</span>
             </label>
             <div class="relative">
-              <input 
-                id="roomInput" 
-                type="text" 
-                placeholder="AB3D" 
-                maxlength="4"
-                class="w-full px-5 py-4 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 hover:border-purple-300 text-gray-800 font-mono text-lg tracking-wider placeholder:text-gray-400 uppercase text-center"
-              />
+              <input id="roomInput" type="text" placeholder="AB3D" maxlength="4"
+                class="w-full px-5 py-4 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 hover:border-purple-300 text-gray-800 font-mono text-lg tracking-wider placeholder:text-gray-400 uppercase text-center" />
               <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                  </path>
                 </svg>
               </div>
             </div>
           </div>
-        
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
-            <button 
-              id="createBtn" 
+            <button id="createBtn"
               class="group premium-btn px-8 py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 hover:from-purple-700 hover:via-purple-600 hover:to-pink-600 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-2xl relative overflow-hidden">
-              <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <span
+                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
               <span class="relative flex items-center justify-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -113,19 +136,21 @@
                 CREATE ROOM
               </span>
             </button>
-            <button 
-              id="joinBtn" 
+            <button id="joinBtn"
               class="group premium-btn px-8 py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-emerald-600 via-green-500 to-teal-500 hover:from-emerald-700 hover:via-green-600 hover:to-teal-600 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-2xl relative overflow-hidden">
-              <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <span
+                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
               <span class="relative flex items-center justify-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
+                  </path>
                 </svg>
                 JOIN ROOM
               </span>
             </button>
           </div>
-        
+
           <div id="roomStatus" class="mt-6 text-center text-sm font-semibold empty:hidden"></div>
         </div>
       </div>
@@ -134,216 +159,190 @@
     <!-- Premium Game Screen -->
     <div id="game" class="hidden" style="font-family: 'Poppins', sans-serif;">
       <div class="grid grid-cols-1 xl:grid-cols-[70%_30%] gap-4 xl:gap-5 2xl:gap-6 items-start">
-        
+
         <!-- Center: Premium Game Board -->
-        <div class="glass-card-premium rounded-3xl p-4 xl:p-5 relative overflow-hidden flex flex-col gap-4 items-center justify-center">
-          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl opacity-10"></div>
+        <div
+          class="glass-card-premium rounded-3xl p-4 xl:p-5 relative overflow-hidden flex flex-col gap-4 items-center justify-center">
+          <div
+            class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl opacity-10">
+          </div>
+
+          <!-- Room ID Display -->
+          <div class="relative z-10 w-full flex justify-center mb-2">
+            <div class="glass-card-premium flat-card rounded-2xl px-6 py-3 relative overflow-hidden group">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                </div>
+                <div>
+                  <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Room Code</span>
+                  <span id="roomCode" class="font-black text-2xl text-indigo-600 tracking-wider">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="relative z-10 w-full">
 
             <div class="relative z-10 w-full flex justify-center">
 
-  <div class="relative w-[95vmin] h-[95vmin] max-w-[1000px] max-h-[1000px]">
+              <div class="relative w-[95vmin] h-[95vmin] max-w-[1000px] max-h-[1000px]">
 
-    <!-- GRID (JS RENDERS CELLS HERE) -->
-    <div id="board-grid"
-         class="absolute inset-0 grid grid-cols-11 grid-rows-11">
-    </div>
-
-    <!-- CENTER UI (SAFE FROM JS DELETE) -->
-    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-
-      <div class="board-center pointer-events-auto">
-        <h2 class="font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-pink-600 to-red-600 mb-1 animate-gradient"
-            style="font-family: 'Montserrat', sans-serif;">
-          MONOPOLY
-        </h2>
-
-        <p class="text-xs text-gray-500 mb-2 font-bold tracking-wide">
-          ELITE EDITION
-        </p>
-
-        <div class="text-center mb-2 p-2 bg-white/80 backdrop-blur-sm rounded-xl border border-purple-200 shadow-lg">
-          <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
-            Current Turn
-          </span>
-          <div id="currentTurn"
-               class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-            Waiting...
-          </div>
-        </div>
-
-        <div class="board-log" id="gameLog"></div>
-
-        <!-- Start Game Button Container - Shown when game is waiting -->
-        <div id="startGameContainer" class="hidden mt-3">
-          <button 
-            id="startGameBtn" 
-            class="premium-btn w-full py-5 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 hover:from-green-700 hover:via-emerald-600 hover:to-teal-600 text-white font-black text-lg rounded-2xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group/btn">
-            <span class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
-            <span class="relative flex items-center justify-center gap-2">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              START GAME
-            </span>
-          </button>
-          <p class="text-center text-sm text-gray-500 mt-2 font-medium flex items-center justify-center gap-2">
-            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            You are the host
-          </p>
-        </div>
-
-        <div class="bg-gradient-to-br from-gray-100 via-gray-50 to-white p-3 rounded-xl border-2 border-gray-200 shadow-inner relative overflow-hidden mt-3">
-          <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
-          <div class="relative z-10">
-            <div class="flex justify-center gap-3 mb-2">
-              <div id="die1" class="die w-12 h-12 bg-white border-3 border-gray-800 rounded-xl flex items-center justify-center text-2xl font-black shadow-xl transform hover:rotate-12 transition-all duration-300">?
-              </div>
-              <div id="die2" class="die w-12 h-12 bg-white border-3 border-gray-800 rounded-xl flex items-center justify-center text-2xl font-black shadow-xl transform hover:-rotate-12 transition-all duration-300">?
-              </div>
-            </div>
-            <div id="diceTotal" class="text-center text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600"></div>
-          </div>
-        </div>
-
-        <div class="w-full space-y-2 mt-2">
-          <div id="bailWrapper" class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-3 hover:shadow-lg transition-all duration-300">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="bailCheckbox" class="w-5 h-5 rounded-lg border-yellow-500 text-yellow-600 focus:ring-2 focus:ring-yellow-500 transition-all duration-200" />
-              <div class="flex-1">
-                <span class="font-bold text-yellow-800 text-xs block">Pay Rs 50 bail</span>
-                <span class="text-[10px] text-yellow-700">If you're in jail</span>
-              </div>
-              <span class="text-xl">🔓</span>
-            </label>
-          </div>
-
-          <button 
-            id="rollBtn" 
-            class="premium-btn w-full py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-black text-sm rounded-xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group/btn">
-            <span class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
-            <span class="relative flex items-center justify-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-              </svg>
-              ROLL DICE
-            </span>
-          </button>
-        </div>
-
-        <button 
-          id="buyBtn" 
-          class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 hover:from-green-700 hover:via-emerald-600 hover:to-teal-600 text-white font-bold text-sm rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
-          <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-          <span class="relative flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            BUY PROPERTY
-          </span>
-        </button>
-
-        <button 
-          id="endTurnBtnCenter" 
-          class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-blue-600 via-cyan-500 to-sky-500 hover:from-blue-700 hover:via-cyan-600 hover:to-sky-600 text-white font-bold text-sm rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
-          <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-          <span class="relative flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-            </svg>
-            END TURN
-          </span>
-        </button>
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-          </div>
-        </div>
-
-        <!-- Right Panel: All Info & Controls -->
-        <div class="space-y-6">
-          <!-- Game Information Card -->
-          <div class="glass-card-premium flat-card rounded-2xl p-5 relative overflow-hidden group">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
-            
-            <div class="relative z-10">
-              <div class="flex items-center gap-3 mb-6">
-                <div class="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
-                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
+                <!-- GRID (JS RENDERS CELLS HERE) -->
+                <div id="board-grid" class="absolute inset-0 grid grid-cols-11 grid-rows-11">
                 </div>
 
-                <h3 class="text-xl font-black text-gray-800">Game Info</h3>
-              </div>
-              
-              <div class="space-y-3">
-                <div class="info-item group/item cursor-pointer">
-                  <div class="flex justify-between items-center p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-purple-100 hover:border-purple-300 transition-all duration-300 hover:shadow-md">
-                    <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold shadow">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
-                        </svg>
+                <!-- CENTER UI (SAFE FROM JS DELETE) -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+
+                  <div class="board-center pointer-events-auto">
+                    <h2
+                      class="font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-pink-600 to-red-600 mb-1 animate-gradient"
+                      style="font-family: 'Montserrat', sans-serif;">
+                      MONOPOLY
+                    </h2>
+
+                    <p class="text-xs text-gray-500 mb-2 font-bold tracking-wide">
+                      ELITE EDITION
+                    </p>
+
+                    <div
+                      class="text-center mb-2 p-2 bg-white/80 backdrop-blur-sm rounded-xl border border-purple-200 shadow-lg">
+                      <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                        Current Turn
+                      </span>
+                      <div id="currentTurn"
+                        class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                        Waiting...
                       </div>
-                      <span class="font-bold text-gray-700">Room Code</span>
                     </div>
-                    <span id="roomCode" class="font-black text-2xl text-indigo-600 tracking-wider">-</span>
+
+                    <div class="board-log" id="gameLog"></div>
+
+                    <!-- Start Game Button Container - Shown when game is waiting -->
+                    <div id="startGameContainer" class="hidden mt-3">
+                      <button id="startGameBtn"
+                        class="premium-btn w-full py-5 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 hover:from-green-700 hover:via-emerald-600 hover:to-teal-600 text-white font-black text-lg rounded-2xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group/btn">
+                        <span
+                          class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
+                        <span class="relative flex items-center justify-center gap-2">
+                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          START GAME
+                        </span>
+                      </button>
+                      <p
+                        class="text-center text-sm text-gray-500 mt-2 font-medium flex items-center justify-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        You are the host
+                      </p>
+                    </div>
+
+                    <div
+                      class="bg-gradient-to-br from-gray-100 via-gray-50 to-white p-3 rounded-xl border-2 border-gray-200 shadow-inner relative overflow-hidden mt-3">
+                      <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
+                      <div class="relative z-10">
+                        <div class="flex justify-center gap-3 mb-2">
+                          <div id="die1"
+                            class="die w-12 h-12 bg-white border-3 border-gray-800 rounded-xl flex items-center justify-center text-2xl font-black shadow-xl transform hover:rotate-12 transition-all duration-300">
+                            ?
+                          </div>
+                          <div id="die2"
+                            class="die w-12 h-12 bg-white border-3 border-gray-800 rounded-xl flex items-center justify-center text-2xl font-black shadow-xl transform hover:-rotate-12 transition-all duration-300">
+                            ?
+                          </div>
+                        </div>
+                        <div id="diceTotal"
+                          class="text-center text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="w-full space-y-2 mt-2">
+                      <div id="bailWrapper"
+                        class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-3 hover:shadow-lg transition-all duration-300">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" id="bailCheckbox"
+                            class="w-5 h-5 rounded-lg border-yellow-500 text-yellow-600 focus:ring-2 focus:ring-yellow-500 transition-all duration-200" />
+                          <div class="flex-1">
+                            <span class="font-bold text-yellow-800 text-xs block">Pay Rs 50 bail</span>
+                            <span class="text-[10px] text-yellow-700">If you're in jail</span>
+                          </div>
+                          <span class="text-xl">🔓</span>
+                        </label>
+                      </div>
+
+                      <button id="rollBtn"
+                        class="premium-btn w-full py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-black text-sm rounded-xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group/btn">
+                        <span
+                          class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
+                        <span class="relative flex items-center justify-center gap-2">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                            </path>
+                          </svg>
+                          ROLL DICE
+                        </span>
+                      </button>
+                    </div>
+
+                    <button id="buyBtn"
+                      class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 hover:from-green-700 hover:via-emerald-600 hover:to-teal-600 text-white font-bold text-sm rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
+                      <span
+                        class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                      <span class="relative flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                          </path>
+                        </svg>
+                        BUY PROPERTY
+                      </span>
+                    </button>
+
+                    <button id="endTurnBtnCenter"
+                      class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-blue-600 via-cyan-500 to-sky-500 hover:from-blue-700 hover:via-cyan-600 hover:to-sky-600 text-white font-bold text-sm rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
+                      <span
+                        class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                      <span class="relative flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                        END TURN
+                      </span>
+                    </button>
                   </div>
+
                 </div>
-                
-                <div class="info-item">
-                  <div class="flex justify-between items-center p-4 bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:shadow-md">
-                    <span class="font-bold text-gray-700 flex items-center gap-2">
-                      <span class="text-xl">🆔</span>
-                      Your ID
-                    </span>
-                    <span id="playerId" class="font-mono text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">-</span>
-                  </div>
-                </div>
-                
-                <div class="info-item">
-                  <div class="flex justify-between items-center p-4 bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:shadow-md">
-                    <span class="font-bold text-gray-700 flex items-center gap-2">
-                      <span class="text-xl">📊</span>
-                      Status
-                    </span>
-                    <span id="gameStatus" class="font-black text-green-600 uppercase text-sm px-3 py-1 bg-green-50 rounded-full">-</span>
-                  </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3">
-                  <div class="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-200 text-center hover:shadow-md transition-all duration-300">
-                    <div class="text-3xl mb-1">🏠</div>
-                    <div class="text-xs font-bold text-gray-600 mb-1">Houses</div>
-                    <div id="houseSupply" class="text-2xl font-black text-orange-600">32</div>
-                  </div>
-                  
-                  <div class="p-4 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border border-red-200 text-center hover:shadow-md transition-all duration-300">
-                    <div class="text-3xl mb-1">🏨</div>
-                    <div class="text-xs font-bold text-gray-600 mb-1">Hotels</div>
-                    <div id="hotelSupply" class="text-2xl font-black text-red-600">12</div>
-                  </div>
-                </div>
+
               </div>
+
             </div>
+
           </div>
         </div>
 
-        <!-- Right Panel: All Info & Controls -->
+        <!-- Right Panel: Players & Properties -->
         <div class="space-y-6">
           <!-- Players Card -->
           <div class="glass-card-premium flat-card rounded-2xl p-5 relative overflow-hidden">
             <div class="flex items-center gap-3 mb-6">
               <div class="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                  </path>
                 </svg>
               </div>
               <h3 class="text-xl font-black text-gray-800">Players</h3>
@@ -355,27 +354,32 @@
             <div class="flex items-center gap-3 mb-6">
               <div class="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                  </path>
                 </svg>
               </div>
               <h3 class="text-xl font-black text-gray-800">Property</h3>
             </div>
-            <div id="propertyStatus" class="p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl text-sm text-gray-600 font-medium border border-gray-200 shadow-inner">
+            <div id="propertyStatus"
+              class="p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl text-sm text-gray-600 font-medium border border-gray-200 shadow-inner">
               <div class="flex items-center gap-2 text-gray-500">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <span>No property action pending</span>
               </div>
             </div>
 
-            <button 
-              id="openTradeBtn" 
+            <button id="openTradeBtn"
               class="premium-btn w-full mt-4 py-4 bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 hover:from-amber-700 hover:via-orange-600 hover:to-amber-600 text-white font-bold rounded-2xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
-              <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <span
+                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
               <span class="relative flex items-center justify-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                 </svg>
                 TRADE ASSETS
               </span>
@@ -387,7 +391,8 @@
             <div class="flex items-center gap-3 mb-6">
               <div class="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
               </div>
               <h3 class="text-xl font-black text-gray-800">Trade Inbox</h3>
@@ -396,13 +401,15 @@
               <p class="text-sm text-gray-500 italic">No pending trades</p>
             </div>
           </div>
-          
+
           <!-- Build Houses/Hotels Card -->
           <div class="glass-card-premium flat-card rounded-2xl p-5 relative overflow-hidden">
             <div class="flex items-center gap-3 mb-6">
               <div class="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                  </path>
                 </svg>
               </div>
               <h3 class="text-xl font-black text-gray-800">Development</h3>
@@ -411,7 +418,8 @@
               <div class="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
                 <p class="text-sm text-gray-600 font-medium flex items-center gap-2">
                   <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
                   <span>Select a property you own to build houses or hotels</span>
                 </p>
@@ -419,153 +427,161 @@
               <div id="buildableProperties" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar"></div>
             </div>
           </div>
+
         </div>
-        
+      </div>
+
+      <!-- Premium Trade Modal -->
+      <div id="tradeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+        style="font-family: 'Poppins', sans-serif;">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTradeModal()"></div>
+
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 p-8 relative overflow-hidden">
+            <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+            <div class="relative z-10 flex items-center justify-between">
+              <div>
+                <h2 class="text-3xl font-black text-white mb-2 flex items-center gap-3">
+                  <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                  </svg>
+                  Create Trade Offer
+                </h2>
+                <p class="text-purple-100 font-medium">Exchange properties, money, and cards with other players</p>
+              </div>
+              <button onclick="closeTradeModal()"
+                class="p-3 bg-white/20 hover:bg-white/30 rounded-2xl transition-all duration-300 group">
+                <svg class="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-300" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="p-8 overflow-y-auto max-h-[calc(90vh-180px)] custom-scrollbar">
+            <!-- Player Selection -->
+            <div class="mb-8">
+              <label class="block text-sm font-black text-gray-700 mb-4 flex items-center gap-2">
+                <span class="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg text-white">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                </span>
+                Trade With Player
+              </label>
+              <select id="tradePlayerSelect"
+                class="w-full px-6 py-4 bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 font-bold text-gray-800 cursor-pointer hover:border-purple-300">
+                <option value="">Select a player...</option>
+              </select>
+            </div>
+
+            <!-- Trade Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- You Offer -->
+              <div class="glass-card-premium rounded-3xl p-6">
+                <h3 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
+                  <span class="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                  </span>
+                  You Offer
+                </h3>
+
+                <!-- Money Input -->
+                <div class="mb-6">
+                  <label class="block text-sm font-bold text-gray-700 mb-3">💰 Money</label>
+                  <div class="relative">
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 text-xl font-bold">Rs</span>
+                    <input type="number" id="offerMoney" min="0" value="0"
+                      class="w-full pl-12 pr-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 font-bold text-xl text-gray-800" />
+                  </div>
+                </div>
+
+                <!-- Properties -->
+                <div class="mb-6">
+                  <label class="block text-sm font-bold text-gray-700 mb-3">🏠 Properties</label>
+                  <div id="offerProperties" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    <p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">No properties available</p>
+                  </div>
+                </div>
+
+                <!-- Jail Cards -->
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-3">🎴 Get Out of Jail Cards</label>
+                  <input type="number" id="offerJailCards" min="0" max="0" value="0"
+                    class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 font-bold text-xl text-gray-800" />
+                </div>
+              </div>
+
+              <!-- You Request -->
+              <div class="glass-card-premium rounded-3xl p-6">
+                <h3 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
+                  <span class="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                    </svg>
+                  </span>
+                  You Request
+                </h3>
+
+                <!-- Money Input -->
+                <div class="mb-6">
+                  <label class="block text-sm font-bold text-gray-700 mb-3">💰 Money</label>
+                  <div class="relative">
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 text-xl font-bold">Rs</span>
+                    <input type="number" id="requestMoney" min="0" value="0"
+                      class="w-full pl-12 pr-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 font-bold text-xl text-gray-800" />
+                  </div>
+                </div>
+
+                <!-- Properties -->
+                <div class="mb-6">
+                  <label class="block text-sm font-bold text-gray-700 mb-3">🏠 Properties</label>
+                  <div id="requestProperties" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    <p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">Select a player first</p>
+                  </div>
+                </div>
+
+                <!-- Jail Cards -->
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-3">🎴 Get Out of Jail Cards</label>
+                  <input type="number" id="requestJailCards" min="0" max="0" value="0"
+                    class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 font-bold text-xl text-gray-800" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="border-t border-gray-200 p-6 bg-gray-50">
+            <div class="flex gap-4">
+              <button onclick="closeTradeModal()"
+                class="flex-1 px-8 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+                Cancel
+              </button>
+              <button id="submitTradeBtn"
+                class="flex-1 premium-btn px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white font-black rounded-2xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group">
+                <span
+                  class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                <span class="relative">Send Trade Offer</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Premium Trade Modal -->
-    <div id="tradeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="font-family: 'Poppins', sans-serif;">
-      <!-- Backdrop -->
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTradeModal()"></div>
-      
-      <!-- Modal Content -->
-      <div class="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 p-8 relative overflow-hidden">
-          <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-          <div class="relative z-10 flex items-center justify-between">
-            <div>
-              <h2 class="text-3xl font-black text-white mb-2 flex items-center gap-3">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                </svg>
-                Create Trade Offer
-              </h2>
-              <p class="text-purple-100 font-medium">Exchange properties, money, and cards with other players</p>
-            </div>
-            <button onclick="closeTradeModal()" class="p-3 bg-white/20 hover:bg-white/30 rounded-2xl transition-all duration-300 group">
-              <svg class="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Modal Body -->
-        <div class="p-8 overflow-y-auto max-h-[calc(90vh-180px)] custom-scrollbar">
-          <!-- Player Selection -->
-          <div class="mb-8">
-            <label class="block text-sm font-black text-gray-700 mb-4 flex items-center gap-2">
-              <span class="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
-              </span>
-              Trade With Player
-            </label>
-            <select id="tradePlayerSelect" class="w-full px-6 py-4 bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 font-bold text-gray-800 cursor-pointer hover:border-purple-300">
-              <option value="">Select a player...</option>
-            </select>
-          </div>
-
-          <!-- Trade Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- You Offer -->
-            <div class="glass-card-premium rounded-3xl p-6">
-              <h3 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
-                <span class="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg text-white">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                  </svg>
-                </span>
-                You Offer
-              </h3>
-              
-              <!-- Money Input -->
-              <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-3">💰 Money</label>
-                <div class="relative">
-                  <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 text-xl font-bold">Rs</span>
-                  <input type="number" id="offerMoney" min="0" value="0" 
-                    class="w-full pl-12 pr-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 font-bold text-xl text-gray-800" />
-                </div>
-              </div>
-
-              <!-- Properties -->
-              <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-3">🏠 Properties</label>
-                <div id="offerProperties" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
-                  <p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">No properties available</p>
-                </div>
-              </div>
-
-              <!-- Jail Cards -->
-              <div>
-                <label class="block text-sm font-bold text-gray-700 mb-3">🎴 Get Out of Jail Cards</label>
-                <input type="number" id="offerJailCards" min="0" max="0" value="0" 
-                  class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 font-bold text-xl text-gray-800" />
-              </div>
-            </div>
-
-            <!-- You Request -->
-            <div class="glass-card-premium rounded-3xl p-6">
-              <h3 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
-                <span class="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg text-white">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
-                  </svg>
-                </span>
-                You Request
-              </h3>
-              
-              <!-- Money Input -->
-              <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-3">💰 Money</label>
-                <div class="relative">
-                  <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 text-xl font-bold">Rs</span>
-                  <input type="number" id="requestMoney" min="0" value="0" 
-                    class="w-full pl-12 pr-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 font-bold text-xl text-gray-800" />
-                </div>
-              </div>
-
-              <!-- Properties -->
-              <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-3">🏠 Properties</label>
-                <div id="requestProperties" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
-                  <p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">Select a player first</p>
-                </div>
-              </div>
-
-              <!-- Jail Cards -->
-              <div>
-                <label class="block text-sm font-bold text-gray-700 mb-3">🎴 Get Out of Jail Cards</label>
-                <input type="number" id="requestJailCards" min="0" max="0" value="0" 
-                  class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 font-bold text-xl text-gray-800" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Modal Footer -->
-        <div class="border-t border-gray-200 p-6 bg-gray-50">
-          <div class="flex gap-4">
-            <button onclick="closeTradeModal()" 
-              class="flex-1 px-8 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
-              Cancel
-            </button>
-            <button id="submitTradeBtn" 
-              class="flex-1 premium-btn px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white font-black rounded-2xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group">
-              <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-              <span class="relative">Send Trade Offer</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="app.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
 </body>
+
 </html>
