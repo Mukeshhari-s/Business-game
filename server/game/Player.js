@@ -16,6 +16,8 @@ export default class Player {
     this.isBankrupt = false;
     this.connected = true;
     this.consecutiveDoubles = 0;
+    this.turnHasRolled = false;
+    this.canRollAgain = false;
   }
 
   toPublic() {
@@ -33,6 +35,8 @@ export default class Player {
       isBankrupt: this.isBankrupt,
       connected: this.connected,
       consecutiveDoubles: this.consecutiveDoubles,
+      turnHasRolled: this.turnHasRolled,
+      canRollAgain: this.canRollAgain,
     };
   }
 }

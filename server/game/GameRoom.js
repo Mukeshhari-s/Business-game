@@ -23,14 +23,12 @@ export default class GameRoom {
     this.gameLog = [];
     this.lastAction = '';
     this.pendingPropertyIndex = null;
-    this.turnHasRolled = false;
     this.hostId = null;
     this.houseSupply = 32;
     this.hotelSupply = 12;
     this.pendingTrades = new Map();
     this.tradeHistory = [];
     this.tradeLock = false;
-    this.canRollAgain = false;
   }
 
   log(message) {
@@ -404,7 +402,7 @@ export default class GameRoom {
       this.sendError(socketId, 'You are bankrupt.');
       return;
     }
-    if (this.turnHasRolled) {
+    if (player.turnHasRolled && !player.canRollAgain) {
       this.sendError(socketId, 'You already rolled this turn.');
       return;
     }
@@ -415,7 +413,7 @@ export default class GameRoom {
         player.balance -= BAIL_AMOUNT;
         player.inJail = false;
         player.jailTurns = 0;
-        this.turnHasRolled = true;
+        player.turnHasRolled = true;
         this.log(`${player.name} paid Rs ${BAIL_AMOUNT} bail and left jail. Cannot move this turn.`);
         this.io.to(this.roomId).emit('paid_bail', { playerId: player.playerId });
         this.broadcastState();
@@ -429,7 +427,7 @@ export default class GameRoom {
     // Handle vacation BEFORE rolling - player can't roll while on vacation
     if (player.inVacation) {
       player.vacationTurns += 1;
-      this.turnHasRolled = true;
+      player.turnHasRolled = true;
 
       // Turn 3 on vacation - automatic release
       if (player.vacationTurns >= VACATION_STAY_TURNS) {
@@ -451,8 +449,8 @@ export default class GameRoom {
     const dice = Dice.roll();
     const isDoubles = dice.die1 === dice.die2;
 
-    this.turnHasRolled = true;
-    this.canRollAgain = false;
+    player.turnHasRolled = true;
+    player.canRollAgain = false;
     this.io.to(this.roomId).emit('dice_rolled', { playerId: player.playerId, dice, isDoubles });
 
     // Check for doubles
@@ -464,55 +462,45 @@ export default class GameRoom {
         this.log(`${player.name} rolled doubles for the THIRD time and goes to jail!`);
         this.io.to(this.roomId).emit('third_double_jail', { playerId: player.playerId });
 
-        setTimeout(() => {
-          this.sendPlayerToJail(player);
-          player.consecutiveDoubles = 0;
-          this.broadcastState();
-        }, 1000);
+        this.sendPlayerToJail(player);
+        player.consecutiveDoubles = 0;
+        this.broadcastState();
         return;
       }
 
       // First or second double - extra turn!
       this.log(`${player.name} rolled doubles (${dice.die1}-${dice.die1})! Gets to roll again. (${player.consecutiveDoubles}/3)`);
+      player.canRollAgain = true; // Set here immediately!
       this.io.to(this.roomId).emit('doubles_rolled', {
         playerId: player.playerId,
         count: player.consecutiveDoubles,
         canRollAgain: true
       });
 
-      // Allow player to roll again by resetting turnHasRolled after movement
-      setTimeout(() => {
-        if (player.inJail) {
-          const canMove = this.handleJailRoll(player, dice, isDoubles);
-          if (canMove) {
-            this.movePlayer(player, dice.total);
-          }
-        } else {
+      if (player.inJail) {
+        const canMove = this.handleJailRoll(player, dice, isDoubles);
+        if (canMove) {
           this.movePlayer(player, dice.total);
         }
-
-        // Set canRollAgain instead of resetting turnHasRolled
-        this.canRollAgain = true;
-        this.broadcastState();
-      }, 1000);
+      } else {
+        this.movePlayer(player, dice.total);
+      }
+      this.broadcastState();
     } else {
       // Not doubles - reset counter
       player.consecutiveDoubles = 0;
 
-      // Wait for dice animation to complete before moving player (1000ms)
-      setTimeout(() => {
-        if (player.inJail) {
-          const canMove = this.handleJailRoll(player, dice, isDoubles);
-          if (canMove) {
-            this.movePlayer(player, dice.total);
-          }
-          this.broadcastState();
-          return;
+      if (player.inJail) {
+        const canMove = this.handleJailRoll(player, dice, isDoubles);
+        if (canMove) {
+          this.movePlayer(player, dice.total);
         }
-
-        this.movePlayer(player, dice.total);
         this.broadcastState();
-      }, 1000);
+        return;
+      }
+
+      this.movePlayer(player, dice.total);
+      this.broadcastState();
     }
   }
 
@@ -664,6 +652,7 @@ export default class GameRoom {
     player.inVacation = false;
     player.vacationTurns = 0;
     this.pendingPropertyIndex = null;
+    player.canRollAgain = false; // Turn ends if sent to jail
     this.log(`${player.name} was sent directly to jail.`);
     this.io.to(this.roomId).emit('sent_to_jail', { playerId: player.playerId });
   }
@@ -1112,8 +1101,8 @@ export default class GameRoom {
 
     this.log(`${player.name} ended their turn.`);
     this.pendingPropertyIndex = null;
-    this.turnHasRolled = false;
-    this.canRollAgain = false;
+    player.turnHasRolled = false;
+    player.canRollAgain = false;
     this.advanceTurn();
   }
 
@@ -1127,8 +1116,8 @@ export default class GameRoom {
       const candidate = this.players[idx];
       if (candidate && !candidate.isBankrupt) {
         this.currentTurnIndex = idx;
-        this.turnHasRolled = false;
-        this.canRollAgain = false;
+        candidate.turnHasRolled = false;
+        candidate.canRollAgain = false;
         this.pendingPropertyIndex = null;
         this.io.to(this.roomId).emit('turn_changed', { playerId: candidate.playerId });
         this.broadcastState();
@@ -1208,8 +1197,8 @@ export default class GameRoom {
       pendingPropertyIndex: this.pendingPropertyIndex,
       lastAction: this.lastAction,
       gameLog: [...this.gameLog],
-      turnHasRolled: this.turnHasRolled,
-      canRollAgain: this.canRollAgain,
+      turnHasRolled: currentPlayer ? currentPlayer.turnHasRolled : false,
+      canRollAgain: currentPlayer ? currentPlayer.canRollAgain : false,
       houseSupply: this.houseSupply,
       hotelSupply: this.hotelSupply,
       pendingTrades: Array.from(this.pendingTrades.values()).map((t) => this.sanitizeTrade(t)),

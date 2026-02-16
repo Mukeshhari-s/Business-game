@@ -5,6 +5,7 @@ let gameState = null;
 let lastDiceRoll = null;
 const lobbyData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
 let autoActionSent = false;
+let isAnimating = false;
 
 // DOM Elements
 const nameInput = document.getElementById('nameInput');
@@ -153,14 +154,17 @@ if (joinBtn && nameInput && roomInput) {
 }
 
 rollBtn.addEventListener('click', () => {
+  rollBtn.disabled = true; // Prevent double-clicks
   socket.emit('roll_dice', { payBail: bailCheckbox.checked });
 });
 
 buyBtn.addEventListener('click', () => {
+  buyBtn.disabled = true; // Prevent double-clicks
   socket.emit('buy_property');
 });
 
 endTurnBtnCenter.addEventListener('click', () => {
+  endTurnBtnCenter.disabled = true; // Prevent double-clicks
   socket.emit('end_turn');
 });
 
@@ -255,6 +259,8 @@ socket.on('turn_changed', ({ playerId }) => {
 
 socket.on('dice_rolled', ({ playerId, dice }) => {
   lastDiceRoll = dice;
+  isAnimating = true;
+  renderState(gameState); // Update UI to disable buttons immediately
 
   // Add premium 3D rolling animation to dice with glow effects
   const diceContainer1 = die1.closest('.dice-container');
@@ -287,6 +293,12 @@ socket.on('dice_rolled', ({ playerId, dice }) => {
 
     // Show the total
     diceTotal.innerHTML = `<span style="font-size: 1.2em; font-weight: 900;">Total: ${dice.total}</span>`;
+
+    // Clear animation flag after dice and some buffer for movement
+    setTimeout(() => {
+      isAnimating = false;
+      renderState(gameState);
+    }, 500);
   }, 1000);
 
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
@@ -298,6 +310,7 @@ socket.on('dice_rolled', ({ playerId, dice }) => {
 });
 
 socket.on('player_moved', ({ playerId, from, to }) => {
+  isAnimating = true;
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   if (player) {
     // Animate token movement with 3D effect
@@ -305,7 +318,9 @@ socket.on('player_moved', ({ playerId, from, to }) => {
 
     setTimeout(() => {
       showToast(`${player.name} moved from ${boardData[from].name} to ${boardData[to].name}`, 'info');
-    }, 400);
+      isAnimating = false;
+      renderState(gameState);
+    }, 800);
   }
 });
 
@@ -863,9 +878,9 @@ function renderState(state) {
   const canRollAgain = state.canRollAgain && isMyTurn;
 
   // Set disabled states
-  rollBtn.disabled = !canAct || (hasRolled && !canRollAgain);
-  buyBtn.disabled = !canAct || state.pendingPropertyIndex === null;
-  endTurnBtnCenter.disabled = !canAct || !hasRolled;
+  rollBtn.disabled = isAnimating || !canAct || (hasRolled && !canRollAgain);
+  buyBtn.disabled = isAnimating || !canAct || state.pendingPropertyIndex === null;
+  endTurnBtnCenter.disabled = isAnimating || !canAct || !hasRolled;
 
   // Update button visibility and text based on state
   console.log('[DEBUG] Button visibility logic:', { gameActive, isMyTurn, hasRolled, canRollAgain, pendingPropertyIndex: state.pendingPropertyIndex });
