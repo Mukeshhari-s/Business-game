@@ -12,6 +12,7 @@
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dice-3d.css" />
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-x-hidden">
@@ -251,14 +252,80 @@
                       class="bg-gradient-to-br from-gray-100 via-gray-50 to-white p-3 rounded-xl border-2 border-gray-200 shadow-inner relative overflow-hidden mt-3">
                       <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
                       <div class="relative z-10">
-                        <div class="flex justify-center gap-2 mb-1.5">
-                          <div id="die1"
-                            class="die w-10 h-10 bg-white border-3 border-gray-800 rounded-lg flex items-center justify-center text-xl font-black shadow-xl transform hover:rotate-12 transition-all duration-300">
-                            ?
+                        <div class="flex justify-center gap-4 mb-1.5">
+                          <div class="dice-container">
+                            <div id="die1" class="dice">
+                              <div class="face front" data-value="1">
+                                <div class="dot center"></div>
+                              </div>
+                              <div class="face back" data-value="6">
+                                <div class="dot top-left"></div>
+                                <div class="dot top-right"></div>
+                                <div class="dot mid-left"></div>
+                                <div class="dot mid-right"></div>
+                                <div class="dot bottom-left"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                              <div class="face right" data-value="3">
+                                <div class="dot top-left"></div>
+                                <div class="dot center"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                              <div class="face left" data-value="4">
+                                <div class="dot top-left"></div>
+                                <div class="dot top-right"></div>
+                                <div class="dot bottom-left"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                              <div class="face top" data-value="5">
+                                <div class="dot top-left"></div>
+                                <div class="dot top-right"></div>
+                                <div class="dot center"></div>
+                                <div class="dot bottom-left"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                              <div class="face bottom" data-value="2">
+                                <div class="dot top-left"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                            </div>
                           </div>
-                          <div id="die2"
-                            class="die w-10 h-10 bg-white border-3 border-gray-800 rounded-lg flex items-center justify-center text-xl font-black shadow-xl transform hover:-rotate-12 transition-all duration-300">
-                            ?
+                          <div class="dice-container">
+                            <div id="die2" class="dice">
+                              <div class="face front" data-value="1">
+                                <div class="dot center"></div>
+                              </div>
+                              <div class="face back" data-value="6">
+                                <div class="dot top-left"></div>
+                                <div class="dot top-right"></div>
+                                <div class="dot mid-left"></div>
+                                <div class="dot mid-right"></div>
+                                <div class="dot bottom-left"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                              <div class="face right" data-value="3">
+                                <div class="dot top-left"></div>
+                                <div class="dot center"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                              <div class="face left" data-value="4">
+                                <div class="dot top-left"></div>
+                                <div class="dot top-right"></div>
+                                <div class="dot bottom-left"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                              <div class="face top" data-value="5">
+                                <div class="dot top-left"></div>
+                                <div class="dot top-right"></div>
+                                <div class="dot center"></div>
+                                <div class="dot bottom-left"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                              <div class="face bottom" data-value="2">
+                                <div class="dot top-left"></div>
+                                <div class="dot bottom-right"></div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                         <div id="diceTotal"
