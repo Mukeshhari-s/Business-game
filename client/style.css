@@ -761,7 +761,7 @@ input:focus {
 .neutral-cell .cell-name {
   background: transparent;
   padding: 0;
-  font-size: 0.9em;
+  font-size: 0.65em;
   font-weight: 900;
   color: #f57c00;
   text-shadow:
