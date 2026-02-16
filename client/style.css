@@ -55,13 +55,13 @@ html {
   -webkit-backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 20px 60px 0 rgba(31, 38, 135, 0.2),
-              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card-premium:hover {
   box-shadow: 0 30px 80px 0 rgba(31, 38, 135, 0.25),
-              inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transform: translateY(-2px);
 }
 
@@ -97,10 +97,10 @@ html {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.4) 50%, 
-    transparent 100%);
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%);
   transform: translateX(-100%);
   transition: transform 0.6s ease;
 }
@@ -115,39 +115,52 @@ html {
 
 /* Animations */
 @keyframes blob {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   33% {
     transform: translate(30px, -50px) scale(1.1);
   }
+
   66% {
     transform: translate(-20px, 20px) scale(0.9);
   }
 }
 
 @keyframes gradient {
-  0%, 100% {
+
+  0%,
+  100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
   }
+
   50% {
     box-shadow: 0 0 40px rgba(124, 58, 237, 0.8);
   }
@@ -157,6 +170,7 @@ html {
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -237,7 +251,7 @@ input:focus {
   min-height: 100vh;
 }
 
-.main-grid > * {
+.main-grid>* {
   min-width: 0;
 }
 
@@ -272,9 +286,9 @@ input:focus {
 }
 
 #monopoly-board {
-  width: min(95vw, 90vh);
-  height: min(95vw, 90vh);
-  max-width: 90vh;
+  width: min(100vw, 95vh);
+  height: min(100vw, 95vh);
+  max-width: 95vh;
   aspect-ratio: 1 / 1;
   background: linear-gradient(135deg, #c8e6cf 0%, #b8dcc5 25%, #a8d2bb 50%, #b8dcc5 75%, #c8e6cf 100%);
   background-size: 200% 200%;
@@ -290,7 +304,7 @@ input:focus {
   gap: 2px;
   padding: 4px;
   position: relative;
-  box-shadow: 
+  box-shadow:
     0 30px 90px rgba(0, 0, 0, 0.3),
     0 15px 40px rgba(0, 0, 0, 0.2),
     inset 0 2px 4px rgba(255, 255, 255, 0.3),
@@ -306,18 +320,25 @@ input:focus {
   left: 0;
   right: 0;
   height: 50%;
-  background: linear-gradient(to bottom, 
-    rgba(255, 255, 255, 0.15) 0%, 
-    rgba(255, 255, 255, 0.05) 50%, 
-    transparent 100%);
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%);
   pointer-events: none;
   z-index: 1;
   border-radius: 24px 24px 0 0;
 }
 
 @keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .board-center {
@@ -331,10 +352,10 @@ input:focus {
   border: 3px solid #333;
   border-radius: 12px;
   padding: 6px;
-  box-shadow: 
-    inset 0 0 30px rgba(0,0,0,0.08),
-    inset 0 2px 4px rgba(255,255,255,0.8),
-    0 4px 20px rgba(0,0,0,0.15);
+  box-shadow:
+    inset 0 0 30px rgba(0, 0, 0, 0.08),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8),
+    0 4px 20px rgba(0, 0, 0, 0.15);
   gap: 4px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -353,7 +374,7 @@ input:focus {
   padding: 20px;
 }
 
-.board-overlay > * {
+.board-overlay>* {
   pointer-events: auto;
 }
 
@@ -452,6 +473,7 @@ input:focus {
 }
 
 @media (max-width: 768px) {
+
   /* Container padding reduction */
   .container.mx-auto {
     padding: 1rem 0.5rem !important;
@@ -473,7 +495,7 @@ input:focus {
     width: min(95vw, 95vh);
     height: min(95vw, 95vh);
   }
-  
+
   .board-center {
     padding: 4px;
     gap: 3px;
@@ -482,6 +504,7 @@ input:focus {
 
 /* Mobile-first tightening to mimic compact richup.io board feel */
 @media (max-width: 600px) {
+
   /* Container padding reduction */
   .container.mx-auto {
     padding: 0.5rem !important;
@@ -511,7 +534,7 @@ input:focus {
     height: 98vw;
     max-width: 98vw;
   }
-  
+
   .board-center {
     padding: 3px;
     gap: 2px;
@@ -519,7 +542,7 @@ input:focus {
   }
 
   /* Side panels - hide on very small screens to maximize board space */
-  #game .grid > .space-y-6 {
+  #game .grid>.space-y-6 {
     display: none !important;
   }
 
@@ -543,9 +566,11 @@ input:focus {
     font-size: 1.75rem !important;
   }
 
-  #rollBtn, #buyBtn, #endTurnBtn {
+  #rollBtn,
+  #buyBtn,
+  #endTurnBtn {
     padding: 0.75rem 0.5rem !important;
-    font-size: 0.75rem !important;
+    font-size: 0.70 rem !important;
   }
 
   .from-yellow-50.rounded-2xl {
@@ -597,7 +622,7 @@ input:focus {
   left: 0;
   right: 0;
   height: 40%;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), transparent);
   pointer-events: none;
   z-index: 1;
 }
@@ -673,7 +698,7 @@ input:focus {
   font-size: 13px;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
+  box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
   cursor: pointer;
@@ -682,7 +707,7 @@ input:focus {
 
 .cell:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 
+  box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.2),
     0 4px 8px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -695,7 +720,7 @@ input:focus {
   text-align: center;
   font-weight: 800;
   background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
-  font-size: 0.75em;
+  font-size: 0.65em;
   line-height: 1.3;
   display: flex;
   align-items: center;
@@ -727,7 +752,7 @@ input:focus {
 
 .neutral-cell:hover {
   background: linear-gradient(135deg, #fffbf0, #fff9e6);
-  box-shadow: 
+  box-shadow:
     0 8px 16px rgba(255, 193, 7, 0.3),
     inset 0 2px 4px rgba(255, 255, 255, 0.6);
   transform: translateY(-2px) scale(1.02);
@@ -739,7 +764,7 @@ input:focus {
   font-size: 0.9em;
   font-weight: 900;
   color: #f57c00;
-  text-shadow: 
+  text-shadow:
     0 2px 4px rgba(255, 255, 255, 0.8),
     0 1px 2px rgba(245, 124, 0, 0.3);
 }
@@ -749,7 +774,7 @@ input:focus {
   width: 100%;
   flex-shrink: 0;
   position: relative;
-  box-shadow: 
+  box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.2),
     inset 0 1px 2px rgba(255, 255, 255, 0.3),
     inset 0 -1px 2px rgba(0, 0, 0, 0.2);
@@ -758,7 +783,7 @@ input:focus {
 
 .cell:hover .cell-color {
   height: 20px;
-  box-shadow: 
+  box-shadow:
     0 4px 8px rgba(0, 0, 0, 0.3),
     inset 0 2px 4px rgba(255, 255, 255, 0.4),
     inset 0 -2px 4px rgba(0, 0, 0, 0.3);
@@ -783,7 +808,7 @@ input:focus {
 .corner {
   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
   border-width: 3px;
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.15),
     inset 0 2px 4px rgba(255, 255, 255, 0.5);
   position: relative;
@@ -797,17 +822,20 @@ input:focus {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, 
-    transparent 30%, 
-    rgba(255, 255, 255, 0.3) 50%, 
-    transparent 70%);
+  background: linear-gradient(45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 70%);
   animation: cornerShine 3s ease-in-out infinite;
 }
 
 @keyframes cornerShine {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(-100%, -100%);
   }
+
   50% {
     transform: translate(0%, 0%);
   }
@@ -819,7 +847,7 @@ input:focus {
 }
 
 .cell.corner .cell-name {
-  font-size: 0.8em;
+  font-size: 0.75em;
   font-weight: 900;
   padding: 4px;
   height: 100%;
@@ -835,8 +863,7 @@ input:focus {
 }
 
 /* Bottom row */
-.bottom {
-}
+.bottom {}
 
 /* Right column */
 .right {
@@ -869,8 +896,7 @@ input:focus {
 }
 
 /* Top row */
-.top {
-}
+.top {}
 
 /* Left column */
 .left {
@@ -909,7 +935,7 @@ input:focus {
   border-radius: 50%;
   border: 2px solid white;
   position: absolute;
-  box-shadow: 
+  box-shadow:
     0 6px 12px rgba(0, 0, 0, 0.4),
     0 3px 6px rgba(0, 0, 0, 0.3),
     0 0 0 2px rgba(0, 0, 0, 0.1),
@@ -935,7 +961,7 @@ input:focus {
 
 .player-token:hover {
   transform: scale(1.4) translateY(-4px) rotateY(20deg);
-  box-shadow: 
+  box-shadow:
     0 12px 24px rgba(0, 0, 0, 0.5),
     0 6px 12px rgba(0, 0, 0, 0.4),
     0 0 0 4px rgba(255, 255, 255, 0.9),
@@ -943,16 +969,19 @@ input:focus {
 }
 
 @keyframes tokenPulse3D {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1) translateZ(0);
-    box-shadow: 
+    box-shadow:
       0 6px 12px rgba(0, 0, 0, 0.4),
       0 3px 6px rgba(0, 0, 0, 0.3),
       0 0 0 2px rgba(0, 0, 0, 0.1);
   }
+
   50% {
     transform: scale(1.08) translateZ(5px);
-    box-shadow: 
+    box-shadow:
       0 8px 16px rgba(0, 0, 0, 0.5),
       0 4px 8px rgba(0, 0, 0, 0.4),
       0 0 0 2px rgba(0, 0, 0, 0.1);
@@ -965,42 +994,52 @@ input:focus {
     transform: translateZ(0) scale(1) rotateY(0deg);
     opacity: 1;
   }
+
   10% {
     transform: translateZ(30px) scale(1.3) rotateY(90deg);
     opacity: 0.9;
   }
+
   20% {
     transform: translateZ(50px) scale(1.5) rotateY(180deg);
     opacity: 0.8;
   }
+
   30% {
     transform: translateZ(60px) scale(1.6) rotateY(270deg);
     opacity: 0.85;
   }
+
   40% {
     transform: translateZ(65px) scale(1.7) rotateY(360deg);
     opacity: 0.9;
   }
+
   50% {
     transform: translateZ(70px) scale(1.8) rotateY(450deg);
     opacity: 0.95;
   }
+
   60% {
     transform: translateZ(60px) scale(1.6) rotateY(540deg);
     opacity: 0.9;
   }
+
   70% {
     transform: translateZ(40px) scale(1.4) rotateY(630deg);
     opacity: 0.85;
   }
+
   80% {
     transform: translateZ(25px) scale(1.2) rotateY(720deg);
     opacity: 0.9;
   }
+
   90% {
     transform: translateZ(10px) scale(1.1) rotateY(810deg);
     opacity: 0.95;
   }
+
   100% {
     transform: translateZ(0) scale(1) rotateY(900deg);
     opacity: 1;
@@ -1019,6 +1058,7 @@ input:focus {
     opacity: 0.8;
     transform: scale(1);
   }
+
   100% {
     opacity: 0;
     transform: scale(1.5);
@@ -1053,7 +1093,7 @@ input:focus {
   background: linear-gradient(135deg, #2ecc71, #27ae60);
   border: 1.5px solid #1e8449;
   border-radius: 3px;
-  box-shadow: 
+  box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.3),
     inset 0 1px 2px rgba(255, 255, 255, 0.3);
   transition: all 0.2s ease;
@@ -1076,7 +1116,7 @@ input:focus {
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  box-shadow: 
+  box-shadow:
     0 3px 6px rgba(0, 0, 0, 0.4),
     inset 0 1px 2px rgba(255, 255, 255, 0.3);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
@@ -1089,35 +1129,42 @@ input:focus {
 }
 
 /* Property Colors - Country Groups with Gradients */
-.color-brazil { 
+.color-brazil {
   background: linear-gradient(135deg, #c77dff, #b565f3);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
-.color-israel { 
+
+.color-israel {
   background: linear-gradient(135deg, #4fc3f7, #3ab0e3);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
-.color-italy { 
+
+.color-italy {
   background: linear-gradient(135deg, #ff6b6b, #ee5a52);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
-.color-germany { 
+
+.color-germany {
   background: linear-gradient(135deg, #f6ae2d, #e39d1a);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
-.color-china { 
+
+.color-china {
   background: linear-gradient(135deg, #d62828, #c41e1e);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
-.color-france { 
+
+.color-france {
   background: linear-gradient(135deg, #277da1, #1e6284);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
-.color-uk { 
+
+.color-uk {
   background: linear-gradient(135deg, #52b788, #40916c);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
-.color-usa { 
+
+.color-usa {
   background: linear-gradient(135deg, #6c5ce7, #5849d0);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
@@ -1131,7 +1178,7 @@ input:focus {
 .cell:hover .color-uk,
 .cell:hover .color-usa {
   filter: brightness(1.2) saturate(1.2);
-  box-shadow: 
+  box-shadow:
     inset 0 2px 4px rgba(255, 255, 255, 0.4),
     0 0 8px currentColor;
 }
@@ -1181,7 +1228,7 @@ input:focus {
   height: 14px;
   border-radius: 50%;
   border: 2px solid white;
-  box-shadow: 
+  box-shadow:
     0 2px 6px rgba(0, 0, 0, 0.4),
     0 0 0 2px rgba(0, 0, 0, 0.1),
     inset 0 1px 2px rgba(255, 255, 255, 0.3);
@@ -1191,7 +1238,7 @@ input:focus {
 
 .owner-indicator:hover {
   transform: scale(1.3);
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.5),
     0 0 0 3px rgba(255, 255, 255, 0.8),
     0 0 12px currentColor;
@@ -1202,7 +1249,7 @@ input:focus {
   height: 7px;
   border-radius: 0 0 4px 4px;
   margin-top: 2px;
-  box-shadow: 
+  box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.2),
     inset 0 1px 2px rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
@@ -1210,7 +1257,7 @@ input:focus {
 
 .cell:hover .owner-bar {
   height: 8px;
-  box-shadow: 
+  box-shadow:
     0 3px 6px rgba(0, 0, 0, 0.3),
     inset 0 1px 2px rgba(255, 255, 255, 0.3),
     0 0 8px currentColor;
@@ -1220,9 +1267,12 @@ input:focus {
 
 /* Animations */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.02);
   }
@@ -1233,10 +1283,14 @@ input:focus {
 }
 
 @keyframes blink {
-  0%, 50% {
+
+  0%,
+  50% {
     opacity: 1;
   }
-  51%, 100% {
+
+  51%,
+  100% {
     opacity: 0.5;
   }
 }
@@ -1267,6 +1321,7 @@ input:focus {
     transform: translateX(400px);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -1301,7 +1356,7 @@ input:focus {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   transition: left 0.5s;
 }
 
@@ -1315,6 +1370,7 @@ input:focus {
     opacity: 0;
     transform: translateY(-50px) scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -1325,6 +1381,7 @@ input:focus {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -1344,7 +1401,7 @@ input:focus {
   user-select: none;
 }
 
-.property-checkbox-item input[type="checkbox"]:checked + * {
+.property-checkbox-item input[type="checkbox"]:checked+* {
   transform: scale(1.05);
 }
 
@@ -1355,7 +1412,10 @@ input:focus {
   transition-duration: 150ms;
 }
 
-button, a, input, select {
+button,
+a,
+input,
+select {
   transition-duration: 300ms;
 }
 
@@ -1380,36 +1440,47 @@ button, a, input, select {
   0% {
     transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
   }
+
   10% {
     transform: rotateX(180deg) rotateY(90deg) rotateZ(45deg) scale(1.2) translateY(-20px);
   }
+
   20% {
     transform: rotateX(360deg) rotateY(180deg) rotateZ(90deg) scale(1.1) translateY(-15px);
   }
+
   30% {
     transform: rotateX(540deg) rotateY(270deg) rotateZ(135deg) scale(1.3) translateY(-25px);
   }
+
   40% {
     transform: rotateX(720deg) rotateY(360deg) rotateZ(180deg) scale(1.15) translateY(-10px);
   }
+
   50% {
     transform: rotateX(900deg) rotateY(450deg) rotateZ(225deg) scale(1.25) translateY(-20px);
   }
+
   60% {
     transform: rotateX(1080deg) rotateY(540deg) rotateZ(270deg) scale(1.1) translateY(-8px);
   }
+
   70% {
     transform: rotateX(1260deg) rotateY(630deg) rotateZ(315deg) scale(1.2) translateY(-15px);
   }
+
   80% {
     transform: rotateX(1440deg) rotateY(720deg) rotateZ(360deg) scale(1.05) translateY(-5px);
   }
+
   90% {
     transform: rotateX(1600deg) rotateY(800deg) rotateZ(400deg) scale(1.1) translateY(-3px);
   }
+
   95% {
     transform: rotateX(1700deg) rotateY(850deg) rotateZ(425deg) scale(1.02) translateY(-1px);
   }
+
   100% {
     transform: rotateX(1800deg) rotateY(900deg) rotateZ(450deg) scale(1) translateY(0);
   }
@@ -1421,7 +1492,7 @@ button, a, input, select {
   transition: all 0.3s ease;
   position: relative;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #e9ecef 100%);
-  box-shadow: 
+  box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.3),
     inset -2px -2px 4px rgba(0, 0, 0, 0.1),
     inset 2px 2px 4px rgba(255, 255, 255, 0.9);
@@ -1459,10 +1530,13 @@ button, a, input, select {
 }
 
 @keyframes shadowPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.3;
     transform: translateX(-50%) scale(0.8);
   }
+
   50% {
     opacity: 0.6;
     transform: translateX(-50%) scale(1.2);
@@ -1471,9 +1545,12 @@ button, a, input, select {
 
 /* Dice bounce on land */
 @keyframes diceBounce {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: rotateX(10deg) rotateY(-10deg) translateY(0) scale(1);
   }
+
   50% {
     transform: rotateX(10deg) rotateY(-10deg) translateY(-8px) scale(1.08);
   }
@@ -1492,13 +1569,16 @@ button, a, input, select {
 
 /* Active property pulse when owned */
 @keyframes propertyPulse {
-  0%, 100% {
-    box-shadow: 
+
+  0%,
+  100% {
+    box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
+
   50% {
-    box-shadow: 
+    box-shadow:
       0 4px 8px rgba(0, 0, 0, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.6),
       0 0 12px rgba(124, 58, 237, 0.3);
@@ -1524,8 +1604,9 @@ button, a, input, select {
 
 /* Responsive adjustments */
 @media (min-width: 1280px) {
+
   /* Right sidebar scrolling on larger screens */
-  #game > .grid > .space-y-6 {
+  #game>.grid>.space-y-6 {
     max-height: calc(100vh - 12rem);
     overflow-y: auto;
     overflow-x: hidden;
@@ -1554,23 +1635,23 @@ button, a, input, select {
     height: clamp(350px, 100%, 500px);
     border-width: 10px;
   }
-  
+
   .board-center h2 {
     font-size: 1.5em;
   }
-  
+
   .board-center p {
     font-size: 0.7em;
   }
-  
+
   .board-log {
     max-height: 150px;
   }
-  
+
   .cell-name {
     font-size: 10px;
   }
-  
+
   .corner .cell-name {
     font-size: 12px;
   }
@@ -1584,23 +1665,23 @@ button, a, input, select {
     gap: 2px;
     padding: 4px;
   }
-  
+
   .board-center h2 {
     font-size: 1.2em;
   }
-  
+
   .board-center p {
     font-size: 0.6em;
   }
-  
+
   .board-log {
     max-height: 120px;
   }
-  
+
   .cell-name {
     font-size: 6px;
   }
-  
+
   .corner .cell-name {
     font-size: 8px;
   }

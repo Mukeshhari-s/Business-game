@@ -42,22 +42,22 @@ const boardData = [
   { name: 'Vaikalmedu', color: 'brazil' },
   { name: 'Pudhaiyal', color: null },
   { name: 'Thopupalayam', color: 'brazil' },
-  { name: 'varumana vari', color: null },
+  { name: 'Varumana vari', color: null },
   { name: 'Vettaiyan Airways', color: 'railroad' },
   { name: 'Paramathi', color: 'israel' },
   { name: 'Surprise', color: null },
-  { name: 'p velur', color: 'israel' },
-  { name: 'kabilarmalai', color: 'israel' },
+  { name: 'P Velur', color: 'israel' },
+  { name: 'Kabilarmalai', color: 'israel' },
   { name: 'Epistine Island', color: null },
-  { name: 'velarivelli', color: 'italy' },
-  { name: 'TASS-MAC', color: 'utility' },
-  { name: 'polampatti', color: 'italy' },
-  { name: 'boat theeru', color: 'italy' },
-  { name: 'eagle Tractors', color: 'railroad' },
-  { name: 'karur', color: 'germany' },
+  { name: 'Velarivelli', color: 'italy' },
+  { name: 'U K Consultancy', color: 'utility' },
+  { name: 'Polampatti', color: 'italy' },
+  { name: 'Boat Theeru', color: 'italy' },
+  { name: 'Eagle Tractors', color: 'railroad' },
+  { name: 'Karur', color: 'germany' },
   { name: 'Pudhaiyal', color: null },
   { name: 'Namakkal main', color: 'germany' },
-  { name: 'erode', color: 'germany' },
+  { name: 'Erode', color: 'germany' },
   { name: 'Sorgavasal', color: null },
   { name: 'Pollachi', color: 'china' },
   { name: 'Surprise', color: null },
@@ -66,18 +66,18 @@ const boardData = [
   { name: 'Vettaiyan waterways', color: 'railroad' },
   { name: 'Unjalur', color: 'france' },
   { name: 'Noyal', color: 'france' },
-  { name: 'kathirvel vathukadai', color: 'utility' },
+  { name: 'Kathirvel vathukadai', color: 'utility' },
   { name: 'Kodumudi', color: 'france' },
   { name: 'Book your tickets', color: null },
-  { name: 'Salapalayam', color: 'uk' },
-  { name: 'govindhampalyam', color: 'uk' },
+  { name: 'Sala Palayam', color: 'uk' },
+  { name: 'Govindham Palyam', color: 'uk' },
   { name: 'Pudhaiyal', color: null },
-  { name: 'valaiyalkaran pudhur', color: 'uk' },
+  { name: 'Valaiyal Karan Pudhur', color: 'uk' },
   { name: 'Vettaiyan Roadways', color: 'railroad' },
   { name: 'Surprise', color: null },
-  { name: 'Mettur dam', color: 'usa' },
-  { name: 'Aadambara vari', color: null },
-  { name: 'Kolathur beach', color: 'usa' },
+  { name: 'Mettur Dam', color: 'usa' },
+  { name: 'Aadambara Vari', color: null },
+  { name: 'Kolathur Beach', color: 'usa' },
 ];
 
 const playerColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12'];
@@ -515,7 +515,7 @@ function renderState(state) {
 
   currentRoomId = state.roomId;
   roomCode.textContent = state.roomId;
-  gameStatusEl.textContent = state.gameStatus.toUpperCase();
+  if (gameStatusEl) gameStatusEl.textContent = state.gameStatus.toUpperCase();
 
   // Update supplies
   if (houseSupplyEl) houseSupplyEl.textContent = state.houseSupply || 32;
@@ -764,6 +764,7 @@ function renderState(state) {
   endTurnBtnCenter.disabled = !canAct || !hasRolled;
 
   // Update button visibility and text based on state
+  console.log('[DEBUG] Button visibility logic:', { gameActive, isMyTurn, hasRolled, pendingPropertyIndex: state.pendingPropertyIndex });
   if (!gameActive || !isMyTurn) {
     // Hide all buttons when not your turn or game not started
     rollBtn.style.display = 'none';
@@ -771,27 +772,63 @@ function renderState(state) {
     endTurnBtnCenter.style.display = 'none';
     if (bailWrapper) bailWrapper.style.display = 'none';
   } else if (hasRolled) {
-    // After rolling: hide roll button, show buy (if property available) and end turn
+    // After rolling: hide roll button and bail, show buy (if property available) and/or end turn
     rollBtn.style.display = 'none';
+    if (bailWrapper) bailWrapper.style.display = 'none';
 
     if (state.pendingPropertyIndex !== null) {
+      // Property available to buy - show both buy and end turn buttons
       buyBtn.style.display = 'block';
-      buyBtn.textContent = '💰 BUY PROPERTY';
+      const buyBtnContent = `
+        <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+        <span class="relative flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+            </path>
+          </svg>
+          BUY PROPERTY
+        </span>
+      `;
+      buyBtn.innerHTML = buyBtnContent;
+
+      endTurnBtnCenter.style.display = 'block';
     } else {
+      // No property to buy - show only end turn button
       buyBtn.style.display = 'none';
+      endTurnBtnCenter.style.display = 'block';
     }
 
-    endTurnBtnCenter.style.display = 'block';
-    endTurnBtnCenter.innerHTML = '<span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span><span class="relative flex items-center justify-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>END TURN</span>';
-
-    // Hide bail checkbox after rolling
-    if (bailWrapper) bailWrapper.style.display = 'none';
+    // Ensure end turn button has proper HTML structure
+    const endTurnContent = `
+      <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+      <span class="relative flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+        </svg>
+        END TURN
+      </span>
+    `;
+    endTurnBtnCenter.innerHTML = endTurnContent;
   } else {
     // Before rolling: show only roll button and bail checkbox if in jail
     rollBtn.style.display = 'block';
-    rollBtn.textContent = '🎲 ROLL DICE';
     buyBtn.style.display = 'none';
     endTurnBtnCenter.style.display = 'none';
+
+    // Ensure roll button has proper HTML structure
+    const rollBtnContent = `
+      <span class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
+      <span class="relative flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+          </path>
+        </svg>
+        ROLL DICE
+      </span>
+    `;
+    rollBtn.innerHTML = rollBtnContent;
 
     // Show bail checkbox only if player is in jail
     if (bailWrapper) {

@@ -201,22 +201,22 @@
 
                   <div class="board-center pointer-events-auto">
                     <h2
-                      class="font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-pink-600 to-red-600 mb-1 animate-gradient"
+                      class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-pink-600 to-red-600 mb-1 animate-gradient"
                       style="font-family: 'Montserrat', sans-serif;">
                       MONOPOLY
                     </h2>
 
-                    <p class="text-xs text-gray-500 mb-2 font-bold tracking-wide">
+                    <p class="text-[8px] text-gray-500 mb-2 font-bold tracking-wide">
                       ELITE EDITION
                     </p>
 
                     <div
-                      class="text-center mb-2 p-2 bg-white/80 backdrop-blur-sm rounded-xl border border-purple-200 shadow-lg">
-                      <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                      class="text-center mb-2 p-1.5 bg-white/80 backdrop-blur-sm rounded-lg border border-purple-200 shadow-lg">
+                      <span class="text-[8px] font-bold text-gray-500 uppercase tracking-wider block mb-0.5">
                         Current Turn
                       </span>
                       <div id="currentTurn"
-                        class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                        class="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
                         Waiting...
                       </div>
                     </div>
@@ -226,11 +226,11 @@
                     <!-- Start Game Button Container - Shown when game is waiting -->
                     <div id="startGameContainer" class="hidden mt-3">
                       <button id="startGameBtn"
-                        class="premium-btn w-full py-5 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 hover:from-green-700 hover:via-emerald-600 hover:to-teal-600 text-white font-black text-lg rounded-2xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group/btn">
+                        class="premium-btn w-full py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold text-xs rounded-lg shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group/btn">
                         <span
                           class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
-                        <span class="relative flex items-center justify-center gap-2">
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="relative flex items-center justify-center gap-1.5">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
                             </path>
@@ -251,13 +251,13 @@
                       class="bg-gradient-to-br from-gray-100 via-gray-50 to-white p-3 rounded-xl border-2 border-gray-200 shadow-inner relative overflow-hidden mt-3">
                       <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
                       <div class="relative z-10">
-                        <div class="flex justify-center gap-3 mb-2">
+                        <div class="flex justify-center gap-2 mb-1.5">
                           <div id="die1"
-                            class="die w-12 h-12 bg-white border-3 border-gray-800 rounded-xl flex items-center justify-center text-2xl font-black shadow-xl transform hover:rotate-12 transition-all duration-300">
+                            class="die w-10 h-10 bg-white border-3 border-gray-800 rounded-lg flex items-center justify-center text-xl font-black shadow-xl transform hover:rotate-12 transition-all duration-300">
                             ?
                           </div>
                           <div id="die2"
-                            class="die w-12 h-12 bg-white border-3 border-gray-800 rounded-xl flex items-center justify-center text-2xl font-black shadow-xl transform hover:-rotate-12 transition-all duration-300">
+                            class="die w-10 h-10 bg-white border-3 border-gray-800 rounded-lg flex items-center justify-center text-xl font-black shadow-xl transform hover:-rotate-12 transition-all duration-300">
                             ?
                           </div>
                         </div>
@@ -274,19 +274,19 @@
                           <input type="checkbox" id="bailCheckbox"
                             class="w-5 h-5 rounded-lg border-yellow-500 text-yellow-600 focus:ring-2 focus:ring-yellow-500 transition-all duration-200" />
                           <div class="flex-1">
-                            <span class="font-bold text-yellow-800 text-xs block">Pay Rs 50 bail</span>
-                            <span class="text-[10px] text-yellow-700">If you're in jail</span>
+                            <span class="font-bold text-yellow-800 text-[10px] block">Pay Rs 50 bail</span>
+                            <span class="text-[8px] text-yellow-700">If in jail</span>
                           </div>
                           <span class="text-xl">🔓</span>
                         </label>
                       </div>
 
                       <button id="rollBtn"
-                        class="premium-btn w-full py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-black text-sm rounded-xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group/btn">
+                        class="premium-btn w-full py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold text-xs rounded-lg shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group/btn">
                         <span
                           class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
-                        <span class="relative flex items-center justify-center gap-2">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="relative flex items-center justify-center gap-1.5">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
                             </path>
@@ -297,11 +297,11 @@
                     </div>
 
                     <button id="buyBtn"
-                      class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 hover:from-green-700 hover:via-emerald-600 hover:to-teal-600 text-white font-bold text-sm rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
+                      class="premium-btn w-full mt-1.5 py-2 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 hover:from-green-700 hover:via-emerald-600 hover:to-teal-600 text-white font-bold text-xs rounded-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
                       <span
                         class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-                      <span class="relative flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <span class="relative flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
                           </path>
@@ -311,11 +311,11 @@
                     </button>
 
                     <button id="endTurnBtnCenter"
-                      class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-blue-600 via-cyan-500 to-sky-500 hover:from-blue-700 hover:via-cyan-600 hover:to-sky-600 text-white font-bold text-sm rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
+                      class="premium-btn w-full mt-1.5 py-2 bg-gradient-to-r from-blue-600 via-cyan-500 to-sky-500 hover:from-blue-700 hover:via-cyan-600 hover:to-sky-600 text-white font-bold text-xs rounded-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
                       <span
                         class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-                      <span class="relative flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <span class="relative flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                         </svg>
