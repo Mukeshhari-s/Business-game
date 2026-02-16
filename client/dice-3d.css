@@ -203,19 +203,19 @@
 }
 
 .dice.show-2 {
-    transform: rotateX(-90deg);
+    transform: rotateX(90deg);
 }
 
 .dice.show-3 {
-    transform: rotateY(90deg);
-}
-
-.dice.show-4 {
     transform: rotateY(-90deg);
 }
 
+.dice.show-4 {
+    transform: rotateY(90deg);
+}
+
 .dice.show-5 {
-    transform: rotateX(90deg);
+    transform: rotateX(-90deg);
 }
 
 .dice.show-6 {

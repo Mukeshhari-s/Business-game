@@ -6,6 +6,7 @@ let lastDiceRoll = null;
 const lobbyData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
 let autoActionSent = false;
 let isAnimating = false;
+let displayedPositions = {}; // Track visual positions to sync with animations
 
 // DOM Elements
 const nameInput = document.getElementById('nameInput');
@@ -296,7 +297,12 @@ socket.on('dice_rolled', ({ playerId, dice }) => {
 
     // Clear animation flag after dice and some buffer for movement
     setTimeout(() => {
-      isAnimating = false;
+      // Sync visual position with actual position after dice settle
+      if (gameState) {
+        const p = gameState.players.find(player => player.playerId === playerId);
+        if (p) displayedPositions[playerId] = p.position;
+      }
+      // Note: we don't set isAnimating=false here yet because player_moved is coming
       renderState(gameState);
     }, 500);
   }, 1000);
@@ -306,21 +312,25 @@ socket.on('dice_rolled', ({ playerId, dice }) => {
 
   setTimeout(() => {
     showToast(`🎲 ${playerName} rolled ${dice.die1} + ${dice.die2} = ${dice.total}`, 'info');
-  }, 1000);
+  }, 1500); // Delayed toast to match settlement
 });
 
 socket.on('player_moved', ({ playerId, from, to }) => {
   isAnimating = true;
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   if (player) {
-    // Animate token movement with 3D effect
-    animateTokenMovement(playerId, from, to);
-
+    // Wait for dice to stop before moving token (1000ms dice + 200ms buffer)
     setTimeout(() => {
-      showToast(`${player.name} moved from ${boardData[from].name} to ${boardData[to].name}`, 'info');
-      isAnimating = false;
-      renderState(gameState);
-    }, 800);
+      // Animate token movement with 3D effect
+      animateTokenMovement(playerId, from, to);
+
+      setTimeout(() => {
+        showToast(`${player.name} moved from ${boardData[from].name} to ${boardData[to].name}`, 'info');
+        displayedPositions[playerId] = to; // Update visual position after animation
+        isAnimating = false;
+        renderState(gameState);
+      }, 800);
+    }, 1200);
   }
 });
 
@@ -729,7 +739,17 @@ function renderState(state) {
   state.players.forEach((player, index) => {
     if (player.isBankrupt) return;
 
-    const cellEl = document.getElementById(`cell-${player.position}`);
+    // Use displayedPosition if available, otherwise fallback to actual position
+    const visualPos = (displayedPositions[player.playerId] !== undefined)
+      ? displayedPositions[player.playerId]
+      : player.position;
+
+    // If it's a new state but not animating, sync displayed position
+    if (!isAnimating) {
+      displayedPositions[player.playerId] = player.position;
+    }
+
+    const cellEl = document.getElementById(`cell-${visualPos}`);
     if (cellEl) {
       const token = document.createElement('div');
       token.className = 'player-token';
@@ -898,8 +918,11 @@ function renderState(state) {
     if (!hasRolled || canRollAgain) {
       rollBtn.style.display = 'block';
       const label = canRollAgain ? '🎲 ROLL AGAIN (DOUBLES!)' : 'ROLL DICE';
-      const btnClass = canRollAgain ? 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500' : 'bg-gradient-to-r from-blue-600 to-indigo-600';
-      rollBtn.className = `${btnClass} hover:shadow-2xl text-white font-black py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg relative overflow-hidden group/btn`;
+      const btnClass = canRollAgain
+        ? 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600'
+        : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700';
+
+      rollBtn.className = `premium-btn w-full py-2 ${btnClass} text-white font-bold text-xs rounded-lg shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group/btn`;
       rollBtn.innerHTML = `
         <span class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
         <span class="relative flex items-center justify-center gap-1.5">
@@ -921,20 +944,8 @@ function renderState(state) {
     }
 
     // Action Buttons logic (shown after rolling)
-    if (hasRolled && !canRollAgain) {
-      // End Turn button (only show if NOT able to roll again)
-      endTurnBtnCenter.style.display = 'block';
-      endTurnBtnCenter.innerHTML = `
-        <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-        <span class="relative flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-          </svg>
-          END TURN
-        </span>
-      `;
-
-      // Buy Property button
+    if (hasRolled || canRollAgain) {
+      // Buy Property button - Show if landed on buyable property, even on doubles
       if (state.pendingPropertyIndex !== null) {
         buyBtn.style.display = 'block';
         buyBtn.innerHTML = `
@@ -951,8 +962,24 @@ function renderState(state) {
       } else {
         buyBtn.style.display = 'none';
       }
+
+      // End Turn button (only show if NOT able to roll again)
+      if (hasRolled && !canRollAgain) {
+        endTurnBtnCenter.style.display = 'block';
+        endTurnBtnCenter.innerHTML = `
+          <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+          <span class="relative flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+            END TURN
+          </span>
+        `;
+      } else {
+        endTurnBtnCenter.style.display = 'none';
+      }
     } else {
-      // Haven't rolled yet OR can roll again (hide end turn button)
+      // Haven't rolled yet
       buyBtn.style.display = 'none';
       endTurnBtnCenter.style.display = 'none';
     }
