@@ -29,6 +29,43 @@ export default class GameRoom {
     this.pendingTrades = new Map();
     this.tradeHistory = [];
     this.tradeLock = false;
+
+    this.treasureCards = [];
+    this.surpriseCards = [];
+    this.initDecks();
+  }
+
+  initDecks() {
+    const treasure = [
+      { id: 't1', type: 'treasure', title: 'Pardon Card', text: 'Get out of jail free. This card may be kept until needed.', action: 'jail_card' },
+      { id: 't2', type: 'treasure', title: 'Tax Refund', text: 'Income tax refund. Collect Rs 200.', action: 'simple_gain', amount: 200 },
+      { id: 't3', type: 'treasure', title: 'Dividends', text: 'Receive Rs 50 dividends.', action: 'simple_gain', amount: 50 },
+      { id: 't4', type: 'treasure', title: 'Birthday Bash', text: 'It is your birthday! Collect Rs 10 from every player.', action: 'collect_from_all', amount: 10 },
+      { id: 't5', type: 'treasure', title: 'Consultancy Fee', text: 'Receive Rs 25 for services rendered.', action: 'simple_gain', amount: 25 },
+      { id: 't6', type: 'treasure', title: 'Inheritance', text: 'You inherit Rs 100.', action: 'simple_gain', amount: 100 },
+      { id: 't7', type: 'treasure', title: 'Hospital Bill', text: 'Pay Rs 50.', action: 'simple_loss', amount: 50 },
+      { id: 't8', type: 'treasure', title: 'School fees', text: 'Pay Rs 50.', action: 'simple_loss', amount: 50 },
+    ];
+
+    const surprise = [
+      { id: 's1', type: 'surprise', title: 'Advance to Start', text: 'Advance to GO (Collect Rs 200).', action: 'move_to', target: 0 },
+      { id: 's2', type: 'surprise', title: 'Next Airport', text: 'Advance to the next Airport. If unowned, you may buy it. If owned, pay double rent.', action: 'move_to_next_group', group: 'railroad', doubleRent: true },
+      { id: 's3', type: 'surprise', title: 'Next Company', text: 'Advance to the next Company (Utility). If unowned, you may buy it. If owned, pay double rent.', action: 'move_to_next_group', group: 'utility', doubleRent: true },
+      { id: 's4', type: 'surprise', title: 'Go to Jail', text: 'Go directly to Jail. Do not pass GO, do not collect Rs 200.', action: 'go_to_jail' },
+      { id: 's5', type: 'surprise', title: 'Forward March', text: 'Move forward a few steps to see what awaits.', action: 'relative_move', min: 3, max: 6, direction: 1 },
+      { id: 's6', type: 'surprise', title: 'Tactical Retreat', text: 'Step back and reconsider your strategy. Move backward 3-6 steps.', action: 'relative_move', min: 3, max: 6, direction: -1 },
+    ];
+
+    this.treasureCards = this.shuffle([...treasure]);
+    this.surpriseCards = this.shuffle([...surprise]);
+  }
+
+  shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
 
   log(message) {
@@ -407,15 +444,24 @@ export default class GameRoom {
       return;
     }
 
-    // Handle jail bail payment BEFORE rolling
+    // Handle jail release BEFORE rolling
     if (player.inJail && payBail) {
-      if (player.balance >= BAIL_AMOUNT) {
+      if (player.jailCards > 0) {
+        player.jailCards -= 1;
+        player.inJail = false;
+        player.jailTurns = 0;
+        player.turnHasRolled = true;
+        this.log(`${player.name} used a Get Out of Jail Free card and left jail. Cannot move this turn.`);
+        this.io.to(this.roomId).emit('paid_bail', { playerId: player.playerId, method: 'card' });
+        this.broadcastState();
+        return; // Turn ends - player can't move after using card
+      } else if (player.balance >= BAIL_AMOUNT) {
         player.balance -= BAIL_AMOUNT;
         player.inJail = false;
         player.jailTurns = 0;
         player.turnHasRolled = true;
         this.log(`${player.name} paid Rs ${BAIL_AMOUNT} bail and left jail. Cannot move this turn.`);
-        this.io.to(this.roomId).emit('paid_bail', { playerId: player.playerId });
+        this.io.to(this.roomId).emit('paid_bail', { playerId: player.playerId, method: 'cash' });
         this.broadcastState();
         return; // Turn ends - player can't move after paying bail
       } else {
@@ -570,6 +616,16 @@ export default class GameRoom {
   }
 
   resolveLanding(cell, player) {
+    if (cell.type === 'neutral') {
+      if (cell.name.toLowerCase().includes('pudhaiyal')) {
+        this.drawCard(player, 'treasure');
+        return;
+      } else if (cell.name.toLowerCase().includes('surprise')) {
+        this.drawCard(player, 'surprise');
+        return;
+      }
+    }
+
     switch (cell.type) {
       case 'property':
         cell.onLand(player, this);
@@ -593,6 +649,93 @@ export default class GameRoom {
         break;
       default:
         this.log(`${player.name} landed on ${cell.name}.`);
+        break;
+    }
+  }
+
+  drawCard(player, type) {
+    const deck = type === 'treasure' ? this.treasureCards : this.surpriseCards;
+    if (deck.length === 0) this.initDecks();
+
+    const card = deck.pop();
+    this.log(`${player.name} drew ${type === 'treasure' ? 'Treasure' : 'Surprise'} card: ${card.title}`);
+
+    // Push back to bottom unless it's a jail card
+    if (card.action !== 'jail_card') {
+      deck.unshift(card);
+    }
+
+    this.executeCardAction(player, card);
+
+    this.io.to(this.roomId).emit('card_drawn', {
+      playerId: player.playerId,
+      card
+    });
+    this.broadcastState();
+  }
+
+  executeCardAction(player, card) {
+    switch (card.action) {
+      case 'jail_card':
+        player.jailCards += 1;
+        break;
+      case 'simple_gain':
+        player.balance += card.amount;
+        break;
+      case 'simple_loss':
+        player.balance -= card.amount;
+        break;
+      case 'collect_from_all':
+        this.players.forEach(p => {
+          if (p.playerId !== player.playerId && !p.isBankrupt) {
+            p.balance -= card.amount;
+            player.balance += card.amount;
+          }
+        });
+        break;
+      case 'pay_to_all':
+        this.players.forEach(p => {
+          if (p.playerId !== player.playerId && !p.isBankrupt) {
+            p.balance += card.amount;
+            player.balance -= card.amount;
+          }
+        });
+        break;
+      case 'move_to':
+        const moveSteps = (card.target - player.position + this.board.cells.length) % this.board.cells.length;
+        this.movePlayer(player, moveSteps);
+        break;
+      case 'move_to_next_group':
+        let currentPos = player.position;
+        let found = false;
+        for (let i = 1; i < this.board.cells.length; i++) {
+          const nextIdx = (currentPos + i) % this.board.cells.length;
+          const cell = this.board.cells[nextIdx];
+          if (cell.type === 'property' && cell.group === card.group) {
+            this.movePlayer(player, i);
+            found = true;
+            break;
+          }
+        }
+        break;
+      case 'relative_move':
+        const steps = Math.floor(Math.random() * (card.max - card.min + 1)) + card.min;
+        const actualSteps = steps * card.direction;
+        // movePlayer normally handles forward movement; for backward we handle carefully
+        if (actualSteps > 0) {
+          this.movePlayer(player, actualSteps);
+        } else {
+          // Absolute position logic for backward movement
+          const newPos = (player.position + actualSteps + this.board.cells.length) % this.board.cells.length;
+          const from = player.position;
+          player.position = newPos;
+          this.io.to(this.roomId).emit('player_moved', {
+            playerId: player.playerId,
+            from,
+            to: newPos
+          });
+          this.resolveLanding(this.board.cells[newPos], player);
+        }
         break;
     }
   }
@@ -635,18 +778,11 @@ export default class GameRoom {
       propertyIndex: cell.index,
     });
     this.log(`${player.name} paid $${rent} rent to ${owner.name} for ${cell.name}.`);
-
-    if (player.balance < 0) {
-      this.handleBankruptcy(player);
-    }
   }
 
   handleTax(cell, player) {
     player.balance -= cell.amount;
     this.log(`${player.name} paid $${cell.amount} in taxes.`);
-    if (player.balance < 0) {
-      this.handleBankruptcy(player);
-    }
   }
 
   sendPlayerToJail(player) {
@@ -1102,6 +1238,12 @@ export default class GameRoom {
       this.sendError(socketId, 'You must roll before ending your turn.');
       return;
     }
+    // Prevent ending turn if player is in debt
+    if (player.balance < 0) {
+      this.sendError(socketId, 'You are in debt! Sell properties or houses to get your balance back to at least Rs 0.');
+      return;
+    }
+
     // Prevent ending turn if player can roll again (doubles)
     if (player.canRollAgain) {
       this.sendError(socketId, 'You must roll again after getting doubles!');
@@ -1137,7 +1279,7 @@ export default class GameRoom {
     }
   }
 
-  handleBankruptcy(player, fromDisconnect = false) {
+  handleBankruptcy(player, fromDisconnect = false, manual = false) {
     player.isBankrupt = true;
     player.inJail = false;
     player.jailTurns = 0;
@@ -1159,12 +1301,65 @@ export default class GameRoom {
     });
     player.properties = [];
 
-    const reason = fromDisconnect ? 'disconnected' : 'went bankrupt';
+    const reason = fromDisconnect ? 'disconnected' : (manual ? 'declared bankruptcy' : 'went bankrupt');
     this.log(`${player.name} ${reason} and left the game.`);
-    if (this.checkGameOver()) {
+
+    // If it was their turn, advance it
+    const currentPlayer = this.getCurrentPlayer();
+    if (currentPlayer && currentPlayer.playerId === player.playerId) {
+      this.advanceTurn();
+    } else if (this.checkGameOver()) {
       return;
     }
-    this.ensureTurnIsValid();
+    this.broadcastState();
+  }
+
+  handleDeclareBankruptcy(socketId) {
+    const player = this.getPlayerBySocketId(socketId);
+    if (!player) return;
+    if (player.balance >= 0) {
+      this.sendError(socketId, 'You can only declare bankruptcy if you are in debt.');
+      return;
+    }
+    this.handleBankruptcy(player, false, true);
+  }
+
+  handleSellProperty(socketId, propertyIndex) {
+    const player = this.getPlayerBySocketId(socketId);
+    if (!player) return;
+
+    const cell = this.board.cells[propertyIndex];
+    if (!cell || cell.type !== 'property' || cell.ownerId !== player.playerId) {
+      this.sendError(socketId, 'You do not own this property.');
+      return;
+    }
+
+    // Rule: Must sell hotels first, then houses
+    if (cell.hotels > 0) {
+      const houseCost = Math.max(1, Math.ceil(cell.price * HOUSE_COST_RATE));
+      const refund = Math.floor(houseCost / 2);
+      cell.hotels -= 1;
+      this.hotelSupply += 1;
+      player.balance += refund;
+      this.log(`${player.name} sold a hotel on ${cell.name} for Rs ${refund}.`);
+    } else if (cell.houses > 0) {
+      const houseCost = Math.max(1, Math.ceil(cell.price * HOUSE_COST_RATE));
+      const refund = Math.floor(houseCost / 2);
+      cell.houses -= 1;
+      this.houseSupply += 1;
+      player.balance += refund;
+      this.log(`${player.name} sold a house on ${cell.name} for Rs ${refund}.`);
+    } else {
+      // Sell the property itself back to bank for 50% of cost
+      const refund = Math.floor(cell.price / 2);
+      cell.ownerId = null;
+      // Sync player's properties array
+      player.properties = player.properties.filter(pIdx => pIdx !== cell.index);
+      player.balance += refund;
+      this.log(`${player.name} sold ${cell.name} back to the bank for Rs ${refund}.`);
+      this.revalidatePendingTrades('Property sold back to bank');
+    }
+    this.broadcastState();
   }
 
   checkGameOver() {

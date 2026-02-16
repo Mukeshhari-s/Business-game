@@ -158,6 +158,24 @@ export default function initSockets(io) {
       room.handleTradeCounter(socket.id, tradeId, draft || {});
     });
 
+    socket.on('sell_property', ({ propertyIndex }) => {
+      const room = roomManager.getRoomBySocket(socket.id);
+      if (!room) {
+        socket.emit('error_message', { message: 'You are not in a room.' });
+        return;
+      }
+      room.handleSellProperty(socket.id, propertyIndex);
+    });
+
+    socket.on('declare_bankruptcy', () => {
+      const room = roomManager.getRoomBySocket(socket.id);
+      if (!room) {
+        socket.emit('error_message', { message: 'You are not in a room.' });
+        return;
+      }
+      room.handleDeclareBankruptcy(socket.id);
+    });
+
     socket.on('end_turn', () => {
       const room = roomManager.getRoomBySocket(socket.id);
       if (!room) {

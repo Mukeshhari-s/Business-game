@@ -37,6 +37,7 @@ const startGameContainer = document.getElementById('startGameContainer');
 const houseSupplyEl = document.getElementById('houseSupply');
 const hotelSupplyEl = document.getElementById('hotelSupply');
 const buildablePropertiesEl = document.getElementById('buildableProperties');
+const declareBankruptcyBtn = document.getElementById('declareBankruptcyBtn');
 
 // Board data themed after richup.io layout (order follows Monopoly indices clockwise starting at GO top-left)
 const boardData = [
@@ -173,6 +174,12 @@ startGameBtn.addEventListener('click', () => {
   socket.emit('start_game');
   startGameBtn.disabled = true;
   startGameBtn.textContent = 'Starting...';
+});
+
+declareBankruptcyBtn.addEventListener('click', () => {
+  if (confirm('Are you sure you want to declare bankruptcy? You will be removed from the game.')) {
+    socket.emit('declare_bankruptcy');
+  }
 });
 
 // Socket Event Handlers
@@ -385,6 +392,41 @@ socket.on('third_double_jail', ({ playerId }) => {
   }
 });
 
+socket.on('card_drawn', ({ playerId, card }) => {
+  const modal = document.getElementById('cardModal');
+  const display = document.getElementById('cardDisplay');
+  const title = document.getElementById('cardTitle');
+  const text = document.getElementById('cardText');
+  const icon = document.getElementById('cardIcon');
+
+  title.textContent = card.title;
+  text.textContent = card.text;
+
+  // Set theme and icon based on type
+  display.className = 'relative w-full max-w-sm aspect-[2.5/3.5] bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border-4 transform transition-all duration-500 scale-90 opacity-0';
+  if (card.type === 'treasure') {
+    display.classList.add('card-treasure');
+    icon.textContent = '💎';
+  } else {
+    display.classList.add('card-surprise');
+    icon.textContent = '🎁';
+  }
+
+  modal.classList.remove('hidden');
+  setTimeout(() => {
+    display.classList.add('show-card');
+  }, 10);
+});
+
+function closeCardModal() {
+  const modal = document.getElementById('cardModal');
+  const display = document.getElementById('cardDisplay');
+  display.classList.remove('show-card');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 500);
+}
+
 socket.on('paid_bail', ({ playerId }) => {
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   if (player) {
@@ -498,6 +540,11 @@ function buildHotel(propertyIndex) {
   socket.emit('build_hotel', { propertyIndex });
 }
 
+// Sell house/hotel or property back to bank
+function sellProperty(propertyIndex) {
+  socket.emit('sell_property', { propertyIndex });
+}
+
 // Initialize board
 function initBoard() {
   monopolyBoard.innerHTML = '';
@@ -565,16 +612,16 @@ function renderBuildableProperties(state) {
 
   const me = state.players.find(p => p.playerId === myPlayerId);
   if (!me || me.isBankrupt) {
-    buildablePropertiesEl.innerHTML = '<p class="text-sm text-gray-500 italic">Not available</p>';
+    buildablePropertiesEl.innerHTML = '<p class="text-sm text-slate-500 italic">Not available</p>';
     return;
   }
 
   const myProperties = state.board.cells.filter(cell =>
-    cell.type === 'property' && cell.ownerId === myPlayerId && cell.buildable
+    cell.type === 'property' && cell.ownerId === myPlayerId
   );
 
   if (myProperties.length === 0) {
-    buildablePropertiesEl.innerHTML = '<p class="text-sm text-gray-500 italic">You don\'t own any buildable properties</p>';
+    buildablePropertiesEl.innerHTML = '<p class="text-sm text-slate-500 italic">You don\'t own any buildable properties</p>';
     return;
   }
 
@@ -585,14 +632,14 @@ function renderBuildableProperties(state) {
     const hotelCost = calcHotelCost(cell);
 
     const propertyDiv = document.createElement('div');
-    propertyDiv.className = 'p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200';
+    propertyDiv.className = 'p-3 bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg border border-slate-700';
 
     const nameDiv = document.createElement('div');
-    nameDiv.className = 'font-bold text-sm text-gray-800 mb-1';
+    nameDiv.className = 'font-bold text-sm text-white mb-1';
     nameDiv.textContent = cell.name;
 
     const statusDiv = document.createElement('div');
-    statusDiv.className = 'text-xs text-gray-600 mb-2';
+    statusDiv.className = 'text-xs text-slate-400 mb-2';
     statusDiv.innerHTML = `Houses: ${cell.houses || 0} | Hotels: ${cell.hotels || 0}<br>House cost: Rs ${houseCost} | Hotel cost: Rs ${hotelCost}`;
 
     const btnContainer = document.createElement('div');
@@ -605,13 +652,28 @@ function renderBuildableProperties(state) {
     houseBtn.onclick = () => buildHouse(cell.index);
 
     const hotelBtn = document.createElement('button');
-    hotelBtn.className = 'flex-1 px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed';
-    hotelBtn.textContent = `🏨 Hotel (-Rs ${hotelCost})`;
+    hotelBtn.className = 'flex-1 px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-colors disabled:opacity-50';
+    hotelBtn.textContent = `🏨 +Hotel (-Rs ${hotelCost})`;
     hotelBtn.disabled = cell.hotels >= 1 || cell.houses !== 4 || me.balance < hotelCost;
     hotelBtn.onclick = () => buildHotel(cell.index);
 
-    btnContainer.appendChild(houseBtn);
-    btnContainer.appendChild(hotelBtn);
+    const sellBtn = document.createElement('button');
+    sellBtn.className = 'flex-1 px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-lg transition-colors';
+
+    if (cell.hotels > 0 || cell.houses > 0) {
+      const refund = Math.floor(cell.housePrice / 2);
+      sellBtn.textContent = `💰 Sell ${cell.hotels > 0 ? 'Hotel' : 'House'} (+Rs ${refund})`;
+    } else {
+      const refund = Math.floor(cell.price / 2);
+      sellBtn.textContent = `🏚️ Liquidate (+Rs ${refund})`;
+    }
+    sellBtn.onclick = () => sellProperty(cell.index);
+
+    if (cell.buildable) {
+      btnContainer.appendChild(houseBtn);
+      btnContainer.appendChild(hotelBtn);
+    }
+    btnContainer.appendChild(sellBtn);
 
     propertyDiv.appendChild(nameDiv);
     propertyDiv.appendChild(statusDiv);
@@ -765,98 +827,58 @@ function renderState(state) {
     }
   });
 
-  // Update players list - Premium Design
+  // Update players list - Minimalist Design
   playersList.innerHTML = '';
   state.players.forEach((player, index) => {
     const card = document.createElement('div');
-    card.className = 'player-card-premium rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] relative overflow-hidden group';
+    card.className = 'relative py-1.5 px-1 transition-all duration-300 border-b border-white/5 last:border-0 group';
 
     if (player.playerId === state.currentTurnPlayerId) {
-      card.classList.add('bg-gradient-to-br', 'from-indigo-100', 'via-purple-100', 'to-pink-100', 'border-2', 'border-indigo-400', 'shadow-xl', 'ring-2', 'ring-indigo-300', 'ring-opacity-50');
-      // Add animated pulse
-      const pulse = document.createElement('div');
-      pulse.className = 'absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-20 animate-pulse';
-      card.appendChild(pulse);
+      // Simple highlight with a color for the current player
+      card.classList.add('bg-indigo-500/20', 'rounded-lg');
     } else if (player.isBankrupt) {
-      card.classList.add('opacity-60', 'bg-gray-200', 'border', 'border-gray-400', 'grayscale');
-    } else {
-      card.classList.add('bg-gradient-to-br', 'from-white', 'to-gray-50', 'border', 'border-gray-200', 'hover:border-gray-300', 'shadow-md', 'hover:shadow-lg');
+      card.classList.add('opacity-40', 'grayscale');
     }
 
     const header = document.createElement('div');
-    header.className = 'flex justify-between items-center mb-3 relative z-10';
+    header.className = 'flex justify-between items-center relative z-10';
 
     const tokenColor = document.createElement('div');
-    tokenColor.className = 'w-10 h-10 rounded-xl border-3 border-white shadow-lg flex items-center justify-center font-black text-white text-sm';
+    tokenColor.className = 'w-7 h-7 rounded-lg border-2 border-white/20 shadow-sm flex items-center justify-center font-black text-white text-[10px]';
     tokenColor.style.background = `linear-gradient(135deg, ${playerColors[index % playerColors.length]}, ${adjustBrightness(playerColors[index % playerColors.length], -20)})`;
     tokenColor.textContent = player.name[0].toUpperCase();
 
     const nameSpan = document.createElement('span');
-    nameSpan.className = 'font-black text-gray-800 text-base';
+    nameSpan.className = 'font-bold text-white text-sm flex-1 ml-2';
     nameSpan.textContent = player.name;
     if (player.playerId === myPlayerId) {
       const youBadge = document.createElement('span');
-      youBadge.className = 'ml-2 px-2 py-0.5 bg-purple-500 text-white text-xs font-bold rounded-full';
+      youBadge.className = 'ml-1.5 px-1.5 py-0.5 bg-indigo-500/80 text-white text-[8px] font-bold rounded-md';
       youBadge.textContent = 'YOU';
       nameSpan.appendChild(youBadge);
     }
 
-    const balanceDiv = document.createElement('div');
-    balanceDiv.className = 'text-right';
-    const balanceLabel = document.createElement('div');
-    balanceLabel.className = 'text-xs text-gray-500 font-semibold';
-    balanceLabel.textContent = 'Balance';
     const balanceAmount = document.createElement('div');
-    balanceAmount.className = 'text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600';
+    balanceAmount.className = 'text-2xl font-black text-yellow-400 text-right drop-shadow-[0_0_10px_rgba(250,204,21,0.3)]';
     balanceAmount.textContent = `$${player.balance}`;
-    balanceDiv.appendChild(balanceLabel);
-    balanceDiv.appendChild(balanceAmount);
 
     const nameContainer = document.createElement('div');
-    nameContainer.className = 'flex items-center gap-3';
+    nameContainer.className = 'flex items-center flex-1';
     nameContainer.appendChild(tokenColor);
     nameContainer.appendChild(nameSpan);
 
     header.appendChild(nameContainer);
-    header.appendChild(balanceDiv);
+    header.appendChild(balanceAmount);
 
-    const stats = document.createElement('div');
-    stats.className = 'grid grid-cols-2 gap-3 text-xs relative z-10';
-
-    const statItems = [
-      { icon: '📍', label: 'Position', value: boardData[player.position].name },
-      { icon: '🏠', label: 'Properties', value: player.properties.length },
-      { icon: player.inJail ? '🔒' : '🔓', label: 'Jail', value: player.inJail ? `Turn ${player.jailTurns}/3` : 'Free' },
-      { icon: player.isBankrupt ? '💀' : '✨', label: 'Status', value: player.isBankrupt ? 'Bankrupt' : 'Active' }
-    ];
-
-    // Add doubles indicator if player has consecutive doubles
-    if (player.consecutiveDoubles > 0) {
-      const doublesIcon = player.consecutiveDoubles === 1 ? '🎲' : player.consecutiveDoubles === 2 ? '🎲🎲' : '🎲🎲🎲';
-      const doublesColor = player.consecutiveDoubles === 1 ? 'text-green-600' : player.consecutiveDoubles === 2 ? 'text-yellow-600' : 'text-red-600';
-      statItems.push({
-        icon: doublesIcon,
-        label: 'Doubles',
-        value: `${player.consecutiveDoubles}/3`,
-        color: doublesColor
-      });
-    }
-
-    statItems.forEach(item => {
-      const statDiv = document.createElement('div');
-      statDiv.className = 'p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200/50';
-      statDiv.innerHTML = `
-        <div class="flex items-center gap-1 mb-1">
-          <span class="text-sm">${item.icon}</span>
-          <span class="font-bold text-gray-600">${item.label}:</span>
-        </div>
-        <div class="font-bold ${item.color || 'text-gray-800'} text-sm truncate">${item.value}</div>
-      `;
-      stats.appendChild(statDiv);
-    });
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'text-[10px] font-medium mt-0.5 relative z-10';
+    const statusText = player.isBankrupt ? 'Bankrupt' : 'Active';
+    const statusColor = player.isBankrupt ? 'text-rose-400' : 'text-cyan-300';
+    statusDiv.className += ` ${statusColor}`;
+    statusDiv.textContent = statusText;
 
     card.appendChild(header);
-    card.appendChild(stats);
+    card.appendChild(statusDiv);
     playersList.appendChild(card);
   });
 
@@ -876,14 +898,14 @@ function renderState(state) {
   if (state.pendingPropertyIndex !== null) {
     const cell = state.board.cells[state.pendingPropertyIndex];
     propertyStatus.innerHTML = `
-      <div class="font-bold text-gray-800 mb-1">🏠 ${cell.name}</div>
-      <div class="text-sm text-gray-600 mb-2">Price: Rs ${cell.price} | Rent: Rs ${cell.rent}</div>
-      <div class="text-sm text-green-600 font-semibold">Click "Buy Property" to purchase!</div>
+      <div class="font-bold text-white mb-1">🏠 ${cell.name}</div>
+      <div class="text-sm text-slate-300 mb-2">Price: Rs ${cell.price} | Rent: Rs ${cell.rent}</div>
+      <div class="text-sm text-emerald-400 font-semibold">Click "Buy Property" to purchase!</div>
     `;
-    propertyStatus.className = 'p-4 bg-green-50 border-2 border-green-500 rounded-lg text-sm';
+    propertyStatus.className = 'p-4 bg-emerald-900/30 border-2 border-emerald-500/50 rounded-lg text-sm';
   } else {
     propertyStatus.innerHTML = 'No property action pending';
-    propertyStatus.className = 'p-4 bg-gray-50 rounded-lg text-sm text-gray-600 font-medium';
+    propertyStatus.className = 'p-4 bg-slate-800/50 rounded-lg text-sm text-slate-400 font-medium';
   }
 
   // Update buildable properties
@@ -898,9 +920,10 @@ function renderState(state) {
   const canRollAgain = state.canRollAgain && isMyTurn;
 
   // Set disabled states
-  rollBtn.disabled = isAnimating || !canAct || (hasRolled && !canRollAgain);
-  buyBtn.disabled = isAnimating || !canAct || state.pendingPropertyIndex === null;
-  endTurnBtnCenter.disabled = isAnimating || !canAct || !hasRolled || canRollAgain; // Can't end turn if can roll again
+  const isInDebt = me && me.balance < 0;
+  rollBtn.disabled = isAnimating || !canAct || (hasRolled && !canRollAgain) || isInDebt;
+  buyBtn.disabled = isAnimating || !canAct || state.pendingPropertyIndex === null || isInDebt;
+  endTurnBtnCenter.disabled = isAnimating || !canAct || !hasRolled || canRollAgain || isInDebt;
 
   // Update button visibility and text based on state
   console.log('[DEBUG] Button visibility logic:', { gameActive, isMyTurn, hasRolled, canRollAgain, pendingPropertyIndex: state.pendingPropertyIndex });
@@ -910,9 +933,15 @@ function renderState(state) {
     rollBtn.style.display = 'none';
     buyBtn.style.display = 'none';
     endTurnBtnCenter.style.display = 'none';
+    if (declareBankruptcyBtn) declareBankruptcyBtn.style.display = 'none';
     if (bailWrapper) bailWrapper.style.display = 'none';
   } else {
     // It's my turn and game is active
+
+    // Show Bankruptcy button ONLY if in debt
+    if (declareBankruptcyBtn) {
+      declareBankruptcyBtn.style.display = isInDebt ? 'block' : 'none';
+    }
 
     // Roll Button logic
     if (!hasRolled || canRollAgain) {
@@ -1035,7 +1064,7 @@ function openTradeModal(prefill = null) {
 
   tradeModal.classList.remove('hidden');
   setTimeout(() => {
-    tradeModal.querySelector('.relative.bg-white').style.animation = 'slideIn 0.3s ease-out';
+    tradeModal.querySelector('.relative.bg-slate-900').style.animation = 'slideIn 0.3s ease-out';
   }, 10);
 }
 
@@ -1081,7 +1110,7 @@ function populateOfferProperties() {
   offerJailCards.max = myPlayer.jailCards || 0;
 
   if (myProperties.length === 0) {
-    offerProperties.innerHTML = '<p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">No properties available</p>';
+    offerProperties.innerHTML = '<p class="text-sm text-slate-500 italic p-4 bg-slate-800/50 rounded-xl">No properties available</p>';
     return;
   }
 
@@ -1092,13 +1121,13 @@ function populateOfferProperties() {
     const colorClass = prop.group ? `color-${prop.group}` : 'bg-gray-200';
 
     div.innerHTML = `
-      <label class="flex items-center gap-3 p-3 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:border-purple-400 transition-all duration-300 hover:shadow-md group">
-        <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500" 
+      <label class="flex items-center gap-3 p-3 bg-slate-800 border-2 border-slate-700 rounded-xl cursor-pointer hover:border-purple-500 transition-all duration-300 hover:shadow-md group">
+        <input type="checkbox" class="w-5 h-5 rounded border-slate-600 bg-slate-900 text-purple-600 focus:ring-purple-500" 
           data-property-index="${prop.index}" />
         <div class="w-8 h-8 rounded-lg ${colorClass} shadow-sm group-hover:scale-110 transition-transform"></div>
         <div class="flex-1">
-          <div class="font-bold text-gray-800 text-sm">${prop.name}</div>
-          <div class="text-xs text-gray-500">Rs ${prop.price}</div>
+          <div class="font-bold text-white text-sm">${prop.name}</div>
+          <div class="text-xs text-slate-400">Rs ${prop.price}</div>
         </div>
       </label>
     `;
@@ -1111,10 +1140,10 @@ function populateOfferProperties() {
     checkbox.addEventListener('change', (e) => {
       if (e.target.checked) {
         selectedOfferProperties.add(parseInt(e.target.dataset.propertyIndex));
-        div.querySelector('label').classList.add('border-purple-500', 'bg-purple-50');
+        div.querySelector('label').classList.add('border-purple-500', 'bg-purple-900/30');
       } else {
         selectedOfferProperties.delete(parseInt(e.target.dataset.propertyIndex));
-        div.querySelector('label').classList.remove('border-purple-500', 'bg-purple-50');
+        div.querySelector('label').classList.remove('border-purple-500', 'bg-purple-900/30');
       }
     });
 
@@ -1125,7 +1154,7 @@ function populateOfferProperties() {
 // Populate request properties (other player's properties)
 function populateRequestProperties(targetPlayerId) {
   if (!gameState || !targetPlayerId) {
-    requestProperties.innerHTML = '<p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">Select a player first</p>';
+    requestProperties.innerHTML = '<p class="text-sm text-slate-500 italic p-4 bg-slate-800/50 rounded-xl">Select a player first</p>';
     return;
   }
 
@@ -1140,7 +1169,7 @@ function populateRequestProperties(targetPlayerId) {
   requestJailCards.max = targetPlayer.jailCards || 0;
 
   if (theirProperties.length === 0) {
-    requestProperties.innerHTML = '<p class="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-xl">Player has no properties</p>';
+    requestProperties.innerHTML = '<p class="text-sm text-slate-500 italic p-4 bg-slate-800/50 rounded-xl">Player has no properties</p>';
     return;
   }
 
@@ -1151,13 +1180,13 @@ function populateRequestProperties(targetPlayerId) {
     const colorClass = prop.group ? `color-${prop.group}` : 'bg-gray-200';
 
     div.innerHTML = `
-      <label class="flex items-center gap-3 p-3 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:border-pink-400 transition-all duration-300 hover:shadow-md group">
-        <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500" 
+      <label class="flex items-center gap-3 p-3 bg-slate-800 border-2 border-slate-700 rounded-xl cursor-pointer hover:border-pink-500 transition-all duration-300 hover:shadow-md group">
+        <input type="checkbox" class="w-5 h-5 rounded border-slate-600 bg-slate-900 text-pink-600 focus:ring-pink-500" 
           data-property-index="${prop.index}" />
         <div class="w-8 h-8 rounded-lg ${colorClass} shadow-sm group-hover:scale-110 transition-transform"></div>
         <div class="flex-1">
-          <div class="font-bold text-gray-800 text-sm">${prop.name}</div>
-          <div class="text-xs text-gray-500">Rs ${prop.price}</div>
+          <div class="font-bold text-white text-sm">${prop.name}</div>
+          <div class="text-xs text-slate-400">Rs ${prop.price}</div>
         </div>
       </label>
     `;
@@ -1170,10 +1199,10 @@ function populateRequestProperties(targetPlayerId) {
     checkbox.addEventListener('change', (e) => {
       if (e.target.checked) {
         selectedRequestProperties.add(parseInt(e.target.dataset.propertyIndex));
-        div.querySelector('label').classList.add('border-pink-500', 'bg-pink-50');
+        div.querySelector('label').classList.add('border-pink-500', 'bg-pink-900/30');
       } else {
         selectedRequestProperties.delete(parseInt(e.target.dataset.propertyIndex));
-        div.querySelector('label').classList.remove('border-pink-500', 'bg-pink-50');
+        div.querySelector('label').classList.remove('border-pink-500', 'bg-pink-900/30');
       }
     });
 
@@ -1240,7 +1269,7 @@ function renderTrades(state) {
   );
 
   if (incoming.length === 0) {
-    tradeInboxList.innerHTML = '<p class="text-sm text-gray-500 italic">No pending trades</p>';
+    tradeInboxList.innerHTML = '<p class="text-sm text-slate-500 italic">No pending trades</p>';
     return;
   }
 
@@ -1249,21 +1278,21 @@ function renderTrades(state) {
     const from = state.players.find((p) => p.playerId === trade.fromPlayerId);
 
     const card = document.createElement('div');
-    card.className = 'p-4 rounded-xl border border-gray-200 bg-white shadow-sm space-y-3';
+    card.className = 'p-4 rounded-xl border border-slate-700 bg-slate-800 shadow-sm space-y-3';
 
     const header = document.createElement('div');
     header.className = 'flex justify-between items-center';
     header.innerHTML = `
       <div>
-        <div class="text-xs text-gray-500">From</div>
-        <div class="font-bold text-gray-800">${from ? from.name : 'Player'}</div>
+        <div class="text-xs text-slate-500">From</div>
+        <div class="font-bold text-white">${from ? from.name : 'Player'}</div>
       </div>
-      <span class="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">Pending</span>
+      <span class="text-xs font-bold px-2 py-1 rounded-full bg-amber-900/50 text-amber-400">Pending</span>
     `;
     card.appendChild(header);
 
     const detail = document.createElement('div');
-    detail.className = 'text-xs text-gray-700 grid grid-cols-2 gap-2';
+    detail.className = 'text-xs text-slate-300 grid grid-cols-2 gap-2';
     const offeredList = [];
     if ((trade.offered?.properties || []).length) offeredList.push(`Properties: ${trade.offered.properties.length}`);
     if (trade.offered?.money) offeredList.push(`Money: $${trade.offered.money}`);
@@ -1275,13 +1304,13 @@ function renderTrades(state) {
     if (trade.requested?.jailCards) requestedList.push(`Jail Cards: ${trade.requested.jailCards}`);
 
     detail.innerHTML = `
-      <div class="p-3 bg-gray-50 rounded-lg">
-        <div class="font-bold text-gray-800 mb-1">They Offer</div>
-        <div>${offeredList.join('<br>') || '<span class="text-gray-500">Nothing</span>'}</div>
+      <div class="p-3 bg-slate-900/50 rounded-lg">
+        <div class="font-bold text-white mb-1">They Offer</div>
+        <div>${offeredList.join('<br>') || '<span class="text-slate-500">Nothing</span>'}</div>
       </div>
-      <div class="p-3 bg-gray-50 rounded-lg">
-        <div class="font-bold text-gray-800 mb-1">You Give</div>
-        <div>${requestedList.join('<br>') || '<span class="text-gray-500">Nothing</span>'}</div>
+      <div class="p-3 bg-slate-900/50 rounded-lg">
+        <div class="font-bold text-white mb-1">You Give</div>
+        <div>${requestedList.join('<br>') || '<span class="text-slate-500">Nothing</span>'}</div>
       </div>
     `;
     card.appendChild(detail);
