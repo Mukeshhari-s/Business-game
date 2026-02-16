@@ -1,7 +1,18 @@
-/* 3D Dice Styles */
+/* ============================================
+   PREMIUM 3D DICE - HIGH-END ANIMATION SYSTEM
+   ============================================ */
+
 .dice-container {
-    perspective: 600px;
+    perspective: 1000px;
     perspective-origin: 50% 50%;
+    position: relative;
+    filter: drop-shadow(0 0 0 transparent);
+    transition: filter 0.3s ease;
+}
+
+/* Glow effect during roll */
+.dice-container.rolling {
+    filter: drop-shadow(0 0 15px rgba(124, 58, 237, 0.6)) drop-shadow(0 0 25px rgba(236, 72, 153, 0.4));
 }
 
 .dice {
@@ -9,22 +20,24 @@
     height: 50px;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .face {
     position: absolute;
     width: 50px;
     height: 50px;
-    background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
-    border: 2px solid #333;
-    border-radius: 8px;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f8f8 30%, #f0f0f0 70%, #e8e8e8 100%);
+    border: 2.5px solid #1e293b;
+    border-radius: 12px;
     display: grid;
     padding: 8px;
     box-shadow:
-        inset 0 2px 4px rgba(255, 255, 255, 0.9),
-        inset 0 -2px 4px rgba(0, 0, 0, 0.1),
-        0 4px 8px rgba(0, 0, 0, 0.3);
+        inset 0 4px 8px rgba(255, 255, 255, 0.95),
+        inset 0 -4px 8px rgba(0, 0, 0, 0.2),
+        0 8px 16px rgba(0, 0, 0, 0.5),
+        0 4px 8px rgba(124, 58, 237, 0.3);
+    backface-visibility: hidden;
 }
 
 /* Position each face in 3D space */
@@ -52,15 +65,16 @@
     transform: rotateX(-90deg) translateZ(25px);
 }
 
-/* Dice dots */
+/* Premium Dice dots with depth */
 .dot {
-    width: 8px;
-    height: 8px;
-    background: radial-gradient(circle, #1a1a1a 0%, #000 70%);
+    width: 9px;
+    height: 9px;
+    background: radial-gradient(circle at 30% 30%, #2c2c2c 0%, #0a0a0a 60%, #000000 100%);
     border-radius: 50%;
     box-shadow:
-        inset 0 1px 2px rgba(255, 255, 255, 0.2),
-        0 1px 2px rgba(0, 0, 0, 0.5);
+        inset 0 2px 3px rgba(0, 0, 0, 0.8),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.1),
+        0 2px 4px rgba(0, 0, 0, 0.6);
 }
 
 /* Dot positions for different dice values */
@@ -99,35 +113,91 @@
     grid-row: 3;
 }
 
-/* Dice rolling animation */
-@keyframes roll-dice {
+/* ============================================
+   PREMIUM ROLLING ANIMATION WITH PHYSICS
+   ============================================ */
+
+@keyframes premium-roll {
     0% {
-        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+        transform:
+            translateY(0px) translateZ(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
     }
 
-    25% {
-        transform: rotateX(360deg) rotateY(180deg) rotateZ(90deg);
+    15% {
+        transform:
+            translateY(-30px) translateZ(20px) rotateX(180deg) rotateY(90deg) rotateZ(45deg) scale(1.15);
     }
 
-    50% {
-        transform: rotateX(720deg) rotateY(360deg) rotateZ(180deg);
+    30% {
+        transform:
+            translateY(-40px) translateZ(30px) rotateX(360deg) rotateY(270deg) rotateZ(135deg) scale(1.2);
+    }
+
+    45% {
+        transform:
+            translateY(-35px) translateZ(25px) rotateX(540deg) rotateY(450deg) rotateZ(225deg) scale(1.15);
+    }
+
+    60% {
+        transform:
+            translateY(-20px) translateZ(15px) rotateX(720deg) rotateY(630deg) rotateZ(315deg) scale(1.1);
     }
 
     75% {
-        transform: rotateX(1080deg) rotateY(540deg) rotateZ(270deg);
+        transform:
+            translateY(-8px) translateZ(8px) rotateX(900deg) rotateY(810deg) rotateZ(405deg) scale(1.05);
+    }
+
+    85% {
+        transform:
+            translateY(0px) translateZ(0px) rotateX(1080deg) rotateY(900deg) rotateZ(450deg) scale(1.02);
+    }
+
+    95% {
+        transform:
+            translateY(-3px) translateZ(2px) rotateX(1080deg) rotateY(900deg) rotateZ(450deg) scale(1.01);
     }
 
     100% {
-        transform: rotateX(1440deg) rotateY(720deg) rotateZ(360deg);
+        transform:
+            translateY(0px) translateZ(0px) rotateX(1080deg) rotateY(900deg) rotateZ(450deg) scale(1);
+    }
+}
+
+/* Particle glow effect */
+@keyframes glow-pulse {
+
+    0%,
+    100% {
+        box-shadow:
+            inset 0 4px 8px rgba(255, 255, 255, 0.95),
+            inset 0 -4px 8px rgba(0, 0, 0, 0.2),
+            0 8px 16px rgba(0, 0, 0, 0.5),
+            0 4px 8px rgba(124, 58, 237, 0.3),
+            0 0 20px rgba(124, 58, 237, 0.4),
+            0 0 40px rgba(236, 72, 153, 0.3);
+    }
+
+    50% {
+        box-shadow:
+            inset 0 4px 8px rgba(255, 255, 255, 0.95),
+            inset 0 -4px 8px rgba(0, 0, 0, 0.2),
+            0 8px 16px rgba(0, 0, 0, 0.5),
+            0 4px 8px rgba(124, 58, 237, 0.3),
+            0 0 30px rgba(124, 58, 237, 0.7),
+            0 0 60px rgba(236, 72, 153, 0.5);
     }
 }
 
 .dice.rolling {
-    animation: roll-dice 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+    animation: premium-roll 1s cubic-bezier(0.33, 0.01, 0.22, 1);
 }
 
-/* Show specific face based on result */
+.dice.rolling .face {
+    animation: glow-pulse 1s ease-in-out;
+}
+
+/* Show specific face based on result with smooth transition */
 .dice.show-1 {
     transform: rotateY(0deg) rotateX(0deg);
 }
@@ -152,7 +222,17 @@
     transform: rotateY(180deg);
 }
 
-/* Hover effect for dice */
+/* Premium hover effect with 3D tilt */
 .dice-container:hover .dice:not(.rolling) {
-    transform: rotateY(10deg) rotateX(-10deg);
+    transform: rotateY(15deg) rotateX(-15deg) translateZ(5px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dice-container:hover .face {
+    box-shadow:
+        inset 0 4px 8px rgba(255, 255, 255, 0.95),
+        inset 0 -4px 8px rgba(0, 0, 0, 0.2),
+        0 12px 24px rgba(0, 0, 0, 0.6),
+        0 6px 12px rgba(124, 58, 237, 0.5);
+    transition: box-shadow 0.3s ease;
 }

@@ -30,6 +30,7 @@ export default class GameRoom {
     this.pendingTrades = new Map();
     this.tradeHistory = [];
     this.tradeLock = false;
+    this.canRollAgain = false;
   }
 
   log(message) {
@@ -57,12 +58,12 @@ export default class GameRoom {
 
     const player = new Player(trimmedName, socketId);
     this.players.push(player);
-    
+
     // First player is the host
     if (this.players.length === 1) {
       this.hostId = player.playerId;
     }
-    
+
     this.log(`${player.name} joined room ${this.roomId}.`);
     return { player };
   }
@@ -358,7 +359,7 @@ export default class GameRoom {
     if (this.getActivePlayers().length < MIN_PLAYERS) {
       return { error: `Need at least ${MIN_PLAYERS} players to start` };
     }
-    
+
     this.gameStatus = 'active';
     this.turnHasRolled = false;
     this.ensureTurnIsValid();
@@ -399,51 +400,139 @@ export default class GameRoom {
       return;
     }
 
-    const dice = Dice.roll();
-    this.turnHasRolled = true;
-    this.io.to(this.roomId).emit('dice_rolled', { playerId: player.playerId, dice });
+    // Handle jail bail payment BEFORE rolling
+    if (player.inJail && payBail) {
+      if (player.balance >= BAIL_AMOUNT) {
+        player.balance -= BAIL_AMOUNT;
+        player.inJail = false;
+        player.jailTurns = 0;
+        this.turnHasRolled = true;
+        this.log(`${player.name} paid Rs ${BAIL_AMOUNT} bail and left jail. Cannot move this turn.`);
+        this.io.to(this.roomId).emit('paid_bail', { playerId: player.playerId });
+        this.broadcastState();
+        return; // Turn ends - player can't move after paying bail
+      } else {
+        this.sendError(socketId, `You need Rs ${BAIL_AMOUNT} to pay bail.`);
+        return;
+      }
+    }
 
+    // Handle vacation BEFORE rolling - player can't roll while on vacation
     if (player.inVacation) {
-      const canMoveFromVacation = this.handleVacationRoll(player);
-      if (canMoveFromVacation) {
-        this.movePlayer(player, dice.total);
+      player.vacationTurns += 1;
+      this.turnHasRolled = true;
+
+      // Turn 3 on vacation - automatic release
+      if (player.vacationTurns >= VACATION_STAY_TURNS) {
+        player.inVacation = false;
+        player.vacationTurns = 0;
+        this.log(`${player.name} returns from vacation and can play next turn!`);
+        this.io.to(this.roomId).emit('vacation_ended', { playerId: player.playerId });
+        this.broadcastState();
+        return; // Turn ends - player can move NEXT turn
       }
+
+      // Still on vacation - skip turn
+      this.log(`${player.name} is on vacation (turn ${player.vacationTurns}/${VACATION_STAY_TURNS}). Turn skipped.`);
+      this.io.to(this.roomId).emit('vacation_skip', { playerId: player.playerId, turnCount: player.vacationTurns });
       this.broadcastState();
-      return;
+      return; // Turn ends - no roll, no movement
     }
 
-    if (player.inJail) {
-      const canMove = this.handleJailRoll(player, payBail);
-      if (canMove) {
-        this.movePlayer(player, dice.total);
-      }
-      this.broadcastState();
-      return;
-    }
+    const dice = Dice.roll();
+    const isDoubles = dice.die1 === dice.die2;
 
-    this.movePlayer(player, dice.total);
-    this.broadcastState();
+    this.turnHasRolled = true;
+    this.canRollAgain = false;
+    this.io.to(this.roomId).emit('dice_rolled', { playerId: player.playerId, dice, isDoubles });
+
+    // Check for doubles
+    if (isDoubles) {
+      player.consecutiveDoubles += 1;
+
+      // Third consecutive double - go to jail!
+      if (player.consecutiveDoubles === 3) {
+        this.log(`${player.name} rolled doubles for the THIRD time and goes to jail!`);
+        this.io.to(this.roomId).emit('third_double_jail', { playerId: player.playerId });
+
+        setTimeout(() => {
+          this.sendPlayerToJail(player);
+          player.consecutiveDoubles = 0;
+          this.broadcastState();
+        }, 1000);
+        return;
+      }
+
+      // First or second double - extra turn!
+      this.log(`${player.name} rolled doubles (${dice.die1}-${dice.die1})! Gets to roll again. (${player.consecutiveDoubles}/3)`);
+      this.io.to(this.roomId).emit('doubles_rolled', {
+        playerId: player.playerId,
+        count: player.consecutiveDoubles,
+        canRollAgain: true
+      });
+
+      // Allow player to roll again by resetting turnHasRolled after movement
+      setTimeout(() => {
+        if (player.inJail) {
+          const canMove = this.handleJailRoll(player, dice, isDoubles);
+          if (canMove) {
+            this.movePlayer(player, dice.total);
+          }
+        } else {
+          this.movePlayer(player, dice.total);
+        }
+
+        // Set canRollAgain instead of resetting turnHasRolled
+        this.canRollAgain = true;
+        this.broadcastState();
+      }, 1000);
+    } else {
+      // Not doubles - reset counter
+      player.consecutiveDoubles = 0;
+
+      // Wait for dice animation to complete before moving player (1000ms)
+      setTimeout(() => {
+        if (player.inJail) {
+          const canMove = this.handleJailRoll(player, dice, isDoubles);
+          if (canMove) {
+            this.movePlayer(player, dice.total);
+          }
+          this.broadcastState();
+          return;
+        }
+
+        this.movePlayer(player, dice.total);
+        this.broadcastState();
+      }, 1000);
+    }
   }
 
-  handleJailRoll(player, payBail) {
-    if (payBail && player.balance >= BAIL_AMOUNT) {
-      player.balance -= BAIL_AMOUNT;
-      player.inJail = false;
-      player.jailTurns = 0;
-      this.log(`${player.name} paid $${BAIL_AMOUNT} bail and left jail.`);
-      return true;
-    }
-
-    if (player.jailTurns >= JAIL_STAY_TURNS) {
-      player.inJail = false;
-      player.jailTurns = 0;
-      this.log(`${player.name} served their time and left jail.`);
-      return true;
-    }
-
+  handleJailRoll(player, dice, isDoubles) {
+    // Increment jail turn counter
     player.jailTurns += 1;
-    this.log(`${player.name} remains in jail (turn ${player.jailTurns}/${JAIL_STAY_TURNS}).`);
-    return false;
+
+    // Turn 3 - automatic release
+    if (player.jailTurns >= 3) {
+      player.inJail = false;
+      player.jailTurns = 0;
+      this.log(`${player.name} served time and is released from jail on turn 3!`);
+      this.io.to(this.roomId).emit('jail_released', { playerId: player.playerId });
+      return true; // Can move
+    }
+
+    // If rolled doubles, escape and move!
+    if (isDoubles) {
+      player.inJail = false;
+      player.jailTurns = 0;
+      player.consecutiveDoubles = 0; // Reset doubles counter
+      this.log(`${player.name} rolled doubles (${dice.die1}-${dice.die1}) and escapes from jail!`);
+      this.io.to(this.roomId).emit('jail_escape_doubles', { playerId: player.playerId });
+      return true; // Can move
+    }
+
+    // Didn't roll doubles - stay in jail
+    this.log(`${player.name} rolled ${dice.die1}-${dice.die2} but remains in jail (turn ${player.jailTurns}/2).`);
+    return false; // Can't move
   }
 
   handleVacationRoll(player) {
@@ -1015,6 +1104,7 @@ export default class GameRoom {
     this.log(`${player.name} ended their turn.`);
     this.pendingPropertyIndex = null;
     this.turnHasRolled = false;
+    this.canRollAgain = false;
     this.advanceTurn();
   }
 
@@ -1029,6 +1119,7 @@ export default class GameRoom {
       if (candidate && !candidate.isBankrupt) {
         this.currentTurnIndex = idx;
         this.turnHasRolled = false;
+        this.canRollAgain = false;
         this.pendingPropertyIndex = null;
         this.io.to(this.roomId).emit('turn_changed', { playerId: candidate.playerId });
         this.broadcastState();
@@ -1109,6 +1200,7 @@ export default class GameRoom {
       lastAction: this.lastAction,
       gameLog: [...this.gameLog],
       turnHasRolled: this.turnHasRolled,
+      canRollAgain: this.canRollAgain,
       houseSupply: this.houseSupply,
       hotelSupply: this.hotelSupply,
       pendingTrades: Array.from(this.pendingTrades.values()).map((t) => this.sanitizeTrade(t)),

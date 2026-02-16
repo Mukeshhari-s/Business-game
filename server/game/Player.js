@@ -15,6 +15,7 @@ export default class Player {
     this.vacationTurns = 0;
     this.isBankrupt = false;
     this.connected = true;
+    this.consecutiveDoubles = 0;
   }
 
   toPublic() {
@@ -31,6 +32,7 @@ export default class Player {
       vacationTurns: this.vacationTurns,
       isBankrupt: this.isBankrupt,
       connected: this.connected,
+      consecutiveDoubles: this.consecutiveDoubles,
     };
   }
 }

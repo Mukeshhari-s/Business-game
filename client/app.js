@@ -227,26 +227,37 @@ socket.on('turn_changed', ({ playerId }) => {
 socket.on('dice_rolled', ({ playerId, dice }) => {
   lastDiceRoll = dice;
 
-  // Add 3D rolling animation to dice
+  // Add premium 3D rolling animation to dice with glow effects
+  const diceContainer1 = die1.closest('.dice-container');
+  const diceContainer2 = die2.closest('.dice-container');
+
+  // Remove any previous show-X classes
+  die1.className = 'dice';
+  die2.className = 'dice';
+
+  // Start the rolling animation
   die1.classList.add('rolling');
   die2.classList.add('rolling');
+  if (diceContainer1) diceContainer1.classList.add('rolling');
+  if (diceContainer2) diceContainer2.classList.add('rolling');
 
-  // Set initial state
-  die1.textContent = '?';
-  die2.textContent = '?';
+  // Clear the total display
   diceTotal.textContent = '';
 
-  // Show result after animation
+  // After animation completes, show the result by rotating to correct face
   setTimeout(() => {
-    die1.textContent = dice.die1;
-    die2.textContent = dice.die2;
-  }, 600);
-
-  setTimeout(() => {
-    diceTotal.innerHTML = `<span style="font-size: 1.2em; font-weight: 900;">Total: ${dice.total}</span>`;
-    // Remove rolling class after animation
+    // Remove rolling class
     die1.classList.remove('rolling');
     die2.classList.remove('rolling');
+    if (diceContainer1) diceContainer1.classList.remove('rolling');
+    if (diceContainer2) diceContainer2.classList.remove('rolling');
+
+    // Add show-X class to rotate to the correct face with dots
+    die1.classList.add(`show-${dice.die1}`);
+    die2.classList.add(`show-${dice.die2}`);
+
+    // Show the total
+    diceTotal.innerHTML = `<span style="font-size: 1.2em; font-weight: 900;">Total: ${dice.total}</span>`;
   }, 1000);
 
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
@@ -302,6 +313,56 @@ socket.on('sent_to_jail', ({ playerId }) => {
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   if (player) {
     showToast(`${player.name} was sent to jail!`, 'error');
+  }
+});
+
+socket.on('doubles_rolled', ({ playerId, count, canRollAgain }) => {
+  const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
+  if (player) {
+    const doublesEmoji = count === 1 ? '🎲' : count === 2 ? '🎲🎲' : '🎲🎲🎲';
+    showToast(`${doublesEmoji} ${player.name} rolled DOUBLES! Gets to roll again! (${count}/3)`, 'success');
+  }
+});
+
+socket.on('third_double_jail', ({ playerId }) => {
+  const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
+  if (player) {
+    showToast(`🚨 ${player.name} rolled THREE DOUBLES and goes to JAIL! 🚔`, 'error');
+  }
+});
+
+socket.on('paid_bail', ({ playerId }) => {
+  const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
+  if (player) {
+    showToast(`💰 ${player.name} paid Rs 50 bail and left jail. Cannot move this turn.`, 'info');
+  }
+});
+
+socket.on('jail_released', ({ playerId }) => {
+  const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
+  if (player) {
+    showToast(`🔓 ${player.name} served time and is released from jail!`, 'success');
+  }
+});
+
+socket.on('jail_escape_doubles', ({ playerId }) => {
+  const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
+  if (player) {
+    showToast(`🎲 ${player.name} rolled DOUBLES and escapes from jail!`, 'success');
+  }
+});
+
+socket.on('vacation_skip', ({ playerId, turnCount }) => {
+  const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
+  if (player) {
+    showToast(`🏖️ ${player.name} is on vacation (turn ${turnCount}/2). Turn skipped.`, 'info');
+  }
+});
+
+socket.on('vacation_ended', ({ playerId }) => {
+  const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
+  if (player) {
+    showToast(`✈️ ${player.name} returns from vacation!`, 'success');
   }
 });
 
@@ -704,6 +765,18 @@ function renderState(state) {
       { icon: player.isBankrupt ? '💀' : '✨', label: 'Status', value: player.isBankrupt ? 'Bankrupt' : 'Active' }
     ];
 
+    // Add doubles indicator if player has consecutive doubles
+    if (player.consecutiveDoubles > 0) {
+      const doublesIcon = player.consecutiveDoubles === 1 ? '🎲' : player.consecutiveDoubles === 2 ? '🎲🎲' : '🎲🎲🎲';
+      const doublesColor = player.consecutiveDoubles === 1 ? 'text-green-600' : player.consecutiveDoubles === 2 ? 'text-yellow-600' : 'text-red-600';
+      statItems.push({
+        icon: doublesIcon,
+        label: 'Doubles',
+        value: `${player.consecutiveDoubles}/3`,
+        color: doublesColor
+      });
+    }
+
     statItems.forEach(item => {
       const statDiv = document.createElement('div');
       statDiv.className = 'p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200/50';
@@ -712,7 +785,7 @@ function renderState(state) {
           <span class="text-sm">${item.icon}</span>
           <span class="font-bold text-gray-600">${item.label}:</span>
         </div>
-        <div class="font-bold text-gray-800 text-sm truncate">${item.value}</div>
+        <div class="font-bold ${item.color || 'text-gray-800'} text-sm truncate">${item.value}</div>
       `;
       stats.appendChild(statDiv);
     });
@@ -757,82 +830,84 @@ function renderState(state) {
   const gameActive = state.gameStatus === 'active';
   const canAct = isMyTurn && gameActive && me && !me.isBankrupt;
   const hasRolled = state.turnHasRolled && isMyTurn;
+  const canRollAgain = state.canRollAgain && isMyTurn;
 
   // Set disabled states
-  rollBtn.disabled = !canAct || hasRolled;
+  rollBtn.disabled = !canAct || (hasRolled && !canRollAgain);
   buyBtn.disabled = !canAct || state.pendingPropertyIndex === null;
   endTurnBtnCenter.disabled = !canAct || !hasRolled;
 
   // Update button visibility and text based on state
-  console.log('[DEBUG] Button visibility logic:', { gameActive, isMyTurn, hasRolled, pendingPropertyIndex: state.pendingPropertyIndex });
+  console.log('[DEBUG] Button visibility logic:', { gameActive, isMyTurn, hasRolled, canRollAgain, pendingPropertyIndex: state.pendingPropertyIndex });
+
   if (!gameActive || !isMyTurn) {
     // Hide all buttons when not your turn or game not started
     rollBtn.style.display = 'none';
     buyBtn.style.display = 'none';
     endTurnBtnCenter.style.display = 'none';
     if (bailWrapper) bailWrapper.style.display = 'none';
-  } else if (hasRolled) {
-    // After rolling: hide roll button and bail, show buy (if property available) and/or end turn
-    rollBtn.style.display = 'none';
-    if (bailWrapper) bailWrapper.style.display = 'none';
+  } else {
+    // It's my turn and game is active
 
-    if (state.pendingPropertyIndex !== null) {
-      // Property available to buy - show both buy and end turn buttons
-      buyBtn.style.display = 'block';
-      const buyBtnContent = `
-        <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+    // Roll Button logic
+    if (!hasRolled || canRollAgain) {
+      rollBtn.style.display = 'block';
+      const label = canRollAgain ? 'ROLL AGAIN' : 'ROLL DICE';
+      rollBtn.innerHTML = `
+        <span class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
         <span class="relative flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
             </path>
           </svg>
-          BUY PROPERTY
+          ${label}
         </span>
       `;
-      buyBtn.innerHTML = buyBtnContent;
-
-      endTurnBtnCenter.style.display = 'block';
     } else {
-      // No property to buy - show only end turn button
-      buyBtn.style.display = 'none';
-      endTurnBtnCenter.style.display = 'block';
+      rollBtn.style.display = 'none';
     }
 
-    // Ensure end turn button has proper HTML structure
-    const endTurnContent = `
-      <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-      <span class="relative flex items-center justify-center gap-1.5">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-        </svg>
-        END TURN
-      </span>
-    `;
-    endTurnBtnCenter.innerHTML = endTurnContent;
-  } else {
-    // Before rolling: show only roll button and bail checkbox if in jail
-    rollBtn.style.display = 'block';
-    buyBtn.style.display = 'none';
-    endTurnBtnCenter.style.display = 'none';
-
-    // Ensure roll button has proper HTML structure
-    const rollBtnContent = `
-      <span class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
-      <span class="relative flex items-center justify-center gap-1.5">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
-          </path>
-        </svg>
-        ROLL DICE
-      </span>
-    `;
-    rollBtn.innerHTML = rollBtnContent;
-
-    // Show bail checkbox only if player is in jail
+    // Bail Checkbox logic
     if (bailWrapper) {
-      bailWrapper.style.display = me?.inJail ? 'block' : 'none';
+      bailWrapper.style.display = (!hasRolled && me?.inJail) ? 'block' : 'none';
+    }
+
+    // Action Buttons logic (shown after rolling)
+    if (hasRolled) {
+      // End Turn button
+      endTurnBtnCenter.style.display = 'block';
+      endTurnBtnCenter.innerHTML = `
+        <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+        <span class="relative flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+          </svg>
+          END TURN
+        </span>
+      `;
+
+      // Buy Property button
+      if (state.pendingPropertyIndex !== null) {
+        buyBtn.style.display = 'block';
+        buyBtn.innerHTML = `
+          <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+          <span class="relative flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+              </path>
+            </svg>
+            BUY PROPERTY
+          </span>
+        `;
+      } else {
+        buyBtn.style.display = 'none';
+      }
+    } else {
+      // Haven't rolled yet
+      buyBtn.style.display = 'none';
+      endTurnBtnCenter.style.display = 'none';
     }
   }
 
