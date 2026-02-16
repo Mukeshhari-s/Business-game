@@ -449,11 +449,10 @@ export default class GameRoom {
     const dice = Dice.roll();
     const isDoubles = dice.die1 === dice.die2;
 
-    player.turnHasRolled = true;
-    player.canRollAgain = false;
+    // Emit dice roll event immediately
     this.io.to(this.roomId).emit('dice_rolled', { playerId: player.playerId, dice, isDoubles });
 
-    // Check for doubles
+    // Check for doubles FIRST before setting turnHasRolled
     if (isDoubles) {
       player.consecutiveDoubles += 1;
 
@@ -464,13 +463,16 @@ export default class GameRoom {
 
         this.sendPlayerToJail(player);
         player.consecutiveDoubles = 0;
+        player.canRollAgain = false;
+        player.turnHasRolled = true;
         this.broadcastState();
         return;
       }
 
       // First or second double - extra turn!
       this.log(`${player.name} rolled doubles (${dice.die1}-${dice.die1})! Gets to roll again. (${player.consecutiveDoubles}/3)`);
-      player.canRollAgain = true; // Set here immediately!
+      player.canRollAgain = true;
+      player.turnHasRolled = false; // Allow rolling again
       this.io.to(this.roomId).emit('doubles_rolled', {
         playerId: player.playerId,
         count: player.consecutiveDoubles,
@@ -487,8 +489,10 @@ export default class GameRoom {
       }
       this.broadcastState();
     } else {
-      // Not doubles - reset counter
+      // Not doubles - normal turn flow
       player.consecutiveDoubles = 0;
+      player.turnHasRolled = true;
+      player.canRollAgain = false;
 
       if (player.inJail) {
         const canMove = this.handleJailRoll(player, dice, isDoubles);
@@ -521,7 +525,7 @@ export default class GameRoom {
     if (isDoubles) {
       player.inJail = false;
       player.jailTurns = 0;
-      player.consecutiveDoubles = 0; // Reset doubles counter
+      // DON'T reset consecutiveDoubles here - let it continue for the extra roll
       this.log(`${player.name} rolled doubles (${dice.die1}-${dice.die1}) and escapes from jail!`);
       this.io.to(this.roomId).emit('jail_escape_doubles', { playerId: player.playerId });
       return true; // Can move
@@ -1094,8 +1098,13 @@ export default class GameRoom {
       this.sendError(socketId, 'Not your turn.');
       return;
     }
-    if (!this.turnHasRolled) {
+    if (!player.turnHasRolled) {
       this.sendError(socketId, 'You must roll before ending your turn.');
+      return;
+    }
+    // Prevent ending turn if player can roll again (doubles)
+    if (player.canRollAgain) {
+      this.sendError(socketId, 'You must roll again after getting doubles!');
       return;
     }
 
@@ -1103,6 +1112,7 @@ export default class GameRoom {
     this.pendingPropertyIndex = null;
     player.turnHasRolled = false;
     player.canRollAgain = false;
+    player.consecutiveDoubles = 0; // Reset doubles counter at end of turn
     this.advanceTurn();
   }
 
@@ -1118,6 +1128,7 @@ export default class GameRoom {
         this.currentTurnIndex = idx;
         candidate.turnHasRolled = false;
         candidate.canRollAgain = false;
+        candidate.consecutiveDoubles = 0; // Reset doubles counter for new turn
         this.pendingPropertyIndex = null;
         this.io.to(this.roomId).emit('turn_changed', { playerId: candidate.playerId });
         this.broadcastState();

@@ -880,7 +880,7 @@ function renderState(state) {
   // Set disabled states
   rollBtn.disabled = isAnimating || !canAct || (hasRolled && !canRollAgain);
   buyBtn.disabled = isAnimating || !canAct || state.pendingPropertyIndex === null;
-  endTurnBtnCenter.disabled = isAnimating || !canAct || !hasRolled;
+  endTurnBtnCenter.disabled = isAnimating || !canAct || !hasRolled || canRollAgain; // Can't end turn if can roll again
 
   // Update button visibility and text based on state
   console.log('[DEBUG] Button visibility logic:', { gameActive, isMyTurn, hasRolled, canRollAgain, pendingPropertyIndex: state.pendingPropertyIndex });
@@ -897,7 +897,9 @@ function renderState(state) {
     // Roll Button logic
     if (!hasRolled || canRollAgain) {
       rollBtn.style.display = 'block';
-      const label = canRollAgain ? 'ROLL AGAIN' : 'ROLL DICE';
+      const label = canRollAgain ? '🎲 ROLL AGAIN (DOUBLES!)' : 'ROLL DICE';
+      const btnClass = canRollAgain ? 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500' : 'bg-gradient-to-r from-blue-600 to-indigo-600';
+      rollBtn.className = `${btnClass} hover:shadow-2xl text-white font-black py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg relative overflow-hidden group/btn`;
       rollBtn.innerHTML = `
         <span class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
         <span class="relative flex items-center justify-center gap-1.5">
@@ -919,8 +921,8 @@ function renderState(state) {
     }
 
     // Action Buttons logic (shown after rolling)
-    if (hasRolled) {
-      // End Turn button
+    if (hasRolled && !canRollAgain) {
+      // End Turn button (only show if NOT able to roll again)
       endTurnBtnCenter.style.display = 'block';
       endTurnBtnCenter.innerHTML = `
         <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
@@ -950,7 +952,7 @@ function renderState(state) {
         buyBtn.style.display = 'none';
       }
     } else {
-      // Haven't rolled yet
+      // Haven't rolled yet OR can roll again (hide end turn button)
       buyBtn.style.display = 'none';
       endTurnBtnCenter.style.display = 'none';
     }
