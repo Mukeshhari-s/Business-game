@@ -76,10 +76,9 @@ export default class GameRoom {
     this.log(`${player.name} disconnected.`);
     this.cancelTradesForPlayer(player.playerId, 'Player disconnected');
 
-    // If the game is active, treat disconnect as bankruptcy to keep flow moving.
-    if (this.gameStatus === 'active') {
-      this.handleBankruptcy(player, true);
-    } else {
+    // If the game is active, we DON'T treat disconnect as bankruptcy immediately.
+    // We allow them to reconnect.
+    if (this.gameStatus !== 'active') {
       // Waiting lobby: remove entirely.
       this.players = this.players.filter((p) => p.socketId !== socketId);
     }
@@ -106,6 +105,16 @@ export default class GameRoom {
 
   getPlayerById(playerId) {
     return this.players.find((p) => p.playerId === playerId) || null;
+  }
+
+  reconnectPlayer(playerId, socketId) {
+    const player = this.getPlayerById(playerId);
+    if (!player) return { error: 'Player not found' };
+
+    player.socketId = socketId;
+    player.connected = true;
+    this.log(`${player.name} reconnected.`);
+    return { player };
   }
 
   isActivePlayer(player) {

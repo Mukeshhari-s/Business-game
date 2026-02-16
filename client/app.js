@@ -174,6 +174,14 @@ startGameBtn.addEventListener('click', () => {
 socket.on('room_created', ({ roomId, playerId }) => {
   currentRoomId = roomId;
   myPlayerId = playerId;
+
+  // Save session for reconnection
+  sessionStorage.setItem('monopolyLobby', JSON.stringify({
+    roomId,
+    playerId,
+    name: nameInput.value
+  }));
+
   roomStatus && (roomStatus.textContent = `Room created! Share code: ${roomId}`);
   roomCode.textContent = roomId;
   playerIdEl && (playerIdEl.textContent = playerId.substring(0, 8) + '...');
@@ -186,6 +194,14 @@ socket.on('room_created', ({ roomId, playerId }) => {
 socket.on('room_joined', ({ roomId, playerId }) => {
   currentRoomId = roomId;
   myPlayerId = playerId;
+
+  // Save session for reconnection
+  sessionStorage.setItem('monopolyLobby', JSON.stringify({
+    roomId,
+    playerId,
+    name: nameInput.value || lobbyData.name
+  }));
+
   roomStatus && (roomStatus.textContent = `Joined room ${roomId}`);
   roomCode.textContent = roomId;
   playerIdEl && (playerIdEl.textContent = playerId.substring(0, 8) + '...');
@@ -195,6 +211,19 @@ socket.on('room_joined', ({ roomId, playerId }) => {
 
 socket.on('player_joined', ({ player }) => {
   showToast(`${player.name} joined the game`, 'info');
+});
+
+socket.on('reconnected', ({ playerId }) => {
+  showToast('Reconnected to game!', 'success');
+});
+
+socket.on('player_reconnected', ({ player }) => {
+  showToast(`${player.name} reconnected`, 'info');
+});
+
+socket.on('reconnect_failed', ({ message }) => {
+  showToast(`Reconnection failed: ${message}`, 'error');
+  sessionStorage.removeItem('monopolyLobby');
 });
 
 socket.on('game_started', () => {
@@ -368,6 +397,7 @@ socket.on('vacation_ended', ({ playerId }) => {
 
 socket.on('game_over', ({ winnerName }) => {
   showToast(`🎉 Game Over! Winner: ${winnerName}! 🎉`, 'success');
+  sessionStorage.removeItem('monopolyLobby');
 });
 
 socket.on('error_message', ({ message }) => {
@@ -1334,7 +1364,17 @@ initBoard();
 socket.on('connect', () => {
   console.log('✅ Connected to server. Socket ID:', socket.id);
   if (!autoActionSent && lobbyData) {
-    const { action, name, roomId } = lobbyData;
+    const { action, name, roomId, playerId } = lobbyData;
+
+    // Priority 1: Persistent session reconnection
+    if (roomId && playerId) {
+      console.log('🔄 Attempting session reconnection...');
+      socket.emit('reconnect_room', { roomId, playerId });
+      autoActionSent = true;
+      return;
+    }
+
+    // Priority 2: One-time lobby actions (create/join)
     if (action === 'create' && name) {
       socket.emit('create_room', { name });
       autoActionSent = true;

@@ -45,6 +45,30 @@ export default function initSockets(io) {
       room.broadcastState();
     });
 
+    socket.on('reconnect_room', ({ roomId, playerId }) => {
+      if (!roomId || !playerId) {
+        socket.emit('reconnect_failed', { message: 'Room ID and Player ID are required for reconnection.' });
+        return;
+      }
+
+      const result = roomManager.reconnectToRoom(roomId, playerId, socket.id);
+      if (result.error) {
+        socket.emit('reconnect_failed', { message: result.error });
+        return;
+      }
+
+      const { room, player } = result;
+      socket.join(roomId);
+
+      // Re-initialize for the reconnected player
+      socket.emit('room_joined', { roomId, playerId: player.playerId });
+      socket.emit('reconnected', { playerId: player.playerId });
+
+      // Notify others and broadcast state
+      io.to(roomId).emit('player_reconnected', { player: player.toPublic() });
+      room.broadcastState();
+    });
+
     socket.on('start_game', () => {
       const room = roomManager.getRoomBySocket(socket.id);
       if (!room) {

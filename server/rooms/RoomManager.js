@@ -42,6 +42,17 @@ export default class RoomManager {
     return { room, player };
   }
 
+  reconnectToRoom(roomId, playerId, socketId) {
+    const room = this.rooms.get(roomId);
+    if (!room) return { error: 'Room not found' };
+
+    const { player, error } = room.reconnectPlayer(playerId, socketId);
+    if (error) return { error };
+
+    this.socketRoomMap.set(socketId, roomId);
+    return { room, player };
+  }
+
   getRoom(roomId) {
     return this.rooms.get(roomId);
   }
