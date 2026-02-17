@@ -132,9 +132,6 @@ const cellPositions = [
   { row: 1, col: 0 },
 ];
 
-// Client-side mirror of the server's build costs
-const calcHouseCost = (cell) => Math.max(1, Math.ceil((cell?.price || 0) * HOUSE_COST_RATE));
-const calcHotelCost = (cell) => calcHouseCost(cell) * HOTEL_COST_MULTIPLIER;
 
 // Event Listeners
 if (createBtn && nameInput) {
@@ -540,9 +537,25 @@ function buildHotel(propertyIndex) {
   socket.emit('build_hotel', { propertyIndex });
 }
 
-// Sell house/hotel or property back to bank
+// Sell house/hotel or mortgage property
 function sellProperty(propertyIndex) {
   socket.emit('sell_property', { propertyIndex });
+}
+
+// Unmortgage property
+function unmortgageProperty(propertyIndex) {
+  socket.emit('unmortgage_property', { propertyIndex });
+}
+
+// Help calculating building costs
+function calcHouseCost(cell) {
+  if (!cell || !cell.price) return 0;
+  return Math.max(1, Math.ceil(cell.price * HOUSE_COST_RATE));
+}
+
+function calcHotelCost(cell) {
+  const houseCost = calcHouseCost(cell);
+  return houseCost * HOTEL_COST_MULTIPLIER;
 }
 
 // Initialize board
@@ -632,48 +645,63 @@ function renderBuildableProperties(state) {
     const hotelCost = calcHotelCost(cell);
 
     const propertyDiv = document.createElement('div');
-    propertyDiv.className = 'p-3 bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg border border-slate-700';
+    propertyDiv.className = `p-3 bg-gradient-to-r ${cell.isMortgaged ? 'from-slate-900 to-black opacity-60' : 'from-slate-800 to-slate-900'} rounded-lg border ${cell.isMortgaged ? 'border-amber-900/50' : 'border-slate-700'}`;
 
     const nameDiv = document.createElement('div');
-    nameDiv.className = 'font-bold text-sm text-white mb-1';
-    nameDiv.textContent = cell.name;
+    nameDiv.className = 'font-bold text-sm text-white mb-1 flex items-center gap-2';
+    nameDiv.innerHTML = `${cell.name} ${cell.isMortgaged ? '<span class="text-[10px] bg-amber-900/80 text-amber-400 px-1 rounded">MORTGAGED</span>' : ''}`;
 
     const statusDiv = document.createElement('div');
     statusDiv.className = 'text-xs text-slate-400 mb-2';
-    statusDiv.innerHTML = `Houses: ${cell.houses || 0} | Hotels: ${cell.hotels || 0}<br>House cost: Rs ${houseCost} | Hotel cost: Rs ${hotelCost}`;
+    if (cell.isMortgaged) {
+      const unmortgageCost = Math.floor(cell.price / 2 * 1.1);
+      statusDiv.innerHTML = `<span class="text-amber-500 font-bold">MORTGAGED</span><br>Unmortgage cost: Rs ${unmortgageCost}`;
+    } else {
+      statusDiv.innerHTML = `Houses: ${cell.houses || 0} | Hotels: ${cell.hotels || 0}<br>House cost: Rs ${houseCost} | Hotel cost: Rs ${hotelCost}`;
+    }
 
     const btnContainer = document.createElement('div');
     btnContainer.className = 'flex gap-2';
 
-    const houseBtn = document.createElement('button');
-    houseBtn.className = 'flex-1 px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed';
-    houseBtn.textContent = `🏠 +House (-Rs ${houseCost})`;
-    houseBtn.disabled = cell.hotels > 0 || cell.houses >= 4 || me.balance < houseCost;
-    houseBtn.onclick = () => buildHouse(cell.index);
-
-    const hotelBtn = document.createElement('button');
-    hotelBtn.className = 'flex-1 px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-colors disabled:opacity-50';
-    hotelBtn.textContent = `🏨 +Hotel (-Rs ${hotelCost})`;
-    hotelBtn.disabled = cell.hotels >= 1 || cell.houses !== 4 || me.balance < hotelCost;
-    hotelBtn.onclick = () => buildHotel(cell.index);
-
-    const sellBtn = document.createElement('button');
-    sellBtn.className = 'flex-1 px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-lg transition-colors';
-
-    if (cell.hotels > 0 || cell.houses > 0) {
-      const refund = Math.floor(cell.housePrice / 2);
-      sellBtn.textContent = `💰 Sell ${cell.hotels > 0 ? 'Hotel' : 'House'} (+Rs ${refund})`;
+    if (cell.isMortgaged) {
+      const unmortgageCost = Math.floor(cell.price / 2 * 1.1);
+      const unmortgageBtn = document.createElement('button');
+      unmortgageBtn.className = 'flex-1 px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-lg transition-colors disabled:opacity-50';
+      unmortgageBtn.textContent = `🔓 Unmortgage (-Rs ${unmortgageCost})`;
+      unmortgageBtn.disabled = me.balance < unmortgageCost;
+      unmortgageBtn.onclick = () => unmortgageProperty(cell.index);
+      btnContainer.appendChild(unmortgageBtn);
     } else {
-      const refund = Math.floor(cell.price / 2);
-      sellBtn.textContent = `🏚️ Liquidate (+Rs ${refund})`;
-    }
-    sellBtn.onclick = () => sellProperty(cell.index);
+      const houseBtn = document.createElement('button');
+      houseBtn.className = 'flex-1 px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed';
+      houseBtn.textContent = `🏠 +House (-Rs ${houseCost})`;
+      houseBtn.disabled = cell.hotels > 0 || cell.houses >= 4 || me.balance < houseCost;
+      houseBtn.onclick = () => buildHouse(cell.index);
 
-    if (cell.buildable) {
-      btnContainer.appendChild(houseBtn);
-      btnContainer.appendChild(hotelBtn);
+      const hotelBtn = document.createElement('button');
+      hotelBtn.className = 'flex-1 px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-colors disabled:opacity-50';
+      hotelBtn.textContent = `🏨 +Hotel (-Rs ${hotelCost})`;
+      hotelBtn.disabled = cell.hotels >= 1 || cell.houses !== 4 || me.balance < hotelCost;
+      hotelBtn.onclick = () => buildHotel(cell.index);
+
+      const sellBtn = document.createElement('button');
+      sellBtn.className = 'flex-1 px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-lg transition-colors';
+
+      if (cell.hotels > 0 || cell.houses > 0) {
+        const refund = Math.floor(houseCost / 2); // Correct refund based on building cost
+        sellBtn.textContent = `💰 Sell ${cell.hotels > 0 ? 'Hotel' : 'House'} (+Rs ${refund})`;
+      } else {
+        const refund = Math.floor(cell.price / 2);
+        sellBtn.textContent = `🏚️ Mortgage (+Rs ${refund})`;
+      }
+      sellBtn.onclick = () => sellProperty(cell.index);
+
+      if (cell.buildable) {
+        btnContainer.appendChild(houseBtn);
+        btnContainer.appendChild(hotelBtn);
+      }
+      btnContainer.appendChild(sellBtn);
     }
-    btnContainer.appendChild(sellBtn);
 
     propertyDiv.appendChild(nameDiv);
     propertyDiv.appendChild(statusDiv);
@@ -787,11 +815,27 @@ function renderState(state) {
       }
     } else {
       // Remove has-owner class if no owner
-      cellEl.classList.remove('has-owner');
+      cellEl.classList.remove('has-owner', 'is-mortgaged');
       const bar = cellEl.querySelector('.owner-bar');
       if (bar) bar.remove();
       const buildingInd = cellEl.querySelector('.building-indicator');
       if (buildingInd) buildingInd.remove();
+    }
+
+    // Add mortgage visual indicator
+    if (cell.isMortgaged) {
+      cellEl.classList.add('is-mortgaged');
+      let mortgageBadge = cellEl.querySelector('.mortgage-badge');
+      if (!mortgageBadge) {
+        mortgageBadge = document.createElement('div');
+        mortgageBadge.className = 'mortgage-badge';
+        mortgageBadge.textContent = 'M';
+        cellEl.appendChild(mortgageBadge);
+      }
+    } else {
+      cellEl.classList.remove('is-mortgaged');
+      const badge = cellEl.querySelector('.mortgage-badge');
+      if (badge) badge.remove();
     }
   });
 

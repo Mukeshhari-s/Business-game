@@ -354,6 +354,10 @@ export default class GameRoom {
   }
 
   getRentForProperty(cell) {
+    if (cell.isMortgaged) {
+      return 0;
+    }
+
     if (cell.hotels > 0) {
       return cell.rent * 5;
     }
@@ -363,6 +367,12 @@ export default class GameRoom {
     }
 
     if (cell.buildable && this.playerOwnsGroup(cell.ownerId, cell.group)) {
+      // Check if any property in the group is mortgaged
+      const groupCells = this.getGroupPropertyCells(cell.group);
+      const anyMortgaged = groupCells.some(c => c.isMortgaged);
+      if (anyMortgaged) {
+        return cell.rent; // No double rent if any property in group is mortgaged
+      }
       return cell.rent * 2;
     }
 
@@ -1139,6 +1149,9 @@ export default class GameRoom {
     if (cell.ownerId !== player.playerId) {
       return { error: 'You do not own this property.' };
     }
+    if (cell.isMortgaged) {
+      return { error: 'Cannot build on a mortgaged property.' };
+    }
     if (!cell.buildable) {
       return { error: 'Houses cannot be built on this property.' };
     }
@@ -1154,6 +1167,9 @@ export default class GameRoom {
     const groupCells = this.getGroupPropertyCells(cell.group);
     if (groupCells.some((groupCell) => groupCell.hotels > 0)) {
       return { error: 'Cannot build houses while a hotel exists in this group.' };
+    }
+    if (groupCells.some((groupCell) => groupCell.isMortgaged)) {
+      return { error: 'Cannot build houses while a property in the group is mortgaged.' };
     }
     const minHouses = Math.min(...groupCells.map((groupCell) => groupCell.houses));
     if (cell.houses > minHouses) {
@@ -1183,6 +1199,9 @@ export default class GameRoom {
     if (cell.ownerId !== player.playerId) {
       return { error: 'You do not own this property.' };
     }
+    if (cell.isMortgaged) {
+      return { error: 'Cannot build on a mortgaged property.' };
+    }
     if (!cell.buildable) {
       return { error: 'Hotels cannot be built on this property.' };
     }
@@ -1196,6 +1215,9 @@ export default class GameRoom {
       return { error: 'You must own all properties in this country group.' };
     }
     const groupCells = this.getGroupPropertyCells(cell.group);
+    if (groupCells.some((groupCell) => groupCell.isMortgaged)) {
+      return { error: 'Cannot build a hotel while a property in the group is mortgaged.' };
+    }
     const allReady = groupCells.every((groupCell) => groupCell.houses === 4 || groupCell.hotels === 1);
     if (!allReady) {
       return { error: 'All properties in the group must be fully developed.' };
@@ -1334,15 +1356,39 @@ export default class GameRoom {
       return;
     }
 
+    const groupCells = cell.buildable ? this.getGroupPropertyCells(cell.group) : [cell];
+
     // Rule: Must sell hotels first, then houses
     if (cell.hotels > 0) {
+      // Even selling check for hotels
+      const maxHotels = Math.max(...groupCells.map((c) => c.hotels));
+      if (cell.hotels < maxHotels) {
+        this.sendError(socketId, 'Hotels must be sold evenly across the group.');
+        return;
+      }
+
+      // Check if house supply can accommodate replacing hotel with 4 houses
+      if (this.houseSupply < 4) {
+        this.sendError(socketId, 'Not enough houses in bank to sell a hotel (needs 4 houses).');
+        return;
+      }
+
       const houseCost = Math.max(1, Math.ceil(cell.price * HOUSE_COST_RATE));
       const refund = Math.floor(houseCost / 2);
-      cell.hotels -= 1;
+      cell.hotels = 0;
+      cell.houses = 4;
       this.hotelSupply += 1;
+      this.houseSupply -= 4;
       player.balance += refund;
-      this.log(`${player.name} sold a hotel on ${cell.name} for Rs ${refund}.`);
+      this.log(`${player.name} sold a hotel on ${cell.name} for Rs ${refund} and replaced with 4 houses.`);
     } else if (cell.houses > 0) {
+      // Even selling check for houses
+      const maxHouses = Math.max(...groupCells.map((c) => c.houses));
+      if (cell.houses < maxHouses) {
+        this.sendError(socketId, 'Houses must be sold evenly across the group.');
+        return;
+      }
+
       const houseCost = Math.max(1, Math.ceil(cell.price * HOUSE_COST_RATE));
       const refund = Math.floor(houseCost / 2);
       cell.houses -= 1;
@@ -1350,15 +1396,52 @@ export default class GameRoom {
       player.balance += refund;
       this.log(`${player.name} sold a house on ${cell.name} for Rs ${refund}.`);
     } else {
-      // Sell the property itself back to bank for 50% of cost
+      // Mortgage the property instead of selling it back to the bank
+      if (cell.isMortgaged) {
+        this.sendError(socketId, 'Property is already mortgaged.');
+        return;
+      }
+
+      // Check if any property in the group has buildings
+      const hasBuildings = groupCells.some((c) => c.houses > 0 || c.hotels > 0);
+      if (hasBuildings) {
+        this.sendError(socketId, 'You must sell all houses/hotels in the group before mortgaging.');
+        return;
+      }
+
       const refund = Math.floor(cell.price / 2);
-      cell.ownerId = null;
-      // Sync player's properties array
-      player.properties = player.properties.filter(pIdx => pIdx !== cell.index);
+      cell.isMortgaged = true;
       player.balance += refund;
-      this.log(`${player.name} sold ${cell.name} back to the bank for Rs ${refund}.`);
-      this.revalidatePendingTrades('Property sold back to bank');
+      this.log(`${player.name} mortgaged ${cell.name} for Rs ${refund}.`);
+      this.revalidatePendingTrades('Property mortgaged');
     }
+    this.broadcastState();
+  }
+
+  handleUnmortgageProperty(socketId, propertyIndex) {
+    const player = this.getPlayerBySocketId(socketId);
+    if (!player) return;
+
+    const cell = this.board.cells[propertyIndex];
+    if (!cell || cell.type !== 'property' || cell.ownerId !== player.playerId) {
+      this.sendError(socketId, 'You do not own this property.');
+      return;
+    }
+
+    if (!cell.isMortgaged) {
+      this.sendError(socketId, 'Property is not mortgaged.');
+      return;
+    }
+
+    const unmortgageCost = Math.floor(cell.price / 2 * 1.1); // 50% principal + 10% interest
+    if (player.balance < unmortgageCost) {
+      this.sendError(socketId, `You need Rs ${unmortgageCost} to unmortgage this property.`);
+      return;
+    }
+
+    player.balance -= unmortgageCost;
+    cell.isMortgaged = false;
+    this.log(`${player.name} unmortgaged ${cell.name} for Rs ${unmortgageCost}.`);
     this.broadcastState();
   }
 
