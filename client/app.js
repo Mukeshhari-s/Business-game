@@ -179,7 +179,7 @@ startGameBtn.addEventListener('click', () => {
 });
 
 declareBankruptcyBtn.addEventListener('click', () => {
-  if (confirm('Are you sure you want to declare bankruptcy? You will be removed from the game.')) {
+  if (confirm('Are you sure you want to declare bankruptcy?\n\nAll your properties will be sold and you will be out of the game. You can watch others playing.\n\nClick OK to proceed or Cancel to continue playing.')) {
     socket.emit('declare_bankruptcy');
   }
 });
@@ -428,11 +428,19 @@ socket.on('card_drawn', ({ playerId, card }) => {
 let selectedPropertyIndex = null;
 
 function openPropertyModal(index) { // Kept name for compatibility with onclick handlers
-  if (!gameState) return;
+  console.log('🏠 Opening property modal for index:', index);
+  if (!gameState) {
+    console.log('❌ No gameState');
+    return;
+  }
   const cell = gameState.board.cells[index];
-  if (!cell || cell.type !== 'property') return;
+  if (!cell || cell.type !== 'property') {
+    console.log('❌ Cell is not a property:', cell);
+    return;
+  }
 
   selectedPropertyIndex = index;
+  console.log('✅ Cell data:', cell);
 
   // Element References (New IDs)
   const popover = document.getElementById('property-popover');
@@ -441,6 +449,14 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
   const costEl = document.getElementById('pp-cost');
   const colorEl = document.getElementById('pp-color-bar');
   const buildingsEl = document.getElementById('pp-buildings');
+  
+  console.log('📦 Popover element:', popover);
+  console.log('📦 Content element:', content);
+  
+  if (!popover || !content) {
+    console.error('❌ Popover elements not found!');
+    return;
+  }
   
   // New Button References
   const buildHouseBtn = document.getElementById('pp-btn-build-house');
@@ -474,6 +490,7 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
   const isMyTurn = gameState.currentTurnPlayerId === myPlayerId;
   const canManage = isMyProperty && isMyTurn;
   const me = gameState.players.find(p => p.playerId === myPlayerId);
+  const owner = cell.ownerId ? gameState.players.find(p => p.playerId === cell.ownerId) : null;
 
   // Debug logging
   console.log('Property Modal Debug:', {
@@ -486,142 +503,226 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
     mortgaged: cell.isMortgaged,
     myBalance: me ? me.balance : 0,
     ownerId: cell.ownerId,
-    myPlayerId
+    myPlayerId,
+    ownerName: owner ? owner.name : 'none'
   });
 
   // Calculate costs
   const houseCost = Math.max(1, Math.ceil(cell.price * HOUSE_COST_RATE));
   const hotelCost = houseCost * HOTEL_COST_MULTIPLIER;
 
-  // Hide all buttons by default
-  buildHouseBtn.classList.add('hidden');
-  buildHotelBtn.classList.add('hidden');
-  destroyBtn.classList.add('hidden');
-  mortgageBtn.classList.add('hidden');
-  unmortgageBtn.classList.add('hidden');
-  liquidateBtn.classList.add('hidden');
-  actionHint.textContent = '';
-
-  if (!isMyProperty) {
-    actionHint.textContent = owner ? '❌ This property is owned by ' + owner.name : '❌ You do not own this property';
-    actionHint.className = 'text-[9px] text-rose-400 text-center';
-  } else if (!isMyTurn) {
-    actionHint.textContent = '⏳ Wait for your turn to manage properties';
-    actionHint.className = 'text-[9px] text-amber-400 text-center';
-  } else {
-    actionHint.className = 'text-[9px] text-slate-500 text-center';
-    // Show appropriate buttons based on property state
-    if (cell.isMortgaged) {
-      // Only show unmortgage button
-      unmortgageBtn.classList.remove('hidden');
-      const unmortgageCost = Math.floor(cell.price / 2 * 1.1);
-      unmortgageBtn.disabled = !me || me.balance < unmortgageCost;
-      actionHint.textContent = `💰 Unmortgage cost: Rs ${unmortgageCost}`;
+  // Always show all buttons, but control disabled state
+  actionHint.className = 'text-[9px] text-slate-500 text-center mt-1';
+  
+  // Determine what buttons to show based on property state (not ownership)
+  if (cell.isMortgaged) {
+    // Mortgaged property - show unmortgage only
+    buildHouseBtn.classList.add('hidden');
+    buildHotelBtn.classList.add('hidden');
+    destroyBtn.classList.add('hidden');
+    mortgageBtn.classList.add('hidden');
+    
+    unmortgageBtn.classList.remove('hidden');
+    liquidateBtn.classList.remove('hidden');
+    
+    const unmortgageCost = Math.floor(cell.price / 2 * 1.1);
+    unmortgageBtn.disabled = !isMyProperty || !isMyTurn || !me || me.balance < unmortgageCost;
+    liquidateBtn.disabled = !isMyProperty || !isMyTurn;
+    
+    if (!isMyProperty) {
+      actionHint.textContent = owner ? `Owned by ${owner.name} | Mortgaged` : 'Mortgaged property';
+      actionHint.className = 'text-[9px] text-amber-400 text-center mt-1';
+    } else if (!isMyTurn) {
+      actionHint.textContent = '⏳ Wait for your turn to unmortgage';
+      actionHint.className = 'text-[9px] text-yellow-400 text-center mt-1';
+    } else if (me.balance < unmortgageCost) {
+      actionHint.textContent = `💰 Need Rs ${unmortgageCost} to unmortgage`;
+      actionHint.className = 'text-[9px] text-rose-400 text-center mt-1';
     } else {
-      // Property is not mortgaged
-      if (cell.hotels > 0) {
-        // Has hotel - can only destroy it
-        destroyBtn.classList.remove('hidden');
-        destroyText.textContent = 'Sell Hotel';
-        destroyBtn.disabled = false;
-        const refund = Math.floor(houseCost / 2);
-        actionHint.textContent = `💵 Refund: Rs ${refund} (returns to 4 houses)`;
-      } else if (cell.houses > 0) {
-        // Has houses - can build hotel or destroy house
-        if (cell.buildable) {
-          if (cell.houses === 4) {
-            buildHotelBtn.classList.remove('hidden');
-            buildHotelBtn.disabled = !me || me.balance < hotelCost || gameState.hotelSupply <= 0;
-            actionHint.textContent = `🏨 Hotel cost: Rs ${hotelCost}`;
-          } else {
-            buildHouseBtn.classList.remove('hidden');
-            buildHouseBtn.disabled = !me || me.balance < houseCost || cell.houses >= 4 || gameState.houseSupply <= 0;
-          }
-        }
-        destroyBtn.classList.remove('hidden');
-        destroyText.textContent = 'Sell House';
-        destroyBtn.disabled = false;
-        const refund = Math.floor(houseCost / 2);
-        if (!actionHint.textContent) {
-          actionHint.textContent = `💵 Refund: Rs ${refund} per house`;
-        }
+      actionHint.textContent = `💰 Unmortgage cost: Rs ${unmortgageCost}`;
+    }
+  } else if (cell.hotels > 0) {
+    // Has hotel
+    buildHouseBtn.classList.add('hidden');
+    buildHotelBtn.classList.add('hidden');
+    mortgageBtn.classList.add('hidden');
+    unmortgageBtn.classList.add('hidden');
+    
+    destroyBtn.classList.remove('hidden');
+    liquidateBtn.classList.remove('hidden');
+    destroyText.textContent = 'Sell Hotel';
+    
+    destroyBtn.disabled = !isMyProperty || !isMyTurn;
+    liquidateBtn.disabled = !isMyProperty || !isMyTurn;
+    
+    const refund = Math.floor(houseCost / 2);
+    if (!isMyProperty) {
+      actionHint.textContent = owner ? `Owned by ${owner.name} | Has 1 Hotel` : 'Has 1 Hotel';
+      actionHint.className = 'text-[9px] text-purple-400 text-center mt-1';
+    } else if (!isMyTurn) {
+      actionHint.textContent = '⏳ Wait for your turn to manage';
+      actionHint.className = 'text-[9px] text-yellow-400 text-center mt-1';
+    } else {
+      actionHint.textContent = `💵 Sell hotel: +Rs ${refund} (returns to 4 houses)`;
+    }
+  } else if (cell.houses > 0) {
+    // Has houses
+    mortgageBtn.classList.add('hidden');
+    unmortgageBtn.classList.add('hidden');
+    
+    if (cell.buildable) {
+      if (cell.houses === 4) {
+        buildHotelBtn.classList.remove('hidden');
+        buildHotelBtn.disabled = !isMyProperty || !isMyTurn || !me || me.balance < hotelCost || gameState.hotelSupply <= 0;
       } else {
-        // No buildings
-        if (cell.buildable) {
-          buildHouseBtn.classList.remove('hidden');
-          buildHouseBtn.disabled = !me || me.balance < houseCost || gameState.houseSupply <= 0;
-          buildHotelBtn.classList.remove('hidden');
-          buildHotelBtn.disabled = true; // Need 4 houses first
-          actionHint.textContent = `🏠 House cost: Rs ${houseCost} | 🏨 Hotel: Need 4 houses first`;
-        } else {
-          actionHint.textContent = '🚫 This property is not buildable (Railroad/Utility)';
-        }
-        mortgageBtn.classList.remove('hidden');
-        mortgageBtn.disabled = false;
-        const refund = Math.floor(cell.price / 2);
-        if (!actionHint.textContent) {
-          actionHint.textContent = `🏚️ Mortgage value: Rs ${refund}`;
-        }
+        buildHotelBtn.classList.add('hidden');
       }
+      buildHouseBtn.classList.remove('hidden');
+      buildHouseBtn.disabled = !isMyProperty || !isMyTurn || !me || me.balance < houseCost || cell.houses >= 4 || gameState.houseSupply <= 0;
+    } else {
+      buildHouseBtn.classList.add('hidden');
+      buildHotelBtn.classList.add('hidden');
+    }
+    
+    destroyBtn.classList.remove('hidden');
+    destroyText.textContent = 'Sell House';
+    destroyBtn.disabled = !isMyProperty || !isMyTurn;
+    
+    liquidateBtn.classList.remove('hidden');
+    liquidateBtn.disabled = !isMyProperty || !isMyTurn;
+    
+    const refund = Math.floor(houseCost / 2);
+    if (!isMyProperty) {
+      actionHint.textContent = owner ? `Owned by ${owner.name} | ${cell.houses} House${cell.houses > 1 ? 's' : ''}` : `${cell.houses} Houses`;
+      actionHint.className = 'text-[9px] text-blue-400 text-center mt-1';
+    } else if (!isMyTurn) {
+      actionHint.textContent = '⏳ Wait for your turn to manage';
+      actionHint.className = 'text-[9px] text-yellow-400 text-center mt-1';
+    } else {
+      actionHint.textContent = cell.houses === 4 ? `🏨 Hotel cost: Rs ${hotelCost}` : `🏠 House cost: Rs ${houseCost}`;
+    }
+  } else {
+    // No buildings
+    unmortgageBtn.classList.add('hidden');
+    destroyBtn.classList.add('hidden');
+    
+    if (cell.buildable) {
+      buildHouseBtn.classList.remove('hidden');
+      buildHouseBtn.disabled = !isMyProperty || !isMyTurn || !me || me.balance < houseCost || gameState.houseSupply <= 0;
+      buildHotelBtn.classList.remove('hidden');
+      buildHotelBtn.disabled = true; // Always disabled until 4 houses
       
-      // Always show liquidate option for owned properties
+      mortgageBtn.classList.remove('hidden');
+      mortgageBtn.disabled = !isMyProperty || !isMyTurn;
+      
       liquidateBtn.classList.remove('hidden');
-      liquidateBtn.disabled = false;
+      liquidateBtn.disabled = !isMyProperty || !isMyTurn;
+      
+      const mortgageValue = Math.floor(cell.price / 2);
+      if (!isMyProperty) {
+        actionHint.textContent = owner ? `Owned by ${owner.name}` : '✨ Available for purchase';
+        actionHint.className = owner ? 'text-[9px] text-indigo-400 text-center mt-1' : 'text-[9px] text-emerald-400 text-center mt-1';
+      } else if (!isMyTurn) {
+        actionHint.textContent = '⏳ Wait for your turn to build';
+        actionHint.className = 'text-[9px] text-yellow-400 text-center mt-1';
+      } else {
+        actionHint.textContent = `🏠 House: Rs ${houseCost} | 🏚️ Mortgage: Rs ${mortgageValue}`;
+      }
+    } else {
+      // Railroad/Utility - can't build
+      buildHouseBtn.classList.add('hidden');
+      buildHotelBtn.classList.add('hidden');
+      
+      mortgageBtn.classList.remove('hidden');
+      mortgageBtn.disabled = !isMyProperty || !isMyTurn;
+      
+      liquidateBtn.classList.remove('hidden');
+      liquidateBtn.disabled = !isMyProperty || !isMyTurn;
+      
+      if (!isMyProperty) {
+        actionHint.textContent = owner ? `Owned by ${owner.name} | Special Property` : '✨ Special Property - Available';
+        actionHint.className = owner ? 'text-[9px] text-cyan-400 text-center mt-1' : 'text-[9px] text-emerald-400 text-center mt-1';
+      } else if (!isMyTurn) {
+        actionHint.textContent = '⏳ Wait for your turn to manage';
+        actionHint.className = 'text-[9px] text-yellow-400 text-center mt-1';
+      } else {
+        const mortgageValue = Math.floor(cell.price / 2);
+        actionHint.textContent = `🏚️ Mortgage value: Rs ${mortgageValue}`;
+      }
     }
   }
 
   // 7. Positioning Logic
   const cellRect = document.getElementById(`cell-${index}`).getBoundingClientRect();
-  const popoverWidth = 256;
-  const popoverHeight = 380; // Adjusted for simplified layout
-  const gap = 8;
+  const popoverWidth = 300;
+  const popoverHeight = 380; // Adjusted for improved layout
+  const gap = 12;
 
   // Reset styles
   content.style.top = '';
   content.style.left = '';
   content.style.bottom = '';
   content.style.right = '';
+  content.style.transform = '';
   content.style.transformOrigin = 'center';
 
   const { row, col } = getCellGridPosition(index);
   let top, left;
 
   // Decide position based on board side
-  if (row === 10) { // Bottom
+  if (row === 10) { // Bottom row
     top = cellRect.top - popoverHeight - gap;
     left = cellRect.left + (cellRect.width / 2) - (popoverWidth / 2);
     content.style.transformOrigin = 'bottom center';
-  } else if (row === 0) { // Top
+  } else if (row === 0) { // Top row
     top = cellRect.bottom + gap;
     left = cellRect.left + (cellRect.width / 2) - (popoverWidth / 2);
     content.style.transformOrigin = 'top center';
-  } else if (col === 0) { // Left
+  } else if (col === 0) { // Left column
     top = cellRect.top + (cellRect.height / 2) - (popoverHeight / 2);
     left = cellRect.right + gap;
-    content.style.transformOrigin = 'left center';
-  } else { // Right
+    content.style.transformOrigin = 'center left';
+  } else if (col === 10) { // Right column
     top = cellRect.top + (cellRect.height / 2) - (popoverHeight / 2);
     left = cellRect.left - popoverWidth - gap;
-    content.style.transformOrigin = 'right center';
+    content.style.transformOrigin = 'center right';
   }
 
   // Viewport Boundary Protection
-  const padding = 10;
-  if (left < padding) left = padding;
-  if (left + popoverWidth > window.innerWidth - padding) left = window.innerWidth - popoverWidth - padding;
-  if (top < padding) top = padding;
-  if (top + popoverHeight > window.innerHeight - padding) top = window.innerHeight - popoverHeight - padding;
+  const padding = 20;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  
+  // Horizontal boundaries
+  if (left < padding) {
+    left = padding;
+  }
+  if (left + popoverWidth > viewportWidth - padding) {
+    left = viewportWidth - popoverWidth - padding;
+  }
+  
+  // Vertical boundaries
+  if (top < padding) {
+    top = padding;
+  }
+  if (top + popoverHeight > viewportHeight - padding) {
+    top = viewportHeight - popoverHeight - padding;
+  }
 
   content.style.top = `${top}px`;
   content.style.left = `${left}px`;
 
+  console.log('📍 Positioning popover at:', { top, left, row, col, cellRect });
+
   // Show
   popover.classList.remove('hidden');
+  console.log('✅ Popover shown, classes:', popover.classList);
 
   // Animation
   requestAnimationFrame(() => {
     content.classList.remove('opacity-0', 'scale-95');
     content.classList.add('opacity-100', 'scale-100');
+    console.log('✅ Animation applied');
   });
 }
 
@@ -928,9 +1029,13 @@ function initBoard() {
     cell.appendChild(nameDiv);
 
     // Add click listener for property management
-    if ((cellData.color || cellData.type === 'property') && cellData.type !== 'neutral' && cellData.type !== 'tax' && cellData.type !== 'go' && cellData.type !== 'jail' && cellData.type !== 'vacation' && cellData.type !== 'go-to-jail') {
+    // Check if it's a property cell (has color = buildable property)
+    if (stateCell && stateCell.type === 'property') {
       cell.classList.add('cursor-pointer', 'hover:bg-white/5', 'transition-colors');
-      cell.onclick = () => openPropertyModal(i);
+      cell.onclick = () => {
+        console.log('🖱️ Clicked cell:', i, cellData.name);
+        openPropertyModal(i);
+      };
     }
 
     monopolyBoard.appendChild(cell);
@@ -1316,20 +1421,19 @@ function renderState(state) {
   // Update button visibility and text based on state
   console.log('[DEBUG] Button visibility logic:', { gameActive, isMyTurn, hasRolled, canRollAgain, pendingPropertyIndex: state.pendingPropertyIndex });
 
+  // Show Bankruptcy button always during active game (unless already bankrupt)
+  if (declareBankruptcyBtn) {
+    declareBankruptcyBtn.style.display = (gameActive && me && !me.isBankrupt) ? 'block' : 'none';
+  }
+
   if (!gameActive || !isMyTurn) {
     // Hide all buttons when not your turn or game not started
     rollBtn.style.display = 'none';
     buyBtn.style.display = 'none';
     endTurnBtnCenter.style.display = 'none';
-    if (declareBankruptcyBtn) declareBankruptcyBtn.style.display = 'none';
     if (bailWrapper) bailWrapper.style.display = 'none';
   } else {
     // It's my turn and game is active
-
-    // Show Bankruptcy button ONLY if in debt
-    if (declareBankruptcyBtn) {
-      declareBankruptcyBtn.style.display = isInDebt ? 'block' : 'none';
-    }
 
     // Roll Button logic
     if (!hasRolled || canRollAgain) {

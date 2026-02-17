@@ -1347,10 +1347,11 @@ export default class GameRoom {
   handleDeclareBankruptcy(socketId) {
     const player = this.getPlayerBySocketId(socketId);
     if (!player) return;
-    if (player.balance >= 0) {
-      this.sendError(socketId, 'You can only declare bankruptcy if you are in debt.');
+    if (player.isBankrupt) {
+      this.sendError(socketId, 'You are already bankrupt.');
       return;
     }
+    // Allow voluntary bankruptcy at any time
     this.handleBankruptcy(player, false, true);
   }
 
