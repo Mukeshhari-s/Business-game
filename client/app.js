@@ -4,6 +4,7 @@ let myPlayerId = null;
 let gameState = null;
 let lastDiceRoll = null;
 const lobbyData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
+console.log('📦 Loaded session data:', lobbyData);
 let autoActionSent = false;
 let isAnimating = false;
 let displayedPositions = {}; // Track visual positions to sync with animations
@@ -183,6 +184,16 @@ declareBankruptcyBtn.addEventListener('click', () => {
   }
 });
 
+// Initialize UI based on session data
+if (lobbyData.roomId && lobbyData.playerId) {
+  console.log('🔄 Existing session detected, preparing for reconnection...');
+  // Show game section immediately while reconnecting
+  connectionScreen?.classList.add('hidden');
+  gameSection?.classList.remove('hidden');
+  if (roomCode) roomCode.textContent = lobbyData.roomId;
+  if (playerIdEl) playerIdEl.textContent = lobbyData.playerId.substring(0, 8) + '...';
+}
+
 // Socket Event Handlers
 socket.on('room_created', ({ roomId, playerId }) => {
   currentRoomId = roomId;
@@ -205,6 +216,7 @@ socket.on('room_created', ({ roomId, playerId }) => {
 
 // Joining players receive their playerId here (host gets it via room_created)
 socket.on('room_joined', ({ roomId, playerId }) => {
+  console.log('✅ Joined room:', roomId, 'with player ID:', playerId);
   currentRoomId = roomId;
   myPlayerId = playerId;
 
@@ -220,6 +232,7 @@ socket.on('room_joined', ({ roomId, playerId }) => {
   playerIdEl && (playerIdEl.textContent = playerId.substring(0, 8) + '...');
   connectionScreen?.classList.add('hidden');
   gameSection?.classList.remove('hidden');
+  showToast(`Joined room ${roomId}`, 'success');
 });
 
 socket.on('player_joined', ({ player }) => {
@@ -227,7 +240,15 @@ socket.on('player_joined', ({ player }) => {
 });
 
 socket.on('reconnected', ({ playerId }) => {
+  console.log('✅ Successfully reconnected! Player ID:', playerId);
+  myPlayerId = playerId;
+  currentRoomId = lobbyData.roomId; // Restore from session
   showToast('Reconnected to game!', 'success');
+  // Make sure UI is updated
+  if (roomCode) roomCode.textContent = currentRoomId;
+  if (playerIdEl) playerIdEl.textContent = playerId.substring(0, 8) + '...';
+  connectionScreen?.classList.add('hidden');
+  gameSection?.classList.remove('hidden');
 });
 
 socket.on('player_reconnected', ({ player }) => {
@@ -417,66 +438,142 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
   const popover = document.getElementById('property-popover');
   const content = document.getElementById('property-popover-content');
   const nameEl = document.getElementById('pp-name');
-  const groupEl = document.getElementById('pp-group');
+  const costEl = document.getElementById('pp-cost');
   const colorEl = document.getElementById('pp-color-bar');
-  const statusEl = document.getElementById('pp-status');
   const buildingsEl = document.getElementById('pp-buildings');
-  const rentInfoEl = document.getElementById('pp-rent-info');
-  const rentTextEl = document.getElementById('pp-rent-text');
-  const sellBtn = document.getElementById('pp-btn-sell');
+  
+  // New Button References
+  const buildHouseBtn = document.getElementById('pp-btn-build-house');
+  const buildHotelBtn = document.getElementById('pp-btn-build-hotel');
+  const destroyBtn = document.getElementById('pp-btn-destroy');
+  const destroyText = document.getElementById('pp-destroy-text');
+  const mortgageBtn = document.getElementById('pp-btn-mortgage');
+  const unmortgageBtn = document.getElementById('pp-btn-unmortgage');
+  const liquidateBtn = document.getElementById('pp-btn-liquidate');
+  const actionHint = document.getElementById('pp-action-hint');
 
   // 1. Basic Info
   nameEl.textContent = cell.name;
-  groupEl.textContent = cell.group || 'Special';
+  costEl.textContent = `Rs ${cell.price}`;
 
   // 2. Color Bar
   const colorClass = cell.group ? `color-${cell.group}` : 'bg-slate-700';
   colorEl.className = `h-4 w-full ${colorClass}`;
 
-  // 3. Status & Owner
-  const owner = cell.ownerId ? gameState.players.find(p => p.playerId === cell.ownerId) : null;
-  if (owner) {
-    statusEl.innerHTML = `Owned by <span class="text-indigo-400">${owner.name}</span>`;
-  } else {
-    statusEl.textContent = 'Unowned';
-  }
-
-  // 4. Buildings Info
+  // 3. Buildings Info
   if (cell.hotels > 0) {
-    buildingsEl.textContent = "1 Hotel";
+    buildingsEl.textContent = "🏨 1 Hotel";
   } else if (cell.houses > 0) {
-    buildingsEl.textContent = `${cell.houses} Houses`;
+    buildingsEl.textContent = `🏠 ${cell.houses} House${cell.houses > 1 ? 's' : ''}`;
   } else {
-    buildingsEl.textContent = "None";
+    buildingsEl.textContent = "No buildings";
   }
 
-  // 5. Rent Info (Utilities/Railroads only)
-  if (cell.group === 'utility') {
-    rentInfoEl.classList.remove('hidden');
-    rentTextEl.textContent = "4x / 10x Dice Roll";
-  } else if (cell.group === 'railroad') {
-    rentInfoEl.classList.remove('hidden');
-    rentTextEl.textContent = "$25 - $200";
-  } else {
-    rentInfoEl.classList.add('hidden');
-  }
-
-  // 6. Sell Button State
+  // 6. Button States - Show/Hide based on property state
   const isMyProperty = cell.ownerId === myPlayerId;
   const isMyTurn = gameState.currentTurnPlayerId === myPlayerId;
+  const canManage = isMyProperty && isMyTurn;
+  const me = gameState.players.find(p => p.playerId === myPlayerId);
 
-  if (isMyProperty && isMyTurn) {
-    sellBtn.disabled = false;
-    sellBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+  // Debug logging
+  console.log('Property Modal Debug:', {
+    property: cell.name,
+    isMyProperty,
+    isMyTurn,
+    buildable: cell.buildable,
+    houses: cell.houses,
+    hotels: cell.hotels,
+    mortgaged: cell.isMortgaged,
+    myBalance: me ? me.balance : 0,
+    ownerId: cell.ownerId,
+    myPlayerId
+  });
+
+  // Calculate costs
+  const houseCost = Math.max(1, Math.ceil(cell.price * HOUSE_COST_RATE));
+  const hotelCost = houseCost * HOTEL_COST_MULTIPLIER;
+
+  // Hide all buttons by default
+  buildHouseBtn.classList.add('hidden');
+  buildHotelBtn.classList.add('hidden');
+  destroyBtn.classList.add('hidden');
+  mortgageBtn.classList.add('hidden');
+  unmortgageBtn.classList.add('hidden');
+  liquidateBtn.classList.add('hidden');
+  actionHint.textContent = '';
+
+  if (!isMyProperty) {
+    actionHint.textContent = owner ? '❌ This property is owned by ' + owner.name : '❌ You do not own this property';
+    actionHint.className = 'text-[9px] text-rose-400 text-center';
+  } else if (!isMyTurn) {
+    actionHint.textContent = '⏳ Wait for your turn to manage properties';
+    actionHint.className = 'text-[9px] text-amber-400 text-center';
   } else {
-    sellBtn.disabled = true;
-    sellBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    actionHint.className = 'text-[9px] text-slate-500 text-center';
+    // Show appropriate buttons based on property state
+    if (cell.isMortgaged) {
+      // Only show unmortgage button
+      unmortgageBtn.classList.remove('hidden');
+      const unmortgageCost = Math.floor(cell.price / 2 * 1.1);
+      unmortgageBtn.disabled = !me || me.balance < unmortgageCost;
+      actionHint.textContent = `💰 Unmortgage cost: Rs ${unmortgageCost}`;
+    } else {
+      // Property is not mortgaged
+      if (cell.hotels > 0) {
+        // Has hotel - can only destroy it
+        destroyBtn.classList.remove('hidden');
+        destroyText.textContent = 'Sell Hotel';
+        destroyBtn.disabled = false;
+        const refund = Math.floor(houseCost / 2);
+        actionHint.textContent = `💵 Refund: Rs ${refund} (returns to 4 houses)`;
+      } else if (cell.houses > 0) {
+        // Has houses - can build hotel or destroy house
+        if (cell.buildable) {
+          if (cell.houses === 4) {
+            buildHotelBtn.classList.remove('hidden');
+            buildHotelBtn.disabled = !me || me.balance < hotelCost || gameState.hotelSupply <= 0;
+            actionHint.textContent = `🏨 Hotel cost: Rs ${hotelCost}`;
+          } else {
+            buildHouseBtn.classList.remove('hidden');
+            buildHouseBtn.disabled = !me || me.balance < houseCost || cell.houses >= 4 || gameState.houseSupply <= 0;
+          }
+        }
+        destroyBtn.classList.remove('hidden');
+        destroyText.textContent = 'Sell House';
+        destroyBtn.disabled = false;
+        const refund = Math.floor(houseCost / 2);
+        if (!actionHint.textContent) {
+          actionHint.textContent = `💵 Refund: Rs ${refund} per house`;
+        }
+      } else {
+        // No buildings
+        if (cell.buildable) {
+          buildHouseBtn.classList.remove('hidden');
+          buildHouseBtn.disabled = !me || me.balance < houseCost || gameState.houseSupply <= 0;
+          buildHotelBtn.classList.remove('hidden');
+          buildHotelBtn.disabled = true; // Need 4 houses first
+          actionHint.textContent = `🏠 House cost: Rs ${houseCost} | 🏨 Hotel: Need 4 houses first`;
+        } else {
+          actionHint.textContent = '🚫 This property is not buildable (Railroad/Utility)';
+        }
+        mortgageBtn.classList.remove('hidden');
+        mortgageBtn.disabled = false;
+        const refund = Math.floor(cell.price / 2);
+        if (!actionHint.textContent) {
+          actionHint.textContent = `🏚️ Mortgage value: Rs ${refund}`;
+        }
+      }
+      
+      // Always show liquidate option for owned properties
+      liquidateBtn.classList.remove('hidden');
+      liquidateBtn.disabled = false;
+    }
   }
 
   // 7. Positioning Logic
   const cellRect = document.getElementById(`cell-${index}`).getBoundingClientRect();
   const popoverWidth = 256;
-  const popoverHeight = 320; // Approx
+  const popoverHeight = 380; // Adjusted for simplified layout
   const gap = 8;
 
   // Reset styles
@@ -562,12 +659,81 @@ function liquidateFromModal() {
   }
 }
 
+// New property management functions
+function buildHouseFromPopover() {
+  if (selectedPropertyIndex === null) return;
+  socket.emit('build_house', { propertyIndex: selectedPropertyIndex });
+  closePropertyPopover();
+}
+
+function buildHotelFromPopover() {
+  if (selectedPropertyIndex === null) return;
+  socket.emit('build_hotel', { propertyIndex: selectedPropertyIndex });
+  closePropertyPopover();
+}
+
+function destroyBuildingFromPopover() {
+  if (selectedPropertyIndex === null) return;
+  if (!gameState) return;
+  
+  const cell = gameState.board.cells[selectedPropertyIndex];
+  const buildingType = cell.hotels > 0 ? 'hotel' : 'house';
+  const message = cell.hotels > 0 
+    ? 'Sell hotel? It will return to 4 houses and refund 50% of the original house cost.'
+    : 'Sell one house for 50% refund?';
+  
+  if (confirm(message)) {
+    socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
+    closePropertyPopover();
+  }
+}
+
+function mortgagePropertyFromPopover() {
+  if (selectedPropertyIndex === null) return;
+  if (!gameState) return;
+  
+  const cell = gameState.board.cells[selectedPropertyIndex];
+  const refund = Math.floor(cell.price / 2);
+  
+  if (confirm(`Mortgage this property for Rs ${refund}? You'll need to pay 10% interest to unmortgage.`)) {
+    socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
+    closePropertyPopover();
+  }
+}
+
+function unmortgagePropertyFromPopover() {
+  if (selectedPropertyIndex === null) return;
+  if (!gameState) return;
+  
+  const cell = gameState.board.cells[selectedPropertyIndex];
+  const cost = Math.floor(cell.price / 2 * 1.1);
+  
+  if (confirm(`Unmortgage this property for Rs ${cost}?`)) {
+    socket.emit('unmortgage_property', { propertyIndex: selectedPropertyIndex });
+    closePropertyPopover();
+  }
+}
+
+function liquidatePropertyFromPopover() {
+  if (selectedPropertyIndex === null) return;
+  if (confirm('Permanently liquidate this property? It will be sold back to the bank for 50% of its value.')) {
+    socket.emit('liquidate_property', { propertyIndex: selectedPropertyIndex });
+    closePropertyPopover();
+  }
+}
+
 // Expose functions to window for onclick handlers
 window.openPropertyModal = openPropertyModal;
 window.closePropertyModal = closePropertyModal; // mapped to closePropertyPopover
 window.closePropertyPopover = closePropertyPopover;
 window.liquidateFromModal = liquidateFromModal;
 window.sellPropertyFromPopover = sellPropertyFromPopover;
+window.buildHouseFromPopover = buildHouseFromPopover;
+window.buildHotelFromPopover = buildHotelFromPopover;
+window.destroyBuildingFromPopover = destroyBuildingFromPopover;
+window.mortgagePropertyFromPopover = mortgagePropertyFromPopover;
+window.unmortgagePropertyFromPopover = unmortgagePropertyFromPopover;
+window.liquidatePropertyFromPopover = liquidatePropertyFromPopover;
 
 socket.on('paid_bail', ({ playerId }) => {
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
@@ -1014,10 +1180,36 @@ function renderState(state) {
       token.style.background = playerColors[index % playerColors.length];
       token.title = player.name;
 
-      // Position token within cell
+      // Position token based on which side of the board
+      const { row, col } = getCellGridPosition(visualPos);
       const offset = index * 20;
-      token.style.left = `${5 + offset}px`;
-      token.style.top = `${5}px`;
+
+      // Determine positioning based on board side
+      if (row === 0) {
+        // Top row: align horizontally at bottom of cell
+        token.style.left = `${5 + offset}px`;
+        token.style.bottom = `5px`;
+        token.style.top = 'auto';
+        token.style.right = 'auto';
+      } else if (row === 10) {
+        // Bottom row: align horizontally at top of cell
+        token.style.left = `${5 + offset}px`;
+        token.style.top = `5px`;
+        token.style.bottom = 'auto';
+        token.style.right = 'auto';
+      } else if (col === 0) {
+        // Left column: align vertically on LEFT side of cell
+        token.style.left = `5px`;
+        token.style.top = `${5 + offset}px`;
+        token.style.right = 'auto';
+        token.style.bottom = 'auto';
+      } else if (col === 10) {
+        // Right column: align vertically on RIGHT side of cell
+        token.style.right = `5px`;
+        token.style.top = `${5 + offset}px`;
+        token.style.left = 'auto';
+        token.style.bottom = 'auto';
+      }
 
       cellEl.appendChild(token);
     }
@@ -1652,11 +1844,11 @@ socket.on('connect', () => {
     if (action === 'create' && name) {
       socket.emit('create_room', { name });
       autoActionSent = true;
-      sessionStorage.removeItem('monopolyLobby');
+      // Don't remove sessionStorage - it will be updated with roomId/playerId after success
     } else if (action === 'join' && name && roomId) {
       socket.emit('join_room', { roomId, name });
       autoActionSent = true;
-      sessionStorage.removeItem('monopolyLobby');
+      // Don't remove sessionStorage - it will be updated with roomId/playerId after success
     }
   }
 });

@@ -170,6 +170,76 @@
   </div>
 </div>
 
+<!-- Property Popover -->
+<div id="property-popover" class="hidden fixed inset-0 z-[10000] pointer-events-none font-sans">
+  <!-- Invisible Backdrop -->
+  <div class="absolute inset-0 pointer-events-auto" onclick="closePropertyPopover()"></div>
+
+  <!-- Content Card -->
+  <div id="property-popover-content"
+    class="absolute w-64 bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 pointer-events-auto flex flex-col transition-all duration-200 opacity-0 scale-95">
+
+    <!-- Header -->
+    <div id="pp-color-bar" class="h-4 w-full bg-slate-700"></div>
+    <div class="p-4 border-b border-white/5 bg-slate-800/50">
+      <h3 id="pp-name" class="text-lg font-black text-white uppercase tracking-tight leading-tight">Property Name
+      </h3>
+      <div class="flex justify-between items-center mt-2">
+        <p id="pp-cost" class="text-sm text-emerald-400 font-bold">Rs 0</p>
+        <p id="pp-buildings" class="text-xs text-slate-400 font-medium">No buildings</p>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="p-4 space-y-4">
+
+      <!-- Actions -->
+      <div class="pt-2 border-t border-white/5 space-y-2">
+        <!-- Building Actions -->
+        <div id="pp-building-actions" class="grid grid-cols-2 gap-2">
+          <button id="pp-btn-build-house" onclick="buildHouseFromPopover()"
+            class="bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
+            <span>🏠</span> Build House
+          </button>
+          <button id="pp-btn-build-hotel" onclick="buildHotelFromPopover()"
+            class="bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
+            <span>🏨</span> Build Hotel
+          </button>
+        </div>
+
+        <!-- Destroy/Sell Building -->
+        <button id="pp-btn-destroy" onclick="destroyBuildingFromPopover()"
+          class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <span>🔨</span> <span id="pp-destroy-text">Sell Building</span>
+        </button>
+
+        <!-- Mortgage Actions -->
+        <button id="pp-btn-mortgage" onclick="mortgagePropertyFromPopover()"
+          class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <span>🏚️</span> Mortgage Property
+        </button>
+        <button id="pp-btn-unmortgage" onclick="unmortgagePropertyFromPopover()"
+          class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <span>🔓</span> Unmortgage Property
+        </button>
+
+        <!-- Liquidate/Sell to Bank -->
+        <button id="pp-btn-liquidate" onclick="liquidatePropertyFromPopover()"
+          class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg font-bold text-xs uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <span>💰</span> Liquidate Property
+        </button>
+        <p id="pp-action-hint" class="text-[9px] text-slate-500 text-center mt-1"></p>
+      </div>
+    </div>
+
+    <!-- Close Button -->
+    <button onclick="closePropertyPopover()"
+      class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold text-[10px] uppercase tracking-widest transition-colors border-t border-white/5">
+      Close
+    </button>
+  </div>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script src="app.js"></script>
 

@@ -678,36 +678,46 @@
         <div class="p-4 border-b border-white/5 bg-slate-800/50">
           <h3 id="pp-name" class="text-lg font-black text-white uppercase tracking-tight leading-tight">Property Name
           </h3>
-          <p id="pp-group" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Group Name</p>
-        </div>
+      <div class="flex justify-between items-center mt-2">
+        <p id="pp-cost" class="text-sm text-emerald-400 font-bold">Rs 0</p>
+        <p id="pp-buildings" class="text-xs text-slate-400 font-medium">No buildings</p>
+      </div>
+    </div>
 
-        <!-- Body -->
-        <div class="p-4 space-y-4">
-          <!-- Stats Grid -->
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-slate-800 p-2 rounded border border-white/5">
-              <div class="text-[9px] text-slate-500 font-bold uppercase">Status</div>
-              <div id="pp-status" class="text-xs font-bold text-white mt-0.5 truncate">Unowned</div>
+    <!-- Body -->
+    <div class="p-4 space-y-4">
+              <button id="pp-btn-build-house" onclick="buildHouseFromPopover()"
+                class="bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
+                <span>🏠</span> Build House
+              </button>
+              <button id="pp-btn-build-hotel" onclick="buildHotelFromPopover()"
+                class="bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
+                <span>🏨</span> Build Hotel
+              </button>
             </div>
-            <div class="bg-slate-800 p-2 rounded border border-white/5">
-              <div class="text-[9px] text-slate-500 font-bold uppercase">Buildings</div>
-              <div id="pp-buildings" class="text-xs font-bold text-white mt-0.5">None</div>
-            </div>
-          </div>
 
-          <!-- Rent Info (Conditional) -->
-          <div id="pp-rent-info" class="hidden bg-slate-800 p-3 rounded border border-white/5 text-center">
-            <div class="text-[9px] text-slate-500 font-bold uppercase mb-0.5">Rent Info</div>
-            <div id="pp-rent-text" class="text-xs font-bold text-white">Rent Amount</div>
-          </div>
-
-          <!-- Actions -->
-          <div class="pt-2 border-t border-white/5">
-            <button id="pp-btn-sell" onclick="sellPropertyFromPopover()"
-              class="w-full bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-lg font-bold text-xs uppercase tracking-wide transition-colors shadow-lg shadow-rose-900/20 flex items-center justify-center gap-2">
-              <span>💰</span> Sell Property
+            <!-- Destroy/Sell Building -->
+            <button id="pp-btn-destroy" onclick="destroyBuildingFromPopover()"
+              class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span>🔨</span> <span id="pp-destroy-text">Sell Building</span>
             </button>
-            <p class="text-[9px] text-slate-600 text-center mt-2">Returns 50% value</p>
+
+            <!-- Mortgage Actions -->
+            <button id="pp-btn-mortgage" onclick="mortgagePropertyFromPopover()"
+              class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span>🏚️</span> Mortgage Property
+            </button>
+            <button id="pp-btn-unmortgage" onclick="unmortgagePropertyFromPopover()"
+              class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span>🔓</span> Unmortgage Property
+            </button>
+
+            <!-- Liquidate/Sell to Bank -->
+            <button id="pp-btn-liquidate" onclick="liquidatePropertyFromPopover()"
+              class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg font-bold text-xs uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span>💰</span> Liquidate Property
+            </button>
+            <p id="pp-action-hint" class="text-[9px] text-slate-500 text-center mt-1"></p>
           </div>
         </div>
 
