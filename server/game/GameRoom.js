@@ -611,7 +611,7 @@ export default class GameRoom {
     const passedGo = player.position + steps >= this.board.cells.length;
     if (passedGo) {
       player.balance += GO_SALARY;
-      this.log(`${player.name} passed GO and collected $${GO_SALARY}.`);
+      this.log(`${player.name} passed GO and collected Rs ${GO_SALARY}.`);
     }
 
     player.position = newPos;
@@ -627,10 +627,11 @@ export default class GameRoom {
 
   resolveLanding(cell, player) {
     if (cell.type === 'neutral') {
-      if (cell.name.toLowerCase().includes('pudhaiyal')) {
+      const name = cell.name.toLowerCase();
+      if (name.includes('pudhaiyal') || name.includes('pudhyal') || name.includes('treasure')) {
         this.drawCard(player, 'treasure');
         return;
-      } else if (cell.name.toLowerCase().includes('surprise')) {
+      } else if (name.includes('surprise') || name.includes('suprise')) {
         this.drawCard(player, 'surprise');
         return;
       }
@@ -691,9 +692,11 @@ export default class GameRoom {
         break;
       case 'simple_gain':
         player.balance += card.amount;
+        this.log(`${player.name} received Rs ${card.amount}.`);
         break;
       case 'simple_loss':
         player.balance -= card.amount;
+        this.log(`${player.name} paid Rs ${card.amount}.`);
         break;
       case 'collect_from_all':
         this.players.forEach(p => {
@@ -702,6 +705,7 @@ export default class GameRoom {
             player.balance += card.amount;
           }
         });
+        this.log(`${player.name} collected Rs ${card.amount} from every player.`);
         break;
       case 'pay_to_all':
         this.players.forEach(p => {
@@ -710,6 +714,7 @@ export default class GameRoom {
             player.balance -= card.amount;
           }
         });
+        this.log(`${player.name} paid Rs ${card.amount} to every player.`);
         break;
       case 'move_to':
         const moveSteps = (card.target - player.position + this.board.cells.length) % this.board.cells.length;
@@ -746,6 +751,9 @@ export default class GameRoom {
           });
           this.resolveLanding(this.board.cells[newPos], player);
         }
+        break;
+      case 'go_to_jail':
+        this.sendPlayerToJail(player);
         break;
     }
   }
@@ -1442,6 +1450,36 @@ export default class GameRoom {
     player.balance -= unmortgageCost;
     cell.isMortgaged = false;
     this.log(`${player.name} unmortgaged ${cell.name} for Rs ${unmortgageCost}.`);
+    this.broadcastState();
+  }
+
+  handleLiquidateProperty(socketId, propertyIndex) {
+    const player = this.getPlayerBySocketId(socketId);
+    if (!player) return;
+
+    const idx = parseInt(propertyIndex);
+    const cell = this.board.cells[idx];
+    if (!cell || cell.type !== 'property' || cell.ownerId !== player.playerId) {
+      this.sendError(socketId, 'You do not own this property.');
+      return;
+    }
+
+    if (cell.houses > 0 || cell.hotels > 0) {
+      this.sendError(socketId, 'You must sell all houses and hotels before selling the property back to the bank.');
+      return;
+    }
+
+    // Permanent sale: refund 50% of the price
+    const refund = Math.floor(cell.price / 2);
+    player.balance += refund;
+    cell.ownerId = null;
+    cell.isMortgaged = false; // Reset mortgage status on sale
+
+    // Remove from player's property list
+    player.properties = player.properties.filter(id => parseInt(id) !== idx);
+
+    this.log(`${player.name} permanently sold ${cell.name} back to the bank for Rs ${refund}.`);
+    this.revalidatePendingTrades('Property liquidated');
     this.broadcastState();
   }
 

@@ -176,6 +176,15 @@ export default function initSockets(io) {
       room.handleUnmortgageProperty(socket.id, propertyIndex);
     });
 
+    socket.on('liquidate_property', ({ propertyIndex }) => {
+      const room = roomManager.getRoomBySocket(socket.id);
+      if (!room) {
+        socket.emit('error_message', { message: 'You are not in a room.' });
+        return;
+      }
+      room.handleLiquidateProperty(socket.id, propertyIndex);
+    });
+
     socket.on('declare_bankruptcy', () => {
       const room = roomManager.getRoomBySocket(socket.id);
       if (!room) {

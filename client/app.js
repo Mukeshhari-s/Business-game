@@ -390,39 +390,156 @@ socket.on('third_double_jail', ({ playerId }) => {
 });
 
 socket.on('card_drawn', ({ playerId, card }) => {
-  const modal = document.getElementById('cardModal');
-  const display = document.getElementById('cardDisplay');
-  const title = document.getElementById('cardTitle');
-  const text = document.getElementById('cardText');
-  const icon = document.getElementById('cardIcon');
+  const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
+  const playerName = player ? player.name : 'Player';
 
-  title.textContent = card.title;
-  text.textContent = card.text;
+  // Show enhanced toast with card title and description
+  showToast(`${playerName} drew ${card.title}: ${card.text}`, 'info');
+});
 
-  // Set theme and icon based on type
-  display.className = 'relative w-full max-w-sm aspect-[2.5/3.5] bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border-4 transform transition-all duration-500 scale-90 opacity-0';
-  if (card.type === 'treasure') {
-    display.classList.add('card-treasure');
-    icon.textContent = '💎';
+// ============================================
+// PROPERTY MANAGEMENT MODAL
+// ============================================
+let selectedPropertyIndex = null;
+
+function openPropertyModal(index) {
+  if (!gameState) return;
+  const cell = gameState.board.cells[index];
+  if (!cell || cell.type !== 'property') return;
+
+  selectedPropertyIndex = index;
+  const modal = document.getElementById('propertyModal');
+  const nameEl = document.getElementById('propModalName');
+  const groupEl = document.getElementById('propModalGroup');
+  const colorEl = document.getElementById('propModalColor');
+  const statusEl = document.getElementById('propModalStatus');
+  const buildingsEl = document.getElementById('propModalBuildings');
+  const actionsContainer = document.getElementById('propModalActions');
+  const liquidateBtn = document.getElementById('btnLiquidate');
+
+  // Set basic info
+  nameEl.textContent = cell.name;
+  groupEl.textContent = cell.group || 'Utility / Transport';
+
+  // Set color header
+  const colorClass = cell.group ? `color-${cell.group}` : 'bg-slate-700';
+  colorEl.className = `h-4 w-full ${colorClass}`;
+
+  // Set status
+  const owner = cell.ownerId ? gameState.players.find(p => p.playerId === cell.ownerId) : null;
+  if (owner) {
+    statusEl.innerHTML = `Owned by <span class="text-indigo-400">${owner.name}</span>${cell.isMortgaged ? ' <span class="text-amber-500">(Mortgaged)</span>' : ''}`;
   } else {
-    display.classList.add('card-surprise');
-    icon.textContent = '🎁';
+    statusEl.textContent = 'Unowned';
+  }
+
+  // Set buildings
+  if (cell.hotels > 0) {
+    buildingsEl.innerHTML = '<span class="text-indigo-400 font-black">1 HOTEL</span>';
+  } else if (cell.houses > 0) {
+    buildingsEl.innerHTML = `<span class="text-emerald-400 font-bold">${cell.houses} HOUSES</span>`;
+  } else {
+    buildingsEl.textContent = 'None';
+  }
+
+  // Handle Action Button Visibility
+  const isMyProperty = cell.ownerId === myPlayerId;
+  const isMyTurn = gameState.currentTurnPlayerId === myPlayerId;
+  const canManage = isMyProperty && isMyTurn;
+
+  // Buttons
+  const btnBuildHouse = document.getElementById('btnBuildHouse');
+  const btnBuildHotel = document.getElementById('btnBuildHotel');
+  const btnSellBuilding = document.getElementById('btnSellBuilding');
+  const btnMortgage = document.getElementById('btnMortgage');
+  const mortgageText = document.getElementById('mortgageText');
+  const mortgageIcon = document.getElementById('mortgageIcon');
+
+  if (canManage) {
+    actionsContainer.classList.remove('opacity-50', 'pointer-events-none');
+    liquidateBtn.classList.remove('hidden');
+
+    // Mortgage logic
+    if (cell.isMortgaged) {
+      mortgageText.textContent = 'UNMORTGAGE';
+      mortgageIcon.textContent = '🔓';
+    } else {
+      mortgageText.textContent = 'MORTGAGE';
+      mortgageIcon.textContent = '🔒';
+    }
+  } else {
+    actionsContainer.classList.add('opacity-50', 'pointer-events-none');
+    liquidateBtn.classList.add('hidden');
   }
 
   modal.classList.remove('hidden');
-  setTimeout(() => {
-    display.classList.add('show-card');
-  }, 10);
-});
+  // Trigger animation after next frame to ensure visibility
+  requestAnimationFrame(() => {
+    const content = modal.querySelector('.relative');
+    if (content) {
+      content.classList.remove('opacity-0', 'scale-95');
+      content.classList.add('opacity-100', 'scale-100');
+    }
+  });
+}
 
-function closeCardModal() {
-  const modal = document.getElementById('cardModal');
-  const display = document.getElementById('cardDisplay');
-  display.classList.remove('show-card');
+function closePropertyModal() {
+  const modal = document.getElementById('propertyModal');
+  const content = modal.querySelector('.relative');
+  if (content) {
+    content.classList.add('opacity-0', 'scale-95');
+    content.classList.remove('opacity-100', 'scale-100');
+  }
   setTimeout(() => {
     modal.classList.add('hidden');
-  }, 500);
+    selectedPropertyIndex = null;
+  }, 200);
 }
+
+function buildHouseFromModal() {
+  if (selectedPropertyIndex !== null) {
+    socket.emit('build_house', { propertyIndex: selectedPropertyIndex });
+  }
+}
+
+function buildHotelFromModal() {
+  if (selectedPropertyIndex !== null) {
+    socket.emit('build_hotel', { propertyIndex: selectedPropertyIndex });
+  }
+}
+
+function sellBuildingFromModal() {
+  if (selectedPropertyIndex !== null) {
+    socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
+  }
+}
+
+function mortgageFromModal() {
+  if (selectedPropertyIndex === null) return;
+  const cell = gameState.board.cells[selectedPropertyIndex];
+  if (cell.isMortgaged) {
+    socket.emit('unmortgage_property', { propertyIndex: selectedPropertyIndex });
+  } else {
+    socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
+  }
+}
+
+function liquidateFromModal() {
+  if (selectedPropertyIndex !== null) {
+    if (confirm('Are you sure you want to permanently sell this property back to the bank for 50% of its price?')) {
+      socket.emit('liquidate_property', { propertyIndex: selectedPropertyIndex });
+      closePropertyModal();
+    }
+  }
+}
+
+window.openPropertyModal = openPropertyModal;
+window.closePropertyModal = closePropertyModal;
+window.buildHouseFromModal = buildHouseFromModal;
+window.buildHotelFromModal = buildHotelFromModal;
+window.sellBuildingFromModal = sellBuildingFromModal;
+window.mortgageFromModal = mortgageFromModal;
+window.liquidateFromModal = liquidateFromModal;
 
 socket.on('paid_bail', ({ playerId }) => {
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
@@ -563,7 +680,7 @@ function initBoard() {
   monopolyBoard.innerHTML = '';
 
   // Center branding (already in HTML, just update reference)
-  const center = monopolyBoard.querySelector('.board-center');
+  const center = document.querySelector('.board-center');
   if (center) {
     gameLog = center.querySelector('#gameLog');
   }
@@ -615,6 +732,17 @@ function initBoard() {
     }
 
     cell.appendChild(nameDiv);
+
+    // Add click listener for property management
+    // We check for cellData.color which correctly identifies all properties, railroads, and utilities in our boardData
+    if (cellData.color) {
+      cell.classList.add('cursor-pointer', 'hover:bg-white/10', 'transition-all', 'duration-200');
+      cell.addEventListener('click', () => {
+        console.log(`[DEBUG] Cell ${i} (${cellData.name}) clicked.`);
+        openPropertyModal(i);
+      });
+    }
+
     monopolyBoard.appendChild(cell);
   }
 }
@@ -1064,6 +1192,11 @@ function renderState(state) {
   }
 
   renderTrades(state);
+
+  // Refresh property modal if open
+  if (selectedPropertyIndex !== null && !document.getElementById('propertyModal').classList.contains('hidden')) {
+    openPropertyModal(selectedPropertyIndex);
+  }
 }
 
 // ============================================
