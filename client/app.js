@@ -449,15 +449,15 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
   const costEl = document.getElementById('pp-cost');
   const colorEl = document.getElementById('pp-color-bar');
   const buildingsEl = document.getElementById('pp-buildings');
-  
+
   console.log('📦 Popover element:', popover);
   console.log('📦 Content element:', content);
-  
+
   if (!popover || !content) {
     console.error('❌ Popover elements not found!');
     return;
   }
-  
+
   // New Button References
   const buildHouseBtn = document.getElementById('pp-btn-build-house');
   const buildHotelBtn = document.getElementById('pp-btn-build-hotel');
@@ -513,7 +513,7 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
 
   // Always show all buttons, but control disabled state
   actionHint.className = 'text-[9px] text-slate-500 text-center mt-1';
-  
+
   // Determine what buttons to show based on property state (not ownership)
   if (cell.isMortgaged) {
     // Mortgaged property - show unmortgage only
@@ -521,14 +521,14 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
     buildHotelBtn.classList.add('hidden');
     destroyBtn.classList.add('hidden');
     mortgageBtn.classList.add('hidden');
-    
+
     unmortgageBtn.classList.remove('hidden');
     liquidateBtn.classList.remove('hidden');
-    
+
     const unmortgageCost = Math.floor(cell.price / 2 * 1.1);
     unmortgageBtn.disabled = !isMyProperty || !isMyTurn || !me || me.balance < unmortgageCost;
     liquidateBtn.disabled = !isMyProperty || !isMyTurn;
-    
+
     if (!isMyProperty) {
       actionHint.textContent = owner ? `Owned by ${owner.name} | Mortgaged` : 'Mortgaged property';
       actionHint.className = 'text-[9px] text-amber-400 text-center mt-1';
@@ -547,14 +547,14 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
     buildHotelBtn.classList.add('hidden');
     mortgageBtn.classList.add('hidden');
     unmortgageBtn.classList.add('hidden');
-    
+
     destroyBtn.classList.remove('hidden');
     liquidateBtn.classList.remove('hidden');
     destroyText.textContent = 'Sell Hotel';
-    
+
     destroyBtn.disabled = !isMyProperty || !isMyTurn;
     liquidateBtn.disabled = !isMyProperty || !isMyTurn;
-    
+
     const refund = Math.floor(houseCost / 2);
     if (!isMyProperty) {
       actionHint.textContent = owner ? `Owned by ${owner.name} | Has 1 Hotel` : 'Has 1 Hotel';
@@ -569,7 +569,7 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
     // Has houses
     mortgageBtn.classList.add('hidden');
     unmortgageBtn.classList.add('hidden');
-    
+
     if (cell.buildable) {
       if (cell.houses === 4) {
         buildHotelBtn.classList.remove('hidden');
@@ -583,14 +583,14 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
       buildHouseBtn.classList.add('hidden');
       buildHotelBtn.classList.add('hidden');
     }
-    
+
     destroyBtn.classList.remove('hidden');
     destroyText.textContent = 'Sell House';
     destroyBtn.disabled = !isMyProperty || !isMyTurn;
-    
+
     liquidateBtn.classList.remove('hidden');
     liquidateBtn.disabled = !isMyProperty || !isMyTurn;
-    
+
     const refund = Math.floor(houseCost / 2);
     if (!isMyProperty) {
       actionHint.textContent = owner ? `Owned by ${owner.name} | ${cell.houses} House${cell.houses > 1 ? 's' : ''}` : `${cell.houses} Houses`;
@@ -605,19 +605,19 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
     // No buildings
     unmortgageBtn.classList.add('hidden');
     destroyBtn.classList.add('hidden');
-    
+
     if (cell.buildable) {
       buildHouseBtn.classList.remove('hidden');
       buildHouseBtn.disabled = !isMyProperty || !isMyTurn || !me || me.balance < houseCost || gameState.houseSupply <= 0;
       buildHotelBtn.classList.remove('hidden');
       buildHotelBtn.disabled = true; // Always disabled until 4 houses
-      
+
       mortgageBtn.classList.remove('hidden');
       mortgageBtn.disabled = !isMyProperty || !isMyTurn;
-      
+
       liquidateBtn.classList.remove('hidden');
       liquidateBtn.disabled = !isMyProperty || !isMyTurn;
-      
+
       const mortgageValue = Math.floor(cell.price / 2);
       if (!isMyProperty) {
         actionHint.textContent = owner ? `Owned by ${owner.name}` : '✨ Available for purchase';
@@ -632,13 +632,13 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
       // Railroad/Utility - can't build
       buildHouseBtn.classList.add('hidden');
       buildHotelBtn.classList.add('hidden');
-      
+
       mortgageBtn.classList.remove('hidden');
       mortgageBtn.disabled = !isMyProperty || !isMyTurn;
-      
+
       liquidateBtn.classList.remove('hidden');
       liquidateBtn.disabled = !isMyProperty || !isMyTurn;
-      
+
       if (!isMyProperty) {
         actionHint.textContent = owner ? `Owned by ${owner.name} | Special Property` : '✨ Special Property - Available';
         actionHint.className = owner ? 'text-[9px] text-cyan-400 text-center mt-1' : 'text-[9px] text-emerald-400 text-center mt-1';
@@ -692,7 +692,7 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
   const padding = 20;
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
-  
+
   // Horizontal boundaries
   if (left < padding) {
     left = padding;
@@ -700,7 +700,7 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
   if (left + popoverWidth > viewportWidth - padding) {
     left = viewportWidth - popoverWidth - padding;
   }
-  
+
   // Vertical boundaries
   if (top < padding) {
     top = padding;
@@ -776,13 +776,13 @@ function buildHotelFromPopover() {
 function destroyBuildingFromPopover() {
   if (selectedPropertyIndex === null) return;
   if (!gameState) return;
-  
+
   const cell = gameState.board.cells[selectedPropertyIndex];
   const buildingType = cell.hotels > 0 ? 'hotel' : 'house';
-  const message = cell.hotels > 0 
+  const message = cell.hotels > 0
     ? 'Sell hotel? It will return to 4 houses and refund 50% of the original house cost.'
     : 'Sell one house for 50% refund?';
-  
+
   if (confirm(message)) {
     socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
     closePropertyPopover();
@@ -792,10 +792,10 @@ function destroyBuildingFromPopover() {
 function mortgagePropertyFromPopover() {
   if (selectedPropertyIndex === null) return;
   if (!gameState) return;
-  
+
   const cell = gameState.board.cells[selectedPropertyIndex];
   const refund = Math.floor(cell.price / 2);
-  
+
   if (confirm(`Mortgage this property for Rs ${refund}? You'll need to pay 10% interest to unmortgage.`)) {
     socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
     closePropertyPopover();
@@ -805,10 +805,10 @@ function mortgagePropertyFromPopover() {
 function unmortgagePropertyFromPopover() {
   if (selectedPropertyIndex === null) return;
   if (!gameState) return;
-  
+
   const cell = gameState.board.cells[selectedPropertyIndex];
   const cost = Math.floor(cell.price / 2 * 1.1);
-  
+
   if (confirm(`Unmortgage this property for Rs ${cost}?`)) {
     socket.emit('unmortgage_property', { propertyIndex: selectedPropertyIndex });
     closePropertyPopover();
@@ -1064,72 +1064,20 @@ function renderBuildableProperties(state) {
   buildablePropertiesEl.innerHTML = '';
 
   myProperties.forEach(cell => {
-    const houseCost = calcHouseCost(cell);
-    const hotelCost = calcHotelCost(cell);
-
     const propertyDiv = document.createElement('div');
-    propertyDiv.className = `p-3 bg-gradient-to-r ${cell.isMortgaged ? 'from-slate-900 to-black opacity-60' : 'from-slate-800 to-slate-900'} rounded-lg border ${cell.isMortgaged ? 'border-amber-900/50' : 'border-slate-700'}`;
+    propertyDiv.className = `p-3 flex justify-between items-center bg-gradient-to-r ${cell.isMortgaged ? 'from-slate-900 to-black opacity-60' : 'from-slate-800 to-slate-900'} rounded-lg border ${cell.isMortgaged ? 'border-amber-900/50' : 'border-slate-700'} cursor-pointer hover:border-slate-500 transition-all`;
+    propertyDiv.onclick = () => openPropertyModal(cell.index);
 
     const nameDiv = document.createElement('div');
-    nameDiv.className = 'font-bold text-sm text-white mb-1 flex items-center gap-2';
+    nameDiv.className = 'font-bold text-sm text-white flex items-center gap-2';
     nameDiv.innerHTML = `${cell.name} ${cell.isMortgaged ? '<span class="text-[10px] bg-amber-900/80 text-amber-400 px-1 rounded">MORTGAGED</span>' : ''}`;
 
-    const statusDiv = document.createElement('div');
-    statusDiv.className = 'text-xs text-slate-400 mb-2';
-    if (cell.isMortgaged) {
-      const unmortgageCost = Math.floor(cell.price / 2 * 1.1);
-      statusDiv.innerHTML = `<span class="text-amber-500 font-bold">MORTGAGED</span><br>Unmortgage cost: Rs ${unmortgageCost}`;
-    } else {
-      statusDiv.innerHTML = `Houses: ${cell.houses || 0} | Hotels: ${cell.hotels || 0}<br>House cost: Rs ${houseCost} | Hotel cost: Rs ${hotelCost}`;
-    }
-
-    const btnContainer = document.createElement('div');
-    btnContainer.className = 'flex gap-2';
-
-    if (cell.isMortgaged) {
-      const unmortgageCost = Math.floor(cell.price / 2 * 1.1);
-      const unmortgageBtn = document.createElement('button');
-      unmortgageBtn.className = 'flex-1 px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-lg transition-colors disabled:opacity-50';
-      unmortgageBtn.textContent = `🔓 Unmortgage (-Rs ${unmortgageCost})`;
-      unmortgageBtn.disabled = me.balance < unmortgageCost;
-      unmortgageBtn.onclick = () => unmortgageProperty(cell.index);
-      btnContainer.appendChild(unmortgageBtn);
-    } else {
-      const houseBtn = document.createElement('button');
-      houseBtn.className = 'flex-1 px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed';
-      houseBtn.textContent = `🏠 +House (-Rs ${houseCost})`;
-      houseBtn.disabled = cell.hotels > 0 || cell.houses >= 4 || me.balance < houseCost;
-      houseBtn.onclick = () => buildHouse(cell.index);
-
-      const hotelBtn = document.createElement('button');
-      hotelBtn.className = 'flex-1 px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-colors disabled:opacity-50';
-      hotelBtn.textContent = `🏨 +Hotel (-Rs ${hotelCost})`;
-      hotelBtn.disabled = cell.hotels >= 1 || cell.houses !== 4 || me.balance < hotelCost;
-      hotelBtn.onclick = () => buildHotel(cell.index);
-
-      const sellBtn = document.createElement('button');
-      sellBtn.className = 'flex-1 px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-lg transition-colors';
-
-      if (cell.hotels > 0 || cell.houses > 0) {
-        const refund = Math.floor(houseCost / 2); // Correct refund based on building cost
-        sellBtn.textContent = `💰 Sell ${cell.hotels > 0 ? 'Hotel' : 'House'} (+Rs ${refund})`;
-      } else {
-        const refund = Math.floor(cell.price / 2);
-        sellBtn.textContent = `🏚️ Mortgage (+Rs ${refund})`;
-      }
-      sellBtn.onclick = () => sellProperty(cell.index);
-
-      if (cell.buildable) {
-        btnContainer.appendChild(houseBtn);
-        btnContainer.appendChild(hotelBtn);
-      }
-      btnContainer.appendChild(sellBtn);
-    }
+    const priceDiv = document.createElement('div');
+    priceDiv.className = 'text-xs font-bold text-yellow-500';
+    priceDiv.textContent = `Rs ${cell.price}`;
 
     propertyDiv.appendChild(nameDiv);
-    propertyDiv.appendChild(statusDiv);
-    propertyDiv.appendChild(btnContainer);
-
+    propertyDiv.appendChild(priceDiv);
     buildablePropertiesEl.appendChild(propertyDiv);
   });
 }
@@ -1534,6 +1482,8 @@ const requestJailCards = document.getElementById('requestJailCards');
 const offerProperties = document.getElementById('offerProperties');
 const requestProperties = document.getElementById('requestProperties');
 const tradeInboxList = document.getElementById('tradeInboxList');
+const myTradeBalance = document.getElementById('myTradeBalance');
+const theirTradeBalance = document.getElementById('theirTradeBalance');
 
 let lockedTradeTarget = null; // When countering, target is fixed to the original sender
 
@@ -1553,6 +1503,13 @@ function openTradeModal(prefill = null) {
 
   populatePlayerDropdown();
   tradePlayerSelect.value = lockedTradeTarget || prefill?.toPlayerId || '';
+
+  // Update balances
+  const myPlayer = gameState.players.find(p => p.playerId === myPlayerId);
+  if (myPlayer && myTradeBalance) myTradeBalance.textContent = `Rs ${myPlayer.balance}`;
+
+  updateTargetTradeBalance(tradePlayerSelect.value);
+
   populateOfferProperties();
   populateRequestProperties(tradePlayerSelect.value);
 
@@ -1592,6 +1549,16 @@ function populatePlayerDropdown() {
   });
 }
 
+function updateTargetTradeBalance(targetId) {
+  if (!gameState || !theirTradeBalance) return;
+  const targetPlayer = gameState.players.find(p => p.playerId === targetId);
+  if (targetPlayer) {
+    theirTradeBalance.textContent = `Rs ${targetPlayer.balance}`;
+  } else {
+    theirTradeBalance.textContent = 'Rs 0';
+  }
+}
+
 // Populate offer properties (your properties)
 function populateOfferProperties() {
   if (!gameState) return;
@@ -1618,13 +1585,13 @@ function populateOfferProperties() {
     const colorClass = prop.group ? `color-${prop.group}` : 'bg-gray-200';
 
     div.innerHTML = `
-      <label class="flex items-center gap-3 p-3 bg-slate-800 border-2 border-slate-700 rounded-xl cursor-pointer hover:border-purple-500 transition-all duration-300 hover:shadow-md group">
-        <input type="checkbox" class="w-5 h-5 rounded border-slate-600 bg-slate-900 text-purple-600 focus:ring-purple-500" 
+      <label class="flex items-center gap-2 p-2 bg-slate-900/50 border border-slate-700/50 rounded-lg cursor-pointer hover:border-purple-500/50 transition-all group">
+        <input type="checkbox" class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-purple-600 focus:ring-purple-500" 
           data-property-index="${prop.index}" />
-        <div class="w-8 h-8 rounded-lg ${colorClass} shadow-sm group-hover:scale-110 transition-transform"></div>
-        <div class="flex-1">
-          <div class="font-bold text-white text-sm">${prop.name}</div>
-          <div class="text-xs text-slate-400">Rs ${prop.price}</div>
+        <div class="w-2.5 h-6 rounded-sm ${colorClass} shadow-sm"></div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-white text-[11px] truncate">${prop.name}</div>
+          <div class="text-[9px] text-slate-500 font-bold">Rs ${prop.price}</div>
         </div>
       </label>
     `;
@@ -1677,13 +1644,13 @@ function populateRequestProperties(targetPlayerId) {
     const colorClass = prop.group ? `color-${prop.group}` : 'bg-gray-200';
 
     div.innerHTML = `
-      <label class="flex items-center gap-3 p-3 bg-slate-800 border-2 border-slate-700 rounded-xl cursor-pointer hover:border-pink-500 transition-all duration-300 hover:shadow-md group">
-        <input type="checkbox" class="w-5 h-5 rounded border-slate-600 bg-slate-900 text-pink-600 focus:ring-pink-500" 
+      <label class="flex items-center gap-2 p-2 bg-slate-900/50 border border-slate-700/50 rounded-lg cursor-pointer hover:border-pink-500/50 transition-all group">
+        <input type="checkbox" class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-pink-600 focus:ring-pink-500" 
           data-property-index="${prop.index}" />
-        <div class="w-8 h-8 rounded-lg ${colorClass} shadow-sm group-hover:scale-110 transition-transform"></div>
-        <div class="flex-1">
-          <div class="font-bold text-white text-sm">${prop.name}</div>
-          <div class="text-xs text-slate-400">Rs ${prop.price}</div>
+        <div class="w-2.5 h-6 rounded-sm ${colorClass} shadow-sm"></div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-white text-[11px] truncate">${prop.name}</div>
+          <div class="text-[9px] text-slate-500 font-bold">Rs ${prop.price}</div>
         </div>
       </label>
     `;
@@ -1710,6 +1677,7 @@ function populateRequestProperties(targetPlayerId) {
 // Listen to player selection change
 tradePlayerSelect.addEventListener('change', (e) => {
   selectedRequestProperties.clear();
+  updateTargetTradeBalance(e.target.value);
   populateRequestProperties(e.target.value);
 });
 

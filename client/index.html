@@ -390,18 +390,7 @@
                       </span>
                     </button>
 
-                    <button id="declareBankruptcyBtn"
-                      class="premium-btn w-full mt-1.5 py-2 bg-gradient-to-r from-red-600 via-orange-600 to-red-700 hover:from-red-700 hover:via-orange-700 hover:to-red-800 text-white font-bold text-xs rounded-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 hidden relative overflow-hidden group">
-                      <span
-                        class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-                      <span class="relative flex items-center justify-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        DECLARE BANKRUPTCY
-                      </span>
-                    </button>
+
                   </div>
 
                 </div>
@@ -448,6 +437,18 @@
                     d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                 </svg>
                 TRADE ASSETS
+              </span>
+            </button>
+
+            <button id="declareBankruptcyBtn"
+              class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-red-600 via-orange-600 to-red-700 hover:from-red-700 hover:via-orange-700 hover:to-red-800 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 hidden relative overflow-hidden group">
+              <span
+                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <span class="relative flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                DECLARE BANKRUPTCY
               </span>
             </button>
           </div>
@@ -508,7 +509,6 @@
               <div id="buildableProperties" class="space-y-2"></div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -546,98 +546,131 @@
           </div>
 
           <!-- Modal Body -->
-          <div class="p-8 overflow-y-auto max-h-[calc(90vh-180px)] custom-scrollbar">
+          <div class="p-5 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
             <!-- Player Selection -->
-            <div class="mb-8">
-              <label class="block text-sm font-black text-slate-300 mb-4 flex items-center gap-2">
-                <span class="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg text-white">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                  </svg>
-                </span>
-                Trade With Player
-              </label>
-              <select id="tradePlayerSelect"
-                class="w-full px-6 py-4 bg-slate-800 border-2 border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 font-bold text-white cursor-pointer hover:border-purple-400">
-                <option value="" class="bg-slate-900">Select a player...</option>
-              </select>
+            <div class="mb-5 bg-slate-800/80 p-4 rounded-2xl border border-white/5">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <label
+                  class="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2 shrink-0">
+                  <span class="p-1.5 bg-blue-500/20 text-blue-400 rounded-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                  </span>
+                  Trade With
+                </label>
+                <select id="tradePlayerSelect"
+                  class="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-bold text-sm text-white cursor-pointer select-custom">
+                  <option value="" class="bg-slate-900">Select a player...</option>
+                </select>
+              </div>
             </div>
 
             <!-- Trade Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- You Offer -->
-              <div class="bg-slate-800/50 backdrop-blur-md rounded-3xl p-6 border border-slate-700">
-                <h3 class="text-xl font-black text-slate-100 mb-6 flex items-center gap-2">
-                  <span class="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                  </span>
-                  You Offer
-                </h3>
+              <div class="bg-slate-800/40 backdrop-blur-md rounded-2xl p-5 border border-white/5">
+                <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
+                  <h3 class="text-sm font-black text-slate-100 flex items-center gap-2 uppercase tracking-wide">
+                    <span class="p-1.5 bg-green-500/20 text-green-400 rounded-md">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                      </svg>
+                    </span>
+                    You Offer
+                  </h3>
+                  <div id="offerBalanceDisplay"
+                    class="text-[10px] font-black bg-slate-900 text-slate-400 px-2.5 py-1 rounded-lg border border-white/5">
+                    BALANCE: <span id="myTradeBalance" class="text-emerald-400">Rs 0</span>
+                  </div>
+                </div>
 
                 <!-- Money Input -->
-                <div class="mb-6">
-                  <label class="block text-sm font-bold text-slate-300 mb-3">💰 Money</label>
+                <div class="mb-4">
+                  <div class="flex justify-between items-center mb-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">💰 Money</label>
+                    <span class="text-[10px] text-slate-500 font-bold">Max Offer</span>
+                  </div>
                   <div class="relative">
-                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-xl font-bold">Rs</span>
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black">Rs</span>
                     <input type="number" id="offerMoney" min="0" value="0"
-                      class="w-full pl-12 pr-6 py-4 bg-slate-800 border-2 border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 font-bold text-xl text-white" />
+                      class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all font-black text-base text-white" />
                   </div>
                 </div>
 
                 <!-- Properties -->
-                <div class="mb-6">
-                  <label class="block text-sm font-bold text-slate-300 mb-3">🏠 Properties</label>
-                  <div id="offerProperties" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
-                    <p class="text-sm text-slate-500 italic p-4 bg-slate-900/50 rounded-xl">No properties available</p>
+                <div class="mb-4">
+                  <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🏠
+                    Properties</label>
+                  <div id="offerProperties"
+                    class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-1 grid grid-cols-1 sm:grid-cols-1 gap-2">
+                    <p class="text-[10px] text-slate-500 italic p-3 bg-slate-900/50 rounded-xl border border-white/5">No
+                      properties available</p>
                   </div>
                 </div>
 
                 <!-- Jail Cards -->
                 <div>
-                  <label class="block text-sm font-bold text-slate-300 mb-3">🎴 Get Out of Jail Cards</label>
-                  <input type="number" id="offerJailCards" min="0" max="0" value="0"
-                    class="w-full px-6 py-4 bg-slate-800 border-2 border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 font-bold text-xl text-white" />
+                  <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🎴 Jail
+                    Cards</label>
+                  <div class="relative">
+                    <input type="number" id="offerJailCards" min="0" max="0" value="0"
+                      class="w-full px-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all font-black text-sm text-white" />
+                  </div>
                 </div>
               </div>
 
               <!-- You Request -->
-              <div class="bg-slate-800/50 backdrop-blur-md rounded-3xl p-6 border border-slate-700">
-                <h3 class="text-xl font-black text-slate-100 mb-6 flex items-center gap-2">
-                  <span class="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
-                    </svg>
-                  </span>
-                  You Request
-                </h3>
+              <div class="bg-slate-800/40 backdrop-blur-md rounded-2xl p-5 border border-white/5">
+                <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
+                  <h3 class="text-sm font-black text-slate-100 flex items-center gap-2 uppercase tracking-wide">
+                    <span class="p-1.5 bg-purple-500/20 text-purple-400 rounded-md">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                      </svg>
+                    </span>
+                    You Request
+                  </h3>
+                  <div id="requestBalanceDisplay"
+                    class="text-[10px] font-black bg-slate-900 text-slate-400 px-2.5 py-1 rounded-lg border border-white/5">
+                    BALANCE: <span id="theirTradeBalance" class="text-emerald-400">Rs 0</span>
+                  </div>
+                </div>
 
                 <!-- Money Input -->
-                <div class="mb-6">
-                  <label class="block text-sm font-bold text-slate-300 mb-3">💰 Money</label>
+                <div class="mb-4">
+                  <div class="flex justify-between items-center mb-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">💰 Money</label>
+                    <span class="text-[10px] text-slate-500 font-bold">Max Request</span>
+                  </div>
                   <div class="relative">
-                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-xl font-bold">Rs</span>
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black">Rs</span>
                     <input type="number" id="requestMoney" min="0" value="0"
-                      class="w-full pl-12 pr-6 py-4 bg-slate-800 border-2 border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 font-bold text-xl text-white" />
+                      class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all font-black text-base text-white" />
                   </div>
                 </div>
 
                 <!-- Properties -->
-                <div class="mb-6">
-                  <label class="block text-sm font-bold text-slate-300 mb-3">🏠 Properties</label>
-                  <div id="requestProperties" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
-                    <p class="text-sm text-slate-500 italic p-4 bg-slate-900/50 rounded-xl">Select a player first</p>
+                <div class="mb-4">
+                  <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🏠
+                    Properties</label>
+                  <div id="requestProperties"
+                    class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-1 grid grid-cols-1 sm:grid-cols-1 gap-2">
+                    <p class="text-[10px] text-slate-500 italic p-3 bg-slate-900/50 rounded-xl border border-white/5">
+                      Select a player first</p>
                   </div>
                 </div>
 
                 <!-- Jail Cards -->
                 <div>
-                  <label class="block text-sm font-bold text-slate-300 mb-3">🎴 Get Out of Jail Cards</label>
-                  <input type="number" id="requestJailCards" min="0" max="0" value="0"
-                    class="w-full px-6 py-4 bg-slate-800 border-2 border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 font-bold text-xl text-white" />
+                  <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🎴 Jail
+                    Cards</label>
+                  <div class="relative">
+                    <input type="number" id="requestJailCards" min="0" max="0" value="0"
+                      class="w-full px-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all font-black text-sm text-white" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -721,7 +754,7 @@
               class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] uppercase tracking-wide transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               <span>💰</span> <span>Liquidate</span>
             </button>
-            
+
             <!-- Action Hint -->
             <div class="pt-1">
               <p id="pp-action-hint" class="text-[10px] text-slate-400 text-center leading-relaxed"></p>

@@ -886,7 +886,7 @@ input:focus {
 
 /* Bottom row */
 .bottom {
-  flex-direction: column-reverse;
+  flex-direction: column;
 }
 
 /* Right column */
@@ -1156,43 +1156,48 @@ input:focus {
 
 /* Property Colors - Country Groups with Gradients */
 .color-brazil {
-  background: linear-gradient(135deg, #c77dff, #b565f3);
+  background: linear-gradient(var(--gradient-dir, to right), #009c3b 33%, #ffdf00 33% 66%, #002776 66%);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .color-israel {
-  background: linear-gradient(135deg, #4fc3f7, #3ab0e3);
+  background: linear-gradient(var(--gradient-dir, to right), #0038b8 25%, #ffffff 25% 75%, #0038b8 75%);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .color-italy {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  background: linear-gradient(var(--gradient-dir, to right), #009246 33%, #ffffff 33% 66%, #ce2b37 66%);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .color-germany {
-  background: linear-gradient(135deg, #f6ae2d, #e39d1a);
+  background: linear-gradient(var(--gradient-dir, to right), #000000 33%, #dd0000 33% 66%, #ffce00 66%);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .color-china {
-  background: linear-gradient(135deg, #d62828, #c41e1e);
+  background: linear-gradient(var(--gradient-dir, to right), #de2910 50%, #ffde00 50%);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .color-france {
-  background: linear-gradient(135deg, #277da1, #1e6284);
+  background: linear-gradient(var(--gradient-dir, to right), #0055a4 33%, #ffffff 33% 66%, #ef4135 66%);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .color-uk {
-  background: linear-gradient(135deg, #52b788, #40916c);
+  background: linear-gradient(var(--gradient-dir, to right), #cf142b 20%, #ffffff 20% 40%, #00247d 40% 60%, #ffffff 60% 80%, #cf142b 80%);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .color-usa {
-  background: linear-gradient(135deg, #6c5ce7, #5849d0);
+  background: linear-gradient(var(--gradient-dir, to right), #3c3b6e 33%, #ffffff 33% 66%, #b22234 66%);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.left .cell-color,
+.right .cell-color {
+  --gradient-dir: to bottom;
 }
 
 .cell:hover .color-brazil,
@@ -1272,8 +1277,8 @@ input:focus {
 
 .owner-bar {
   width: 100%;
-  height: 7px;
-  border-radius: 0 0 4px 4px;
+  height: 8px;
+  border-radius: 4px;
   margin-top: 2px;
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.2),
@@ -1281,12 +1286,33 @@ input:focus {
   transition: all 0.3s ease;
 }
 
+.left .owner-bar,
+.right .owner-bar {
+  width: 8px;
+  height: 100%;
+  margin-top: 0;
+}
+
+.right .owner-bar {
+  margin-left: 2px;
+}
+
+.left .owner-bar {
+  margin-right: 2px;
+}
+
 .cell:hover .owner-bar {
-  height: 8px;
+  height: 9px;
   box-shadow:
     0 3px 6px rgba(0, 0, 0, 0.3),
     inset 0 1px 2px rgba(255, 255, 255, 0.3),
     0 0 8px currentColor;
+}
+
+.left:hover .owner-bar,
+.right:hover .owner-bar {
+  height: 100%;
+  width: 9px;
 }
 
 
