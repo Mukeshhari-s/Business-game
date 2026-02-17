@@ -663,75 +663,65 @@
 
     </div>
 
-
-    <!-- Property Management Modal -->
-    <div id="propertyModal" class="hidden fixed inset-0 z-[100] p-4 pointer-events-none">
-      <!-- Backdrop -->
-      <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closePropertyModal()"></div>
+    <!-- Property Management Popover (MUST be direct child of body, outside any transformed parent) -->
+    <div id="propertyModal" class="hidden fixed inset-0 z-[9999] pointer-events-none">
+      <!-- Invisible Backdrop to catch clicks outside -->
+      <div class="absolute inset-0 pointer-events-auto" onclick="closePropertyModal()"></div>
 
       <!-- content -->
-      <div
-        class="relative w-full max-w-md bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-white/10 transform transition-all duration-300 opacity-0 scale-95">
+      <div id="propertyModalContent"
+        class="absolute w-64 bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 transform transition-all duration-200 opacity-0 scale-95 pointer-events-auto origin-center">
         <!-- Header -->
         <div id="propModalColor" class="h-4 w-full"></div>
-        <div class="p-6 border-b border-white/5">
-          <h3 id="propModalName" class="text-xl font-black text-white uppercase tracking-tight">Property Name</h3>
-          <p id="propModalGroup" class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Group Name</p>
+        <div class="p-4 border-b border-white/5">
+          <h3 id="propModalName" class="text-lg font-black text-white uppercase tracking-tight">Property Name</h3>
+          <p id="propModalGroup" class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Group
+            Name</p>
         </div>
 
         <!-- Body -->
-        <div class="p-6 space-y-6">
+        <div class="p-4 space-y-4">
           <!-- Status Stats -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-slate-800/50 p-3 rounded-xl border border-white/5">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-white/5">
               <div class="text-[10px] text-slate-500 font-bold uppercase">Status</div>
-              <div id="propModalStatus" class="text-sm font-bold text-white mt-1">Owned</div>
+              <div id="propModalStatus" class="text-xs font-bold text-white mt-0.5">Owned</div>
             </div>
-            <div class="bg-slate-800/50 p-3 rounded-xl border border-white/5">
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-white/5">
               <div class="text-[10px] text-slate-500 font-bold uppercase">Buildings</div>
-              <div id="propModalBuildings" class="text-sm font-bold text-white mt-1">None</div>
+              <div id="propModalBuildings" class="text-xs font-bold text-white mt-0.5">None</div>
             </div>
           </div>
 
-          <!-- Actions -->
-          <div class="grid grid-cols-2 gap-3" id="propModalActions">
-            <button id="btnBuildHouse" onclick="buildHouseFromModal()"
-              class="action-btn bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 py-3 rounded-xl font-bold text-xs transition-all flex flex-col items-center gap-1">
-              <span class="text-lg">🏠</span>
-              <span>+ HOUSE</span>
-            </button>
-            <button id="btnBuildHotel" onclick="buildHotelFromModal()"
-              class="action-btn bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 py-3 rounded-xl font-bold text-xs transition-all flex flex-col items-center gap-1">
-              <span class="text-lg">🏨</span>
-              <span>+ HOTEL</span>
-            </button>
-            <button id="btnSellBuilding" onclick="sellBuildingFromModal()"
-              class="action-btn bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 py-3 rounded-xl font-bold text-xs transition-all flex flex-col items-center gap-1">
-              <span class="text-lg">🔨</span>
-              <span>DESTROY</span>
-            </button>
-            <button id="btnMortgage" onclick="mortgageFromModal()"
-              class="action-btn bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/30 py-3 rounded-xl font-bold text-xs transition-all flex flex-col items-center gap-1">
-              <span id="mortgageIcon" class="text-lg">🔒</span>
-              <span id="mortgageText">MORTGAGE</span>
-            </button>
+          <!-- Rent Info for Utilities/Railroads -->
+          <div id="propModalRentInfo" class="hidden bg-slate-800/50 p-3 rounded-lg border border-white/5 text-center">
+            <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Rent Info</div>
+            <div id="propModalRentText" class="text-xs font-bold text-white">4x Dice Roll</div>
           </div>
 
-          <!-- Permanent Sale -->
-          <div class="pt-4 border-t border-white/5">
+          <!-- Hidden placeholders for JS references -->
+          <div id="propModalActions" class="hidden"></div>
+          <div id="buildingButtons" class="hidden"></div>
+          <button id="btnBuildHouse" class="hidden"></button>
+          <button id="btnBuildHotel" class="hidden"></button>
+          <button id="btnSellBuilding" class="hidden"></button>
+          <button id="btnMortgage" class="hidden"><span id="mortgageIcon"></span><span
+              id="mortgageText"></span></button>
+
+          <!-- Sell Property -->
+          <div class="pt-3 border-t border-white/5">
             <button id="btnLiquidate" onclick="liquidateFromModal()"
-              class="w-full bg-rose-600 hover:bg-rose-700 text-white py-4 rounded-xl font-black text-sm transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2 uppercase">
+              class="w-full bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-lg font-bold text-xs transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2 uppercase">
               <span>💰</span>
-              <span>Sell Property Permanently</span>
+              <span>Sell Property</span>
             </button>
-            <p class="text-[10px] text-slate-500 text-center mt-3 font-medium px-4">This will permanently release the
-              property back to the bank for 50% of its initial cost.</p>
+            <p class="text-[9px] text-slate-500 text-center mt-2 font-medium">Returns 50% of cost.</p>
           </div>
         </div>
 
         <!-- Footer -->
         <button onclick="closePropertyModal()"
-          class="w-full py-4 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold text-xs uppercase tracking-widest transition-all">
+          class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold text-xs uppercase tracking-widest transition-all">
           Close
         </button>
       </div>

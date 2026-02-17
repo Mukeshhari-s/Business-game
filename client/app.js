@@ -132,6 +132,10 @@ const cellPositions = [
   { row: 1, col: 0 },
 ];
 
+function getCellGridPosition(index) {
+  return cellPositions[index];
+}
+
 
 // Event Listeners
 if (createBtn && nameInput) {
@@ -447,45 +451,133 @@ function openPropertyModal(index) {
   const isMyTurn = gameState.currentTurnPlayerId === myPlayerId;
   const canManage = isMyProperty && isMyTurn;
 
-  // Buttons
+  // Buttons & Sections
   const btnBuildHouse = document.getElementById('btnBuildHouse');
   const btnBuildHotel = document.getElementById('btnBuildHotel');
   const btnSellBuilding = document.getElementById('btnSellBuilding');
+  const buildingButtons = document.getElementById('buildingButtons');
+  const rentInfoSection = document.getElementById('propModalRentInfo');
+  const rentInfoText = document.getElementById('propModalRentText');
   const btnMortgage = document.getElementById('btnMortgage');
   const mortgageText = document.getElementById('mortgageText');
   const mortgageIcon = document.getElementById('mortgageIcon');
 
-  if (canManage) {
-    actionsContainer.classList.remove('opacity-50', 'pointer-events-none');
-    liquidateBtn.classList.remove('hidden');
+  // Type Logic — server uses lowercase group names: 'utility', 'railroad'
+  const isUtility = cell.group === 'utility';
+  const isRailroad = cell.group === 'railroad';
+  const isStandardProperty = !isUtility && !isRailroad;
 
-    // Mortgage logic
-    if (cell.isMortgaged) {
-      mortgageText.textContent = 'UNMORTGAGE';
-      mortgageIcon.textContent = '🔓';
-    } else {
-      mortgageText.textContent = 'MORTGAGE';
-      mortgageIcon.textContent = '🔒';
-    }
+  // Visibility Management — only show rent info for utilities/railroads
+  if (isStandardProperty) {
+    rentInfoSection.classList.add('hidden');
   } else {
-    actionsContainer.classList.add('opacity-50', 'pointer-events-none');
-    liquidateBtn.classList.add('hidden');
+    rentInfoSection.classList.remove('hidden');
+    if (isUtility) {
+      rentInfoText.textContent = "4x / 10x Dice Roll";
+    } else if (isRailroad) {
+      rentInfoText.textContent = "$25 - $200 (Qty Owned)";
+    }
   }
 
-  modal.classList.remove('hidden');
-  // Trigger animation after next frame to ensure visibility
-  requestAnimationFrame(() => {
-    const content = modal.querySelector('.relative');
-    if (content) {
-      content.classList.remove('opacity-0', 'scale-95');
-      content.classList.add('opacity-100', 'scale-100');
+  // Sell button — only enabled when you own it and it's your turn
+  if (canManage) {
+    liquidateBtn.classList.remove('opacity-50', 'pointer-events-none');
+  } else {
+    liquidateBtn.classList.add('opacity-50', 'pointer-events-none');
+  }
+
+  // Calculate Position
+  const cellRect = document.getElementById(`cell-${index}`).getBoundingClientRect();
+  const modalContent = document.getElementById('propertyModalContent');
+
+  // Reset previous transforms/styles
+  modalContent.style.top = '';
+  modalContent.style.left = '';
+  modalContent.style.bottom = '';
+  modalContent.style.right = '';
+  modalContent.style.transform = '';
+
+  const gap = 5; // Closer to cell
+  const modalWidth = 256; // w-64 = 16rem = 256px
+  const modalHeight = 350; // approximate height after shrinking
+
+  // Determine board side based on index
+  const { row, col } = getCellGridPosition(index);
+
+  let top, left, transformOrigin;
+
+  if (row === 10) {
+    // Bottom Row -> Show Above (Right aligned to cell usually looks better or center)
+    top = cellRect.top - modalHeight - gap;
+    left = cellRect.left + (cellRect.width / 2) - (modalWidth / 2);
+    transformOrigin = 'bottom center';
+
+    // Corner Fixes
+    if (col === 10) { // Bottom Right Corner -> Show Above-Left
+      left = cellRect.right - modalWidth;
+      transformOrigin = 'bottom right';
+    } else if (col === 0) { // Bottom Left Corner -> Show Above-Right
+      left = cellRect.left;
+      transformOrigin = 'bottom left';
     }
-  });
+
+  } else if (row === 0) {
+    // Top Row -> Show Below
+    top = cellRect.bottom + gap;
+    left = cellRect.left + (cellRect.width / 2) - (modalWidth / 2);
+    transformOrigin = 'top center';
+
+    // Corner Fixes
+    if (col === 10) { // Top Right Corner -> Show Below-Left
+      left = cellRect.right - modalWidth;
+      transformOrigin = 'top right';
+    } else if (col === 0) { // Top Left Corner -> Show Below-Right
+      left = cellRect.left;
+      transformOrigin = 'top left';
+    }
+
+  } else if (col === 0) {
+    // Left Column -> Show Right
+    top = cellRect.top + (cellRect.height / 2) - (modalHeight / 2);
+    left = cellRect.right + gap;
+    transformOrigin = 'center left';
+  } else if (col === 10) {
+    // Right Column -> Show Left
+    top = cellRect.top + (cellRect.height / 2) - (modalHeight / 2);
+    left = cellRect.left - modalWidth - gap;
+    transformOrigin = 'center right';
+  } else {
+    // Fallback (center)
+    top = (window.innerHeight - modalHeight) / 2;
+    left = (window.innerWidth - modalWidth) / 2;
+    transformOrigin = 'center';
+  }
+
+  // Boundary checks to keep in viewport (Strict)
+  if (left < 5) left = 5;
+  if (left + modalWidth > window.innerWidth - 5) left = window.innerWidth - modalWidth - 5;
+  if (top < 5) top = 5;
+  if (top + modalHeight > window.innerHeight - 5) top = window.innerHeight - modalHeight - 5;
+
+  modalContent.style.top = `${top}px`;
+  modalContent.style.left = `${left}px`;
+  modalContent.style.transformOrigin = transformOrigin;
+
+  modal.classList.remove('hidden');
+
+  // Force reflow to enable transition
+  void modal.offsetWidth;
+
+  // Trigger animation
+  if (modalContent) {
+    modalContent.classList.remove('opacity-0', 'scale-95');
+    modalContent.classList.add('opacity-100', 'scale-100');
+  }
 }
 
 function closePropertyModal() {
   const modal = document.getElementById('propertyModal');
-  const content = modal.querySelector('.relative');
+  const content = document.getElementById('propertyModalContent');
   if (content) {
     content.classList.add('opacity-0', 'scale-95');
     content.classList.remove('opacity-100', 'scale-100');
@@ -680,7 +772,7 @@ function initBoard() {
   monopolyBoard.innerHTML = '';
 
   // Center branding (already in HTML, just update reference)
-  const center = document.querySelector('.board-center');
+  const center = monopolyBoard.querySelector('.board-center');
   if (center) {
     gameLog = center.querySelector('#gameLog');
   }
@@ -734,13 +826,9 @@ function initBoard() {
     cell.appendChild(nameDiv);
 
     // Add click listener for property management
-    // We check for cellData.color which correctly identifies all properties, railroads, and utilities in our boardData
-    if (cellData.color) {
-      cell.classList.add('cursor-pointer', 'hover:bg-white/10', 'transition-all', 'duration-200');
-      cell.addEventListener('click', () => {
-        console.log(`[DEBUG] Cell ${i} (${cellData.name}) clicked.`);
-        openPropertyModal(i);
-      });
+    if ((cellData.color || cellData.type === 'property') && cellData.type !== 'neutral' && cellData.type !== 'tax' && cellData.type !== 'go' && cellData.type !== 'jail' && cellData.type !== 'vacation' && cellData.type !== 'go-to-jail') {
+      cell.classList.add('cursor-pointer', 'hover:bg-white/5', 'transition-colors');
+      cell.onclick = () => openPropertyModal(i);
     }
 
     monopolyBoard.appendChild(cell);
