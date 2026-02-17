@@ -663,65 +663,57 @@
 
     </div>
 
-    <!-- Property Management Popover (MUST be direct child of body, outside any transformed parent) -->
-    <div id="propertyModal" class="hidden fixed inset-0 z-[9999] pointer-events-none">
-      <!-- Invisible Backdrop to catch clicks outside -->
-      <div class="absolute inset-0 pointer-events-auto" onclick="closePropertyModal()"></div>
 
-      <!-- content -->
-      <div id="propertyModalContent"
-        class="absolute w-64 bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 transform transition-all duration-200 opacity-0 scale-95 pointer-events-auto origin-center">
+    <!-- NEW Property Popover (Rebuilt) -->
+    <div id="property-popover" class="hidden fixed inset-0 z-[10000] pointer-events-none font-sans">
+      <!-- Invisible Backdrop -->
+      <div class="absolute inset-0 pointer-events-auto" onclick="closePropertyPopover()"></div>
+
+      <!-- Content Card -->
+      <div id="property-popover-content"
+        class="absolute w-64 bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 pointer-events-auto flex flex-col">
+
         <!-- Header -->
-        <div id="propModalColor" class="h-4 w-full"></div>
-        <div class="p-4 border-b border-white/5">
-          <h3 id="propModalName" class="text-lg font-black text-white uppercase tracking-tight">Property Name</h3>
-          <p id="propModalGroup" class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Group
-            Name</p>
+        <div id="pp-color-bar" class="h-4 w-full bg-slate-700"></div>
+        <div class="p-4 border-b border-white/5 bg-slate-800/50">
+          <h3 id="pp-name" class="text-lg font-black text-white uppercase tracking-tight leading-tight">Property Name
+          </h3>
+          <p id="pp-group" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Group Name</p>
         </div>
 
         <!-- Body -->
         <div class="p-4 space-y-4">
-          <!-- Status Stats -->
+          <!-- Stats Grid -->
           <div class="grid grid-cols-2 gap-3">
-            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-white/5">
-              <div class="text-[10px] text-slate-500 font-bold uppercase">Status</div>
-              <div id="propModalStatus" class="text-xs font-bold text-white mt-0.5">Owned</div>
+            <div class="bg-slate-800 p-2 rounded border border-white/5">
+              <div class="text-[9px] text-slate-500 font-bold uppercase">Status</div>
+              <div id="pp-status" class="text-xs font-bold text-white mt-0.5 truncate">Unowned</div>
             </div>
-            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-white/5">
-              <div class="text-[10px] text-slate-500 font-bold uppercase">Buildings</div>
-              <div id="propModalBuildings" class="text-xs font-bold text-white mt-0.5">None</div>
+            <div class="bg-slate-800 p-2 rounded border border-white/5">
+              <div class="text-[9px] text-slate-500 font-bold uppercase">Buildings</div>
+              <div id="pp-buildings" class="text-xs font-bold text-white mt-0.5">None</div>
             </div>
           </div>
 
-          <!-- Rent Info for Utilities/Railroads -->
-          <div id="propModalRentInfo" class="hidden bg-slate-800/50 p-3 rounded-lg border border-white/5 text-center">
-            <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Rent Info</div>
-            <div id="propModalRentText" class="text-xs font-bold text-white">4x Dice Roll</div>
+          <!-- Rent Info (Conditional) -->
+          <div id="pp-rent-info" class="hidden bg-slate-800 p-3 rounded border border-white/5 text-center">
+            <div class="text-[9px] text-slate-500 font-bold uppercase mb-0.5">Rent Info</div>
+            <div id="pp-rent-text" class="text-xs font-bold text-white">Rent Amount</div>
           </div>
 
-          <!-- Hidden placeholders for JS references -->
-          <div id="propModalActions" class="hidden"></div>
-          <div id="buildingButtons" class="hidden"></div>
-          <button id="btnBuildHouse" class="hidden"></button>
-          <button id="btnBuildHotel" class="hidden"></button>
-          <button id="btnSellBuilding" class="hidden"></button>
-          <button id="btnMortgage" class="hidden"><span id="mortgageIcon"></span><span
-              id="mortgageText"></span></button>
-
-          <!-- Sell Property -->
-          <div class="pt-3 border-t border-white/5">
-            <button id="btnLiquidate" onclick="liquidateFromModal()"
-              class="w-full bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-lg font-bold text-xs transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2 uppercase">
-              <span>💰</span>
-              <span>Sell Property</span>
+          <!-- Actions -->
+          <div class="pt-2 border-t border-white/5">
+            <button id="pp-btn-sell" onclick="sellPropertyFromPopover()"
+              class="w-full bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-lg font-bold text-xs uppercase tracking-wide transition-colors shadow-lg shadow-rose-900/20 flex items-center justify-center gap-2">
+              <span>💰</span> Sell Property
             </button>
-            <p class="text-[9px] text-slate-500 text-center mt-2 font-medium">Returns 50% of cost.</p>
+            <p class="text-[9px] text-slate-600 text-center mt-2">Returns 50% value</p>
           </div>
         </div>
 
-        <!-- Footer -->
-        <button onclick="closePropertyModal()"
-          class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold text-xs uppercase tracking-widest transition-all">
+        <!-- Close Button -->
+        <button onclick="closePropertyPopover()"
+          class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold text-[10px] uppercase tracking-widest transition-colors border-t border-white/5">
           Close
         </button>
       </div>

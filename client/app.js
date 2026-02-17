@@ -402,236 +402,172 @@ socket.on('card_drawn', ({ playerId, card }) => {
 });
 
 // ============================================
-// PROPERTY MANAGEMENT MODAL
+// PROPERTY POPOVER (Rebuilt)
 // ============================================
 let selectedPropertyIndex = null;
 
-function openPropertyModal(index) {
+function openPropertyModal(index) { // Kept name for compatibility with onclick handlers
   if (!gameState) return;
   const cell = gameState.board.cells[index];
   if (!cell || cell.type !== 'property') return;
 
   selectedPropertyIndex = index;
-  const modal = document.getElementById('propertyModal');
-  const nameEl = document.getElementById('propModalName');
-  const groupEl = document.getElementById('propModalGroup');
-  const colorEl = document.getElementById('propModalColor');
-  const statusEl = document.getElementById('propModalStatus');
-  const buildingsEl = document.getElementById('propModalBuildings');
-  const actionsContainer = document.getElementById('propModalActions');
-  const liquidateBtn = document.getElementById('btnLiquidate');
 
-  // Set basic info
+  // Element References (New IDs)
+  const popover = document.getElementById('property-popover');
+  const content = document.getElementById('property-popover-content');
+  const nameEl = document.getElementById('pp-name');
+  const groupEl = document.getElementById('pp-group');
+  const colorEl = document.getElementById('pp-color-bar');
+  const statusEl = document.getElementById('pp-status');
+  const buildingsEl = document.getElementById('pp-buildings');
+  const rentInfoEl = document.getElementById('pp-rent-info');
+  const rentTextEl = document.getElementById('pp-rent-text');
+  const sellBtn = document.getElementById('pp-btn-sell');
+
+  // 1. Basic Info
   nameEl.textContent = cell.name;
-  groupEl.textContent = cell.group || 'Utility / Transport';
+  groupEl.textContent = cell.group || 'Special';
 
-  // Set color header
+  // 2. Color Bar
   const colorClass = cell.group ? `color-${cell.group}` : 'bg-slate-700';
   colorEl.className = `h-4 w-full ${colorClass}`;
 
-  // Set status
+  // 3. Status & Owner
   const owner = cell.ownerId ? gameState.players.find(p => p.playerId === cell.ownerId) : null;
   if (owner) {
-    statusEl.innerHTML = `Owned by <span class="text-indigo-400">${owner.name}</span>${cell.isMortgaged ? ' <span class="text-amber-500">(Mortgaged)</span>' : ''}`;
+    statusEl.innerHTML = `Owned by <span class="text-indigo-400">${owner.name}</span>`;
   } else {
     statusEl.textContent = 'Unowned';
   }
 
-  // Set buildings
+  // 4. Buildings Info
   if (cell.hotels > 0) {
-    buildingsEl.innerHTML = '<span class="text-indigo-400 font-black">1 HOTEL</span>';
+    buildingsEl.textContent = "1 Hotel";
   } else if (cell.houses > 0) {
-    buildingsEl.innerHTML = `<span class="text-emerald-400 font-bold">${cell.houses} HOUSES</span>`;
+    buildingsEl.textContent = `${cell.houses} Houses`;
   } else {
-    buildingsEl.textContent = 'None';
+    buildingsEl.textContent = "None";
   }
 
-  // Handle Action Button Visibility
+  // 5. Rent Info (Utilities/Railroads only)
+  if (cell.group === 'utility') {
+    rentInfoEl.classList.remove('hidden');
+    rentTextEl.textContent = "4x / 10x Dice Roll";
+  } else if (cell.group === 'railroad') {
+    rentInfoEl.classList.remove('hidden');
+    rentTextEl.textContent = "$25 - $200";
+  } else {
+    rentInfoEl.classList.add('hidden');
+  }
+
+  // 6. Sell Button State
   const isMyProperty = cell.ownerId === myPlayerId;
   const isMyTurn = gameState.currentTurnPlayerId === myPlayerId;
-  const canManage = isMyProperty && isMyTurn;
 
-  // Buttons & Sections
-  const btnBuildHouse = document.getElementById('btnBuildHouse');
-  const btnBuildHotel = document.getElementById('btnBuildHotel');
-  const btnSellBuilding = document.getElementById('btnSellBuilding');
-  const buildingButtons = document.getElementById('buildingButtons');
-  const rentInfoSection = document.getElementById('propModalRentInfo');
-  const rentInfoText = document.getElementById('propModalRentText');
-  const btnMortgage = document.getElementById('btnMortgage');
-  const mortgageText = document.getElementById('mortgageText');
-  const mortgageIcon = document.getElementById('mortgageIcon');
-
-  // Type Logic — server uses lowercase group names: 'utility', 'railroad'
-  const isUtility = cell.group === 'utility';
-  const isRailroad = cell.group === 'railroad';
-  const isStandardProperty = !isUtility && !isRailroad;
-
-  // Visibility Management — only show rent info for utilities/railroads
-  if (isStandardProperty) {
-    rentInfoSection.classList.add('hidden');
+  if (isMyProperty && isMyTurn) {
+    sellBtn.disabled = false;
+    sellBtn.classList.remove('opacity-50', 'cursor-not-allowed');
   } else {
-    rentInfoSection.classList.remove('hidden');
-    if (isUtility) {
-      rentInfoText.textContent = "4x / 10x Dice Roll";
-    } else if (isRailroad) {
-      rentInfoText.textContent = "$25 - $200 (Qty Owned)";
-    }
+    sellBtn.disabled = true;
+    sellBtn.classList.add('opacity-50', 'cursor-not-allowed');
   }
 
-  // Sell button — only enabled when you own it and it's your turn
-  if (canManage) {
-    liquidateBtn.classList.remove('opacity-50', 'pointer-events-none');
-  } else {
-    liquidateBtn.classList.add('opacity-50', 'pointer-events-none');
-  }
-
-  // Calculate Position
+  // 7. Positioning Logic
   const cellRect = document.getElementById(`cell-${index}`).getBoundingClientRect();
-  const modalContent = document.getElementById('propertyModalContent');
+  const popoverWidth = 256;
+  const popoverHeight = 320; // Approx
+  const gap = 8;
 
-  // Reset previous transforms/styles
-  modalContent.style.top = '';
-  modalContent.style.left = '';
-  modalContent.style.bottom = '';
-  modalContent.style.right = '';
-  modalContent.style.transform = '';
+  // Reset styles
+  content.style.top = '';
+  content.style.left = '';
+  content.style.bottom = '';
+  content.style.right = '';
+  content.style.transformOrigin = 'center';
 
-  const gap = 5; // Closer to cell
-  const modalWidth = 256; // w-64 = 16rem = 256px
-  const modalHeight = 350; // approximate height after shrinking
-
-  // Determine board side based on index
   const { row, col } = getCellGridPosition(index);
+  let top, left;
 
-  let top, left, transformOrigin;
-
-  if (row === 10) {
-    // Bottom Row -> Show Above (Right aligned to cell usually looks better or center)
-    top = cellRect.top - modalHeight - gap;
-    left = cellRect.left + (cellRect.width / 2) - (modalWidth / 2);
-    transformOrigin = 'bottom center';
-
-    // Corner Fixes
-    if (col === 10) { // Bottom Right Corner -> Show Above-Left
-      left = cellRect.right - modalWidth;
-      transformOrigin = 'bottom right';
-    } else if (col === 0) { // Bottom Left Corner -> Show Above-Right
-      left = cellRect.left;
-      transformOrigin = 'bottom left';
-    }
-
-  } else if (row === 0) {
-    // Top Row -> Show Below
+  // Decide position based on board side
+  if (row === 10) { // Bottom
+    top = cellRect.top - popoverHeight - gap;
+    left = cellRect.left + (cellRect.width / 2) - (popoverWidth / 2);
+    content.style.transformOrigin = 'bottom center';
+  } else if (row === 0) { // Top
     top = cellRect.bottom + gap;
-    left = cellRect.left + (cellRect.width / 2) - (modalWidth / 2);
-    transformOrigin = 'top center';
-
-    // Corner Fixes
-    if (col === 10) { // Top Right Corner -> Show Below-Left
-      left = cellRect.right - modalWidth;
-      transformOrigin = 'top right';
-    } else if (col === 0) { // Top Left Corner -> Show Below-Right
-      left = cellRect.left;
-      transformOrigin = 'top left';
-    }
-
-  } else if (col === 0) {
-    // Left Column -> Show Right
-    top = cellRect.top + (cellRect.height / 2) - (modalHeight / 2);
+    left = cellRect.left + (cellRect.width / 2) - (popoverWidth / 2);
+    content.style.transformOrigin = 'top center';
+  } else if (col === 0) { // Left
+    top = cellRect.top + (cellRect.height / 2) - (popoverHeight / 2);
     left = cellRect.right + gap;
-    transformOrigin = 'center left';
-  } else if (col === 10) {
-    // Right Column -> Show Left
-    top = cellRect.top + (cellRect.height / 2) - (modalHeight / 2);
-    left = cellRect.left - modalWidth - gap;
-    transformOrigin = 'center right';
-  } else {
-    // Fallback (center)
-    top = (window.innerHeight - modalHeight) / 2;
-    left = (window.innerWidth - modalWidth) / 2;
-    transformOrigin = 'center';
+    content.style.transformOrigin = 'left center';
+  } else { // Right
+    top = cellRect.top + (cellRect.height / 2) - (popoverHeight / 2);
+    left = cellRect.left - popoverWidth - gap;
+    content.style.transformOrigin = 'right center';
   }
 
-  // Boundary checks to keep in viewport (Strict)
-  if (left < 5) left = 5;
-  if (left + modalWidth > window.innerWidth - 5) left = window.innerWidth - modalWidth - 5;
-  if (top < 5) top = 5;
-  if (top + modalHeight > window.innerHeight - 5) top = window.innerHeight - modalHeight - 5;
+  // Viewport Boundary Protection
+  const padding = 10;
+  if (left < padding) left = padding;
+  if (left + popoverWidth > window.innerWidth - padding) left = window.innerWidth - popoverWidth - padding;
+  if (top < padding) top = padding;
+  if (top + popoverHeight > window.innerHeight - padding) top = window.innerHeight - popoverHeight - padding;
 
-  modalContent.style.top = `${top}px`;
-  modalContent.style.left = `${left}px`;
-  modalContent.style.transformOrigin = transformOrigin;
+  content.style.top = `${top}px`;
+  content.style.left = `${left}px`;
 
-  modal.classList.remove('hidden');
+  // Show
+  popover.classList.remove('hidden');
 
-  // Force reflow to enable transition
-  void modal.offsetWidth;
-
-  // Trigger animation
-  if (modalContent) {
-    modalContent.classList.remove('opacity-0', 'scale-95');
-    modalContent.classList.add('opacity-100', 'scale-100');
-  }
+  // Animation
+  requestAnimationFrame(() => {
+    content.classList.remove('opacity-0', 'scale-95');
+    content.classList.add('opacity-100', 'scale-100');
+  });
 }
 
-function closePropertyModal() {
-  const modal = document.getElementById('propertyModal');
-  const content = document.getElementById('propertyModalContent');
+function closePropertyPopover() {
+  const popover = document.getElementById('property-popover');
+  const content = document.getElementById('property-popover-content');
+
   if (content) {
     content.classList.add('opacity-0', 'scale-95');
     content.classList.remove('opacity-100', 'scale-100');
   }
+
   setTimeout(() => {
-    modal.classList.add('hidden');
-    selectedPropertyIndex = null;
+    if (popover) popover.classList.add('hidden');
   }, 200);
 }
 
-function buildHouseFromModal() {
-  if (selectedPropertyIndex !== null) {
-    socket.emit('build_house', { propertyIndex: selectedPropertyIndex });
-  }
+// Redirect old close function if called by older code
+function closePropertyModal() {
+  closePropertyPopover();
 }
 
-function buildHotelFromModal() {
-  if (selectedPropertyIndex !== null) {
-    socket.emit('build_hotel', { propertyIndex: selectedPropertyIndex });
-  }
+
+// function sellPropertyFromPopover - bridge for the new button
+function sellPropertyFromPopover() {
+  liquidateFromModal();
 }
 
-function sellBuildingFromModal() {
-  if (selectedPropertyIndex !== null) {
-    socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
-  }
-}
-
-function mortgageFromModal() {
-  if (selectedPropertyIndex === null) return;
-  const cell = gameState.board.cells[selectedPropertyIndex];
-  if (cell.isMortgaged) {
-    socket.emit('unmortgage_property', { propertyIndex: selectedPropertyIndex });
-  } else {
-    socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
-  }
-}
-
+// Redefine liquidateFromModal to use the new close function
 function liquidateFromModal() {
-  if (selectedPropertyIndex !== null) {
-    if (confirm('Are you sure you want to permanently sell this property back to the bank for 50% of its price?')) {
-      socket.emit('liquidate_property', { propertyIndex: selectedPropertyIndex });
-      closePropertyModal();
-    }
+  if (selectedPropertyIndex === null) return;
+  if (confirm('Are you sure you want to permanently sell this property for 50% of its value?')) {
+    socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
+    closePropertyPopover();
   }
 }
 
+// Expose functions to window for onclick handlers
 window.openPropertyModal = openPropertyModal;
-window.closePropertyModal = closePropertyModal;
-window.buildHouseFromModal = buildHouseFromModal;
-window.buildHotelFromModal = buildHotelFromModal;
-window.sellBuildingFromModal = sellBuildingFromModal;
-window.mortgageFromModal = mortgageFromModal;
+window.closePropertyModal = closePropertyModal; // mapped to closePropertyPopover
+window.closePropertyPopover = closePropertyPopover;
 window.liquidateFromModal = liquidateFromModal;
+window.sellPropertyFromPopover = sellPropertyFromPopover;
 
 socket.on('paid_bail', ({ playerId }) => {
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
