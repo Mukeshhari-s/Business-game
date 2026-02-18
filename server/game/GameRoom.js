@@ -13,9 +13,19 @@ const HOUSE_COST_RATE = 0.5; // houses cost 50% of the property's price
 const HOTEL_COST_MULTIPLIER = 1; // hotel upgrade costs the same as a single house build
 
 export default class GameRoom {
-  constructor(roomId, io) {
+  constructor(roomId, io, settings = {}) {
     this.roomId = roomId;
     this.io = io;
+    // Parse settings robustly
+    const startingBalance = parseInt(settings.startingBalance);
+    const maxPlayers = parseInt(settings.maxPlayers);
+
+    this.settings = {
+      startingBalance: !isNaN(startingBalance) ? startingBalance : 1500,
+      maxPlayers: !isNaN(maxPlayers) ? maxPlayers : 4,
+      map: settings.map || 'world',
+      mortgageEnabled: settings.mortgageEnabled !== undefined ? settings.mortgageEnabled : true
+    };
     this.players = [];
     this.board = new Board();
     this.currentTurnIndex = 0;
@@ -77,7 +87,7 @@ export default class GameRoom {
   }
 
   addPlayer(name, socketId) {
-    if (this.players.length >= MAX_PLAYERS) {
+    if (this.players.length >= this.settings.maxPlayers) {
       return { error: 'Room is full' };
     }
     if (this.gameStatus !== 'waiting') {
@@ -91,7 +101,7 @@ export default class GameRoom {
       return { error: 'Name already taken in this room' };
     }
 
-    const player = new Player(trimmedName, socketId);
+    const player = new Player(trimmedName, socketId, this.settings.startingBalance);
     this.players.push(player);
 
     // First player is the host
@@ -100,6 +110,7 @@ export default class GameRoom {
     }
 
     this.log(`${player.name} joined room ${this.roomId}.`);
+    this.broadcastState();
     return { player };
   }
 
@@ -1406,6 +1417,10 @@ export default class GameRoom {
       this.log(`${player.name} sold a house on ${cell.name} for Rs ${refund}.`);
     } else {
       // Mortgage the property instead of selling it back to the bank
+      if (!this.settings.mortgageEnabled) {
+        this.sendError(socketId, 'Mortgaging is disabled in this room.');
+        return;
+      }
       if (cell.isMortgaged) {
         this.sendError(socketId, 'Property is already mortgaged.');
         return;
@@ -1516,6 +1531,7 @@ export default class GameRoom {
     return {
       roomId: this.roomId,
       gameStatus: this.gameStatus,
+      settings: this.settings,
       currentTurnPlayerId: currentPlayer ? currentPlayer.playerId : null,
       hostId: this.hostId,
       players: this.players.map((p) => p.toPublic()),

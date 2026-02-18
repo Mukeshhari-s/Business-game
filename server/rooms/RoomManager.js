@@ -21,9 +21,9 @@ export default class RoomManager {
     return code;
   }
 
-  createRoom(hostName, socketId) {
+  createRoom(hostName, socketId, settings) {
     const roomId = this.generateRoomId();
-    const room = new GameRoom(roomId, this.io);
+    const room = new GameRoom(roomId, this.io, settings);
     const { player, error } = room.addPlayer(hostName, socketId);
     if (error) {
       return { error };

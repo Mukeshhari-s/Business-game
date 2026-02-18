@@ -86,7 +86,37 @@
           <p class="text-slate-400 text-sm">Create a new room or join an existing one</p>
         </div>
 
-        <div class="space-y-6">
+        <!-- Initial Choice View -->
+        <div id="lobbyChoiceView" class="space-y-6 pt-4">
+          <div class="grid grid-cols-1 gap-4">
+            <button id="showCreateBtn"
+              class="group premium-btn px-8 py-6 rounded-2xl font-bold text-white bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 hover:from-purple-700 hover:via-purple-600 hover:to-pink-600 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-2xl relative overflow-hidden">
+              <span
+                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <span class="relative flex items-center justify-center gap-3 text-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                CREATE NEW GAME
+              </span>
+            </button>
+            <button id="showJoinBtn"
+              class="group premium-btn px-8 py-6 rounded-2xl font-bold text-white bg-gradient-to-r from-emerald-600 via-green-500 to-teal-500 hover:from-emerald-700 hover:via-green-600 hover:to-teal-600 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-2xl relative overflow-hidden">
+              <span
+                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <span class="relative flex items-center justify-center gap-3 text-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 11-6 0V7a3 3 0 016 0v1"></path>
+                </svg>
+                JOIN EXISTING GAME
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Create Room Flow -->
+        <div id="lobbyCreateView" class="hidden space-y-6">
           <div class="form-group">
             <label for="nameInput" class="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
               <span
@@ -96,13 +126,80 @@
             <div class="relative">
               <input id="nameInput" type="text" placeholder="Enter your player name" maxlength="20"
                 class="w-full px-5 py-4 bg-slate-800/50 backdrop-blur-sm border-2 border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 hover:border-purple-400 text-white font-medium placeholder:text-slate-500" />
-              <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
+            </div>
+          </div>
+
+          <div id="roomSettings" class="p-6 bg-slate-900/50 rounded-2xl border border-slate-700/50 space-y-4">
+            <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Advanced Room Settings</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1">Starting Cash</label>
+                <select id="startCashSelect"
+                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm font-bold text-white cursor-pointer hover:border-purple-400">
+                  <option value="1500">Rs 1500</option>
+                  <option value="2000">Rs 2000</option>
+                  <option value="2500">Rs 2500</option>
+                  <option value="3000">Rs 3000</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1">Max Players</label>
+                <select id="maxPlayersSelect"
+                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm font-bold text-white cursor-pointer hover:border-purple-400">
+                  <option value="2">2 Players</option>
+                  <option value="3">3 Players</option>
+                  <option value="4" selected>4 Players</option>
+                  <option value="5">5 Players</option>
+                  <option value="6">6 Players</option>
+                  <option value="7">7 Players</option>
+                  <option value="8">8 Players</option>
+                </select>
               </div>
             </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1">Select Map</label>
+                <select id="mapSelect"
+                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm font-bold text-white cursor-pointer hover:border-purple-400">
+                  <option value="world">World Map</option>
+                </select>
+              </div>
+              <div class="flex flex-col justify-center">
+                <label class="flex items-center gap-2 cursor-pointer group mt-4">
+                  <div class="relative">
+                    <input type="checkbox" id="mortgageToggle" class="sr-only" checked>
+                    <div
+                      class="w-10 h-5 bg-slate-700 rounded-full shadow-inner transition-colors group-has-[:checked]:bg-purple-600">
+                    </div>
+                    <div
+                      class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform group-has-[:checked]:translate-x-5">
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-slate-300 uppercase select-none">Mortgages</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-4 pt-4">
+            <button
+              class="backToLobbyBtn w-full sm:w-1/3 px-6 py-4 rounded-2xl font-bold text-slate-400 hover:text-white bg-slate-800/50 border-2 border-slate-700 transition-all duration-300">BACK</button>
+            <button id="createBtn"
+              class="premium-btn flex-1 px-8 py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg hover:scale-[1.02]">CREATE
+              ROOM</button>
+          </div>
+        </div>
+
+        <!-- Join Room Flow -->
+        <div id="lobbyJoinView" class="hidden space-y-6">
+          <div class="form-group">
+            <label for="nameInputJoin" class="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+              <span
+                class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg text-white text-xs">👤</span>
+              Your Name
+            </label>
+            <input id="nameInputJoin" type="text" placeholder="Enter your player name" maxlength="20"
+              class="w-full px-5 py-4 bg-slate-800/50 backdrop-blur-sm border-2 border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white font-medium" />
           </div>
 
           <div class="form-group">
@@ -110,668 +207,640 @@
               <span
                 class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg text-white text-xs">🔑</span>
               Room Code
-              <span class="text-xs text-slate-500 font-normal">(optional)</span>
             </label>
-            <div class="relative">
-              <input id="roomInput" type="text" placeholder="AB3D" maxlength="4"
-                class="w-full px-5 py-4 bg-slate-800/50 backdrop-blur-sm border-2 border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 hover:border-purple-400 text-white font-mono text-lg tracking-wider placeholder:text-slate-500 uppercase text-center" />
-              <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                  </path>
-                </svg>
-              </div>
-            </div>
+            <input id="roomInput" type="text" placeholder="AB3D" maxlength="4"
+              class="w-full px-5 py-4 bg-slate-800/50 border-2 border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white font-mono text-center text-lg tracking-widest uppercase" />
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
-            <button id="createBtn"
-              class="group premium-btn px-8 py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 hover:from-purple-700 hover:via-purple-600 hover:to-pink-600 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-2xl relative overflow-hidden">
-              <span
-                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-              <span class="relative flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                CREATE ROOM
-              </span>
-            </button>
+          <div class="flex flex-col sm:flex-row gap-4 pt-4">
+            <button
+              class="backToLobbyBtn w-full sm:w-1/3 px-6 py-4 rounded-2xl font-bold text-slate-400 hover:text-white bg-slate-800/50 border-2 border-slate-700 transition-all duration-300">BACK</button>
             <button id="joinBtn"
-              class="group premium-btn px-8 py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-emerald-600 via-green-500 to-teal-500 hover:from-emerald-700 hover:via-green-600 hover:to-teal-600 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-2xl relative overflow-hidden">
-              <span
-                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-              <span class="relative flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
-                  </path>
-                </svg>
-                JOIN ROOM
-              </span>
-            </button>
+              class="premium-btn flex-1 px-8 py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-500 shadow-lg hover:scale-[1.02]">JOIN
+              ROOM</button>
           </div>
-
-          <div id="roomStatus" class="mt-6 text-center text-sm font-semibold empty:hidden"></div>
         </div>
+
+        <div id="roomStatus" class="mt-6 text-center text-sm font-semibold empty:hidden"></div>
       </div>
     </div>
+  </div>
 
-    <!-- Premium Game Screen -->
-    <div id="game" class="hidden" style="font-family: 'Poppins', sans-serif;">
-      <div class="grid grid-cols-1 xl:grid-cols-[70%_30%] gap-4 xl:gap-5 2xl:gap-6 items-start">
+  <!-- Premium Game Screen -->
+  <div id="game" class="hidden" style="font-family: 'Poppins', sans-serif;">
+    <div class="grid grid-cols-1 xl:grid-cols-[70%_30%] gap-4 xl:gap-5 2xl:gap-6 items-start">
 
-        <!-- Center: Premium Game Board -->
+      <!-- Center: Premium Game Board -->
+      <div
+        class="glass-card-premium rounded-3xl p-4 xl:p-5 relative overflow-hidden flex flex-col gap-4 items-center justify-center">
         <div
-          class="glass-card-premium rounded-3xl p-4 xl:p-5 relative overflow-hidden flex flex-col gap-4 items-center justify-center">
-          <div
-            class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl opacity-10">
-          </div>
-
-          <!-- Room ID Display -->
-          <div class="relative z-10 w-full flex justify-center mb-2">
-            <div class="glass-card-premium flat-card rounded-2xl px-6 py-3 relative overflow-hidden group">
-              <div class="flex items-center gap-3">
-                <div class="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z">
-                    </path>
-                  </svg>
-                </div>
-                <div>
-                  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Room Code</span>
-                  <span id="roomCode" class="font-black text-2xl text-indigo-400 tracking-wider">-</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="relative z-10 w-full">
-
-            <div class="relative z-10 w-full flex justify-center">
-
-              <div class="relative w-[95vmin] h-[95vmin] max-w-[1000px] max-h-[1000px]">
-
-                <!-- GRID (JS RENDERS CELLS HERE) -->
-                <div id="board-grid" class="absolute inset-0 grid grid-cols-11 grid-rows-11">
-                </div>
-
-                <!-- CENTER UI (SAFE FROM JS DELETE) -->
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-
-                  <div class="board-center pointer-events-auto">
-                    <h2
-                      class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-pink-600 to-red-600 mb-1 animate-gradient"
-                      style="font-family: 'Montserrat', sans-serif;">
-                      MONOPOLY
-                    </h2>
-
-                    <p class="text-[8px] text-slate-400 mb-2 font-bold tracking-wide">
-                      ELITE EDITION
-                    </p>
-
-                    <div
-                      class="text-center mb-2 p-1.5 bg-slate-800/80 backdrop-blur-sm rounded-lg border border-purple-500/30 shadow-lg">
-                      <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
-                        Current Turn
-                      </span>
-                      <div id="currentTurn"
-                        class="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-                        Waiting...
-                      </div>
-                    </div>
-
-                    <div class="board-log" id="gameLog"></div>
-
-                    <!-- Start Game Button Container - Shown when game is waiting -->
-                    <div id="startGameContainer" class="hidden mt-3">
-                      <button id="startGameBtn"
-                        class="premium-btn w-full py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold text-xs rounded-lg shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group/btn">
-                        <span
-                          class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
-                        <span class="relative flex items-center justify-center gap-1.5">
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
-                            </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          START GAME
-                        </span>
-                      </button>
-                      <p
-                        class="text-center text-sm text-slate-400 mt-2 font-medium flex items-center justify-center gap-2">
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        You are the host
-                      </p>
-                    </div>
-
-                    <div
-                      class="bg-gradient-to-br from-slate-800 via-slate-900 to-black p-3 rounded-xl border-2 border-slate-700 shadow-inner relative overflow-hidden mt-3">
-                      <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10"></div>
-                      <div class="relative z-10">
-                        <div class="flex justify-center gap-4 mb-1.5">
-                          <div class="dice-container">
-                            <div id="die1" class="dice">
-                              <div class="face front" data-value="1">
-                                <div class="dot center"></div>
-                              </div>
-                              <div class="face back" data-value="6">
-                                <div class="dot top-left"></div>
-                                <div class="dot top-right"></div>
-                                <div class="dot mid-left"></div>
-                                <div class="dot mid-right"></div>
-                                <div class="dot bottom-left"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                              <div class="face right" data-value="3">
-                                <div class="dot top-left"></div>
-                                <div class="dot center"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                              <div class="face left" data-value="4">
-                                <div class="dot top-left"></div>
-                                <div class="dot top-right"></div>
-                                <div class="dot bottom-left"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                              <div class="face top" data-value="5">
-                                <div class="dot top-left"></div>
-                                <div class="dot top-right"></div>
-                                <div class="dot center"></div>
-                                <div class="dot bottom-left"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                              <div class="face bottom" data-value="2">
-                                <div class="dot top-left"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="dice-container">
-                            <div id="die2" class="dice">
-                              <div class="face front" data-value="1">
-                                <div class="dot center"></div>
-                              </div>
-                              <div class="face back" data-value="6">
-                                <div class="dot top-left"></div>
-                                <div class="dot top-right"></div>
-                                <div class="dot mid-left"></div>
-                                <div class="dot mid-right"></div>
-                                <div class="dot bottom-left"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                              <div class="face right" data-value="3">
-                                <div class="dot top-left"></div>
-                                <div class="dot center"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                              <div class="face left" data-value="4">
-                                <div class="dot top-left"></div>
-                                <div class="dot top-right"></div>
-                                <div class="dot bottom-left"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                              <div class="face top" data-value="5">
-                                <div class="dot top-left"></div>
-                                <div class="dot top-right"></div>
-                                <div class="dot center"></div>
-                                <div class="dot bottom-left"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                              <div class="face bottom" data-value="2">
-                                <div class="dot top-left"></div>
-                                <div class="dot bottom-right"></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div id="diceTotal"
-                          class="text-center text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="w-full space-y-2 mt-2">
-                      <div id="bailWrapper"
-                        class="bg-gradient-to-r from-slate-800 to-slate-900 border-2 border-yellow-500/50 rounded-xl p-3 hover:shadow-lg transition-all duration-300">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" id="bailCheckbox"
-                            class="w-5 h-5 rounded-lg border-yellow-500 bg-slate-800 text-yellow-600 focus:ring-2 focus:ring-yellow-500 transition-all duration-200" />
-                          <div class="flex-1">
-                            <span class="font-bold text-yellow-500 text-[10px] block">Pay Rs 50 bail</span>
-                            <span class="text-[8px] text-yellow-500/70">If in jail</span>
-                          </div>
-                          <span class="text-xl">🔓</span>
-                        </label>
-                      </div>
-
-                      <button id="rollBtn"
-                        class="premium-btn w-full py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold text-xs rounded-lg shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group/btn">
-                        <span
-                          class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
-                        <span class="relative flex items-center justify-center gap-1.5">
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
-                            </path>
-                          </svg>
-                          ROLL DICE
-                        </span>
-                      </button>
-                    </div>
-
-                    <button id="buyBtn"
-                      class="premium-btn w-full mt-1.5 py-2 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 hover:from-green-700 hover:via-emerald-600 hover:to-teal-600 text-white font-bold text-xs rounded-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
-                      <span
-                        class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-                      <span class="relative flex items-center justify-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                          </path>
-                        </svg>
-                        BUY PROPERTY
-                      </span>
-                    </button>
-
-                    <button id="endTurnBtnCenter"
-                      class="premium-btn w-full mt-1.5 py-2 bg-gradient-to-r from-blue-600 via-cyan-500 to-sky-500 hover:from-blue-700 hover:via-cyan-600 hover:to-sky-600 text-white font-bold text-xs rounded-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
-                      <span
-                        class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-                      <span class="relative flex items-center justify-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        END TURN
-                      </span>
-                    </button>
-
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
+          class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl opacity-10">
         </div>
 
-        <!-- Right Panel: Players & Properties -->
-        <div class="space-y-4 xl:sticky xl:top-6 self-start">
-          <!-- Property Status Card -->
-          <div class="glass-card-premium rounded-2xl p-3 relative overflow-hidden">
-            <div class="flex items-center gap-2 mb-2">
-              <div class="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg">
+        <!-- Room ID Display -->
+        <div class="relative z-10 w-full flex justify-center mb-2">
+          <div class="glass-card-premium flat-card rounded-2xl px-6 py-3 relative overflow-hidden group">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                    d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z">
                   </path>
                 </svg>
               </div>
-              <h3 class="text-lg font-black text-white drop-shadow-sm">Property</h3>
+              <div>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Room Code</span>
+                <span id="roomCode" class="font-black text-2xl text-indigo-400 tracking-wider">-</span>
+              </div>
             </div>
-            <div id="propertyStatus"
-              class="p-2.5 bg-white/10 backdrop-blur-md rounded-xl text-xs text-white/90 font-medium border border-white/20 shadow-inner">
-              <div class="flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          </div>
+        </div>
+
+        <div class="relative z-10 w-full">
+
+          <div class="relative z-10 w-full flex justify-center">
+
+            <div class="relative w-[95vmin] h-[95vmin] max-w-[1000px] max-h-[1000px]">
+
+              <!-- GRID (JS RENDERS CELLS HERE) -->
+              <div id="board-grid" class="absolute inset-0 grid grid-cols-11 grid-rows-11">
+              </div>
+
+              <!-- CENTER UI (SAFE FROM JS DELETE) -->
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+
+                <div class="board-center pointer-events-auto">
+                  <h2
+                    class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-pink-600 to-red-600 mb-1 animate-gradient"
+                    style="font-family: 'Montserrat', sans-serif;">
+                    MONOPOLY
+                  </h2>
+
+                  <p class="text-[8px] text-slate-400 mb-2 font-bold tracking-wide">
+                    ELITE EDITION
+                  </p>
+
+                  <div
+                    class="text-center mb-2 p-1.5 bg-slate-800/80 backdrop-blur-sm rounded-lg border border-purple-500/30 shadow-lg">
+                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                      Current Turn
+                    </span>
+                    <div id="currentTurn"
+                      class="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                      Waiting...
+                    </div>
+                  </div>
+
+                  <div class="board-log" id="gameLog"></div>
+
+                  <!-- Start Game Button Container - Shown when game is waiting -->
+                  <div id="startGameContainer" class="hidden mt-3">
+                    <button id="startGameBtn"
+                      class="premium-btn w-full py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold text-xs rounded-lg shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group/btn">
+                      <span
+                        class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
+                      <span class="relative flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                          </path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        START GAME
+                      </span>
+                    </button>
+                    <p
+                      class="text-center text-sm text-slate-400 mt-2 font-medium flex items-center justify-center gap-2">
+                      <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                      You are the host
+                    </p>
+                  </div>
+
+                  <div
+                    class="bg-gradient-to-br from-slate-800 via-slate-900 to-black p-3 rounded-xl border-2 border-slate-700 shadow-inner relative overflow-hidden mt-3">
+                    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10"></div>
+                    <div class="relative z-10">
+                      <div class="flex justify-center gap-4 mb-1.5">
+                        <div class="dice-container">
+                          <div id="die1" class="dice">
+                            <div class="face front" data-value="1">
+                              <div class="dot center"></div>
+                            </div>
+                            <div class="face back" data-value="6">
+                              <div class="dot top-left"></div>
+                              <div class="dot top-right"></div>
+                              <div class="dot mid-left"></div>
+                              <div class="dot mid-right"></div>
+                              <div class="dot bottom-left"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                            <div class="face right" data-value="3">
+                              <div class="dot top-left"></div>
+                              <div class="dot center"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                            <div class="face left" data-value="4">
+                              <div class="dot top-left"></div>
+                              <div class="dot top-right"></div>
+                              <div class="dot bottom-left"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                            <div class="face top" data-value="5">
+                              <div class="dot top-left"></div>
+                              <div class="dot top-right"></div>
+                              <div class="dot center"></div>
+                              <div class="dot bottom-left"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                            <div class="face bottom" data-value="2">
+                              <div class="dot top-left"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="dice-container">
+                          <div id="die2" class="dice">
+                            <div class="face front" data-value="1">
+                              <div class="dot center"></div>
+                            </div>
+                            <div class="face back" data-value="6">
+                              <div class="dot top-left"></div>
+                              <div class="dot top-right"></div>
+                              <div class="dot mid-left"></div>
+                              <div class="dot mid-right"></div>
+                              <div class="dot bottom-left"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                            <div class="face right" data-value="3">
+                              <div class="dot top-left"></div>
+                              <div class="dot center"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                            <div class="face left" data-value="4">
+                              <div class="dot top-left"></div>
+                              <div class="dot top-right"></div>
+                              <div class="dot bottom-left"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                            <div class="face top" data-value="5">
+                              <div class="dot top-left"></div>
+                              <div class="dot top-right"></div>
+                              <div class="dot center"></div>
+                              <div class="dot bottom-left"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                            <div class="face bottom" data-value="2">
+                              <div class="dot top-left"></div>
+                              <div class="dot bottom-right"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div id="diceTotal"
+                        class="text-center text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="w-full space-y-2 mt-2">
+                    <div id="bailWrapper"
+                      class="bg-gradient-to-r from-slate-800 to-slate-900 border-2 border-yellow-500/50 rounded-xl p-3 hover:shadow-lg transition-all duration-300">
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="bailCheckbox"
+                          class="w-5 h-5 rounded-lg border-yellow-500 bg-slate-800 text-yellow-600 focus:ring-2 focus:ring-yellow-500 transition-all duration-200" />
+                        <div class="flex-1">
+                          <span class="font-bold text-yellow-500 text-[10px] block">Pay Rs 50 bail</span>
+                          <span class="text-[8px] text-yellow-500/70">If in jail</span>
+                        </div>
+                        <span class="text-xl">🔓</span>
+                      </label>
+                    </div>
+
+                    <button id="rollBtn"
+                      class="premium-btn w-full py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold text-xs rounded-lg shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group/btn">
+                      <span
+                        class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
+                      <span class="relative flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                          </path>
+                        </svg>
+                        ROLL DICE
+                      </span>
+                    </button>
+                  </div>
+
+                  <button id="buyBtn"
+                    class="premium-btn w-full mt-1.5 py-2 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 hover:from-green-700 hover:via-emerald-600 hover:to-teal-600 text-white font-bold text-xs rounded-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
+                    <span
+                      class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                    <span class="relative flex items-center justify-center gap-1.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                      </svg>
+                      BUY PROPERTY
+                    </span>
+                  </button>
+
+                  <button id="endTurnBtnCenter"
+                    class="premium-btn w-full mt-1.5 py-2 bg-gradient-to-r from-blue-600 via-cyan-500 to-sky-500 hover:from-blue-700 hover:via-cyan-600 hover:to-sky-600 text-white font-bold text-xs rounded-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
+                    <span
+                      class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                    <span class="relative flex items-center justify-center gap-1.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                      </svg>
+                      END TURN
+                    </span>
+                  </button>
+
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right Panel: Players & Properties -->
+      <div class="space-y-4 xl:sticky xl:top-6 self-start">
+        <!-- Property Status Card -->
+        <div class="glass-card-premium rounded-2xl p-3 relative overflow-hidden">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                </path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-black text-white drop-shadow-sm">Property</h3>
+          </div>
+          <div id="propertyStatus"
+            class="p-2.5 bg-white/10 backdrop-blur-md rounded-xl text-xs text-white/90 font-medium border border-white/20 shadow-inner">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>No property action pending</span>
+            </div>
+          </div>
+
+          <button id="openTradeBtn"
+            class="premium-btn w-full mt-3 py-3 bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 hover:from-amber-700 hover:via-orange-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
+            <span
+              class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+            <span class="relative flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+              </svg>
+              TRADE ASSETS
+            </span>
+          </button>
+
+          <button id="declareBankruptcyBtn"
+            class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-red-600 via-orange-600 to-red-700 hover:from-red-700 hover:via-orange-700 hover:to-red-800 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 hidden relative overflow-hidden group">
+            <span
+              class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+            <span class="relative flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              DECLARE BANKRUPTCY
+            </span>
+          </button>
+        </div>
+
+        <!-- Players Card -->
+        <div class="glass-card-premium rounded-2xl p-3 relative overflow-hidden">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg shadow-lg">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                </path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-black text-white drop-shadow-sm">Players</h3>
+          </div>
+          <div id="playersList" class="space-y-2"></div>
+        </div>
+
+        <!-- Trade Inbox -->
+        <div class="glass-card-premium rounded-2xl p-4 relative overflow-hidden">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-black text-white drop-shadow-sm">Trade Inbox</h3>
+          </div>
+          <div id="tradeInboxList" class="space-y-3">
+            <p class="text-sm text-slate-400 italic">No pending trades</p>
+          </div>
+        </div>
+
+        <!-- Build Houses/Hotels Card -->
+        <div class="glass-card-premium rounded-2xl p-4 relative overflow-hidden">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg shadow-lg">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                </path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-black text-white drop-shadow-sm">Development</h3>
+          </div>
+          <div id="buildingControls" class="space-y-3">
+            <div class="p-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
+              <p class="text-xs text-white/80 font-medium flex items-center gap-2">
+                <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <span>No property action pending</span>
-              </div>
+                <span>Select a property you own to build houses or hotels</span>
+              </p>
             </div>
+            <div id="buildableProperties" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            <button id="openTradeBtn"
-              class="premium-btn w-full mt-3 py-3 bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 hover:from-amber-700 hover:via-orange-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
-              <span
-                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-              <span class="relative flex items-center justify-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Premium Trade Modal -->
+    <div id="tradeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+      style="font-family: 'Poppins', sans-serif;">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTradeModal()"></div>
+
+      <!-- Modal Content -->
+      <div
+        class="relative bg-slate-900 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-slate-700">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 p-8 relative overflow-hidden">
+          <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+          <div class="relative z-10 flex items-center justify-between">
+            <div>
+              <h2 class="text-3xl font-black text-white mb-2 flex items-center gap-3">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                 </svg>
-                TRADE ASSETS
-              </span>
+                Create Trade Offer
+              </h2>
+              <p class="text-purple-100 font-medium">Exchange properties, money, and cards with other players</p>
+            </div>
+            <button onclick="closeTradeModal()"
+              class="p-3 bg-white/20 hover:bg-white/30 rounded-2xl transition-all duration-300 group">
+              <svg class="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-300" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
             </button>
-
-            <button id="declareBankruptcyBtn"
-              class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-red-600 via-orange-600 to-red-700 hover:from-red-700 hover:via-orange-700 hover:to-red-800 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 hidden relative overflow-hidden group">
-              <span
-                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-              <span class="relative flex items-center justify-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                DECLARE BANKRUPTCY
-              </span>
-            </button>
-          </div>
-
-          <!-- Players Card -->
-          <div class="glass-card-premium rounded-2xl p-3 relative overflow-hidden">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg shadow-lg">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                  </path>
-                </svg>
-              </div>
-              <h3 class="text-lg font-black text-white drop-shadow-sm">Players</h3>
-            </div>
-            <div id="playersList" class="space-y-2"></div>
-          </div>
-
-          <!-- Trade Inbox -->
-          <div class="glass-card-premium rounded-2xl p-4 relative overflow-hidden">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
-              </div>
-              <h3 class="text-xl font-black text-white drop-shadow-sm">Trade Inbox</h3>
-            </div>
-            <div id="tradeInboxList" class="space-y-3">
-              <p class="text-sm text-slate-400 italic">No pending trades</p>
-            </div>
-          </div>
-
-          <!-- Build Houses/Hotels Card -->
-          <div class="glass-card-premium rounded-2xl p-4 relative overflow-hidden">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg shadow-lg">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                  </path>
-                </svg>
-              </div>
-              <h3 class="text-xl font-black text-white drop-shadow-sm">Development</h3>
-            </div>
-            <div id="buildingControls" class="space-y-3">
-              <div class="p-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-                <p class="text-xs text-white/80 font-medium flex items-center gap-2">
-                  <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <span>Select a property you own to build houses or hotels</span>
-                </p>
-              </div>
-              <div id="buildableProperties" class="space-y-2"></div>
-            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Premium Trade Modal -->
-      <div id="tradeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
-        style="font-family: 'Poppins', sans-serif;">
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTradeModal()"></div>
-
-        <!-- Modal Content -->
-        <div
-          class="relative bg-slate-900 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-slate-700">
-          <!-- Header -->
-          <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 p-8 relative overflow-hidden">
-            <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-            <div class="relative z-10 flex items-center justify-between">
-              <div>
-                <h2 class="text-3xl font-black text-white mb-2 flex items-center gap-3">
-                  <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Modal Body -->
+        <div class="p-5 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
+          <!-- Player Selection -->
+          <div class="mb-5 bg-slate-800/80 p-4 rounded-2xl border border-white/5">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+              <label
+                class="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2 shrink-0">
+                <span class="p-1.5 bg-blue-500/20 text-blue-400 rounded-md">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                   </svg>
-                  Create Trade Offer
-                </h2>
-                <p class="text-purple-100 font-medium">Exchange properties, money, and cards with other players</p>
-              </div>
-              <button onclick="closeTradeModal()"
-                class="p-3 bg-white/20 hover:bg-white/30 rounded-2xl transition-all duration-300 group">
-                <svg class="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-300" fill="none"
-                  stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+                </span>
+                Trade With
+              </label>
+              <select id="tradePlayerSelect"
+                class="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-bold text-sm text-white cursor-pointer select-custom">
+                <option value="" class="bg-slate-900">Select a player...</option>
+              </select>
             </div>
           </div>
 
-          <!-- Modal Body -->
-          <div class="p-5 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
-            <!-- Player Selection -->
-            <div class="mb-5 bg-slate-800/80 p-4 rounded-2xl border border-white/5">
-              <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                <label
-                  class="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2 shrink-0">
-                  <span class="p-1.5 bg-blue-500/20 text-blue-400 rounded-md">
+          <!-- Trade Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- You Offer -->
+            <div class="bg-slate-800/40 backdrop-blur-md rounded-2xl p-5 border border-white/5">
+              <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
+                <h3 class="text-sm font-black text-slate-100 flex items-center gap-2 uppercase tracking-wide">
+                  <span class="p-1.5 bg-green-500/20 text-green-400 rounded-md">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                   </span>
-                  Trade With
-                </label>
-                <select id="tradePlayerSelect"
-                  class="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-bold text-sm text-white cursor-pointer select-custom">
-                  <option value="" class="bg-slate-900">Select a player...</option>
-                </select>
+                  You Offer
+                </h3>
+                <div id="offerBalanceDisplay"
+                  class="text-[10px] font-black bg-slate-900 text-slate-400 px-2.5 py-1 rounded-lg border border-white/5">
+                  BALANCE: <span id="myTradeBalance" class="text-emerald-400">Rs 0</span>
+                </div>
+              </div>
+
+              <!-- Money Input -->
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-1.5">
+                  <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">💰 Money</label>
+                  <span class="text-[10px] text-slate-500 font-bold">Max Offer</span>
+                </div>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black">Rs</span>
+                  <input type="number" id="offerMoney" min="0" value="0"
+                    class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all font-black text-base text-white" />
+                </div>
+              </div>
+
+              <!-- Properties -->
+              <div class="mb-4">
+                <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🏠
+                  Properties</label>
+                <div id="offerProperties"
+                  class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-1 grid grid-cols-1 sm:grid-cols-1 gap-2">
+                  <p class="text-[10px] text-slate-500 italic p-3 bg-slate-900/50 rounded-xl border border-white/5">No
+                    properties available</p>
+                </div>
+              </div>
+
+              <!-- Jail Cards -->
+              <div>
+                <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🎴 Jail
+                  Cards</label>
+                <div class="relative">
+                  <input type="number" id="offerJailCards" min="0" max="0" value="0"
+                    class="w-full px-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all font-black text-sm text-white" />
+                </div>
               </div>
             </div>
 
-            <!-- Trade Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- You Offer -->
-              <div class="bg-slate-800/40 backdrop-blur-md rounded-2xl p-5 border border-white/5">
-                <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
-                  <h3 class="text-sm font-black text-slate-100 flex items-center gap-2 uppercase tracking-wide">
-                    <span class="p-1.5 bg-green-500/20 text-green-400 rounded-md">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                      </svg>
-                    </span>
-                    You Offer
-                  </h3>
-                  <div id="offerBalanceDisplay"
-                    class="text-[10px] font-black bg-slate-900 text-slate-400 px-2.5 py-1 rounded-lg border border-white/5">
-                    BALANCE: <span id="myTradeBalance" class="text-emerald-400">Rs 0</span>
-                  </div>
-                </div>
-
-                <!-- Money Input -->
-                <div class="mb-4">
-                  <div class="flex justify-between items-center mb-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">💰 Money</label>
-                    <span class="text-[10px] text-slate-500 font-bold">Max Offer</span>
-                  </div>
-                  <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black">Rs</span>
-                    <input type="number" id="offerMoney" min="0" value="0"
-                      class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all font-black text-base text-white" />
-                  </div>
-                </div>
-
-                <!-- Properties -->
-                <div class="mb-4">
-                  <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🏠
-                    Properties</label>
-                  <div id="offerProperties"
-                    class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-1 grid grid-cols-1 sm:grid-cols-1 gap-2">
-                    <p class="text-[10px] text-slate-500 italic p-3 bg-slate-900/50 rounded-xl border border-white/5">No
-                      properties available</p>
-                  </div>
-                </div>
-
-                <!-- Jail Cards -->
-                <div>
-                  <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🎴 Jail
-                    Cards</label>
-                  <div class="relative">
-                    <input type="number" id="offerJailCards" min="0" max="0" value="0"
-                      class="w-full px-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all font-black text-sm text-white" />
-                  </div>
+            <!-- You Request -->
+            <div class="bg-slate-800/40 backdrop-blur-md rounded-2xl p-5 border border-white/5">
+              <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
+                <h3 class="text-sm font-black text-slate-100 flex items-center gap-2 uppercase tracking-wide">
+                  <span class="p-1.5 bg-purple-500/20 text-purple-400 rounded-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                    </svg>
+                  </span>
+                  You Request
+                </h3>
+                <div id="requestBalanceDisplay"
+                  class="text-[10px] font-black bg-slate-900 text-slate-400 px-2.5 py-1 rounded-lg border border-white/5">
+                  BALANCE: <span id="theirTradeBalance" class="text-emerald-400">Rs 0</span>
                 </div>
               </div>
 
-              <!-- You Request -->
-              <div class="bg-slate-800/40 backdrop-blur-md rounded-2xl p-5 border border-white/5">
-                <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
-                  <h3 class="text-sm font-black text-slate-100 flex items-center gap-2 uppercase tracking-wide">
-                    <span class="p-1.5 bg-purple-500/20 text-purple-400 rounded-md">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
-                      </svg>
-                    </span>
-                    You Request
-                  </h3>
-                  <div id="requestBalanceDisplay"
-                    class="text-[10px] font-black bg-slate-900 text-slate-400 px-2.5 py-1 rounded-lg border border-white/5">
-                    BALANCE: <span id="theirTradeBalance" class="text-emerald-400">Rs 0</span>
-                  </div>
+              <!-- Money Input -->
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-1.5">
+                  <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">💰 Money</label>
+                  <span class="text-[10px] text-slate-500 font-bold">Max Request</span>
                 </div>
-
-                <!-- Money Input -->
-                <div class="mb-4">
-                  <div class="flex justify-between items-center mb-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">💰 Money</label>
-                    <span class="text-[10px] text-slate-500 font-bold">Max Request</span>
-                  </div>
-                  <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black">Rs</span>
-                    <input type="number" id="requestMoney" min="0" value="0"
-                      class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all font-black text-base text-white" />
-                  </div>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black">Rs</span>
+                  <input type="number" id="requestMoney" min="0" value="0"
+                    class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all font-black text-base text-white" />
                 </div>
+              </div>
 
-                <!-- Properties -->
-                <div class="mb-4">
-                  <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🏠
-                    Properties</label>
-                  <div id="requestProperties"
-                    class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-1 grid grid-cols-1 sm:grid-cols-1 gap-2">
-                    <p class="text-[10px] text-slate-500 italic p-3 bg-slate-900/50 rounded-xl border border-white/5">
-                      Select a player first</p>
-                  </div>
+              <!-- Properties -->
+              <div class="mb-4">
+                <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🏠
+                  Properties</label>
+                <div id="requestProperties"
+                  class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-1 grid grid-cols-1 sm:grid-cols-1 gap-2">
+                  <p class="text-[10px] text-slate-500 italic p-3 bg-slate-900/50 rounded-xl border border-white/5">
+                    Select a player first</p>
                 </div>
+              </div>
 
-                <!-- Jail Cards -->
-                <div>
-                  <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🎴 Jail
-                    Cards</label>
-                  <div class="relative">
-                    <input type="number" id="requestJailCards" min="0" max="0" value="0"
-                      class="w-full px-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all font-black text-sm text-white" />
-                  </div>
+              <!-- Jail Cards -->
+              <div>
+                <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">🎴 Jail
+                  Cards</label>
+                <div class="relative">
+                  <input type="number" id="requestJailCards" min="0" max="0" value="0"
+                    class="w-full px-4 py-2 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all font-black text-sm text-white" />
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Modal Footer -->
-          <div class="border-t border-slate-700 p-6 bg-slate-800">
-            <div class="flex gap-4">
-              <button onclick="closeTradeModal()"
-                class="flex-1 px-8 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
-                Cancel
-              </button>
-              <button id="submitTradeBtn"
-                class="flex-1 premium-btn px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white font-black rounded-2xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group">
-                <span
-                  class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-                <span class="relative">Send Trade Offer</span>
-              </button>
-            </div>
+        <!-- Modal Footer -->
+        <div class="border-t border-slate-700 p-6 bg-slate-800">
+          <div class="flex gap-4">
+            <button onclick="closeTradeModal()"
+              class="flex-1 px-8 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+              Cancel
+            </button>
+            <button id="submitTradeBtn"
+              class="flex-1 premium-btn px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white font-black rounded-2xl shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group">
+              <span
+                class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <span class="relative">Send Trade Offer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- NEW Property Popover (Rebuilt) -->
+  <div id="property-popover" class="hidden fixed inset-0 z-[10000] pointer-events-none font-sans">
+    <!-- Invisible Backdrop -->
+    <div class="absolute inset-0 pointer-events-auto" onclick="closePropertyPopover()"></div>
+
+    <!-- Content Card -->
+    <div id="property-popover-content"
+      class="absolute w-[300px] bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 pointer-events-auto flex flex-col transition-all duration-200 opacity-0 scale-95">
+
+      <!-- Header -->
+      <div id="pp-color-bar" class="h-5 w-full bg-slate-700"></div>
+      <div class="px-4 py-3 border-b border-white/5 bg-slate-800/50">
+        <h3 id="pp-name" class="text-base font-black text-white uppercase tracking-tight leading-tight">Property Name
+        </h3>
+        <div class="flex justify-between items-center mt-2">
+          <p id="pp-cost" class="text-sm text-emerald-400 font-bold">Rs 0</p>
+          <p id="pp-buildings" class="text-[11px] text-slate-400 font-medium">No buildings</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="px-4 py-3 space-y-2.5 max-h-[360px] overflow-y-auto">
+        <!-- Actions -->
+        <div class="space-y-2">
+          <!-- Building Actions -->
+          <div id="pp-building-actions" class="grid grid-cols-2 gap-2">
+            <button id="pp-btn-build-house" onclick="buildHouseFromPopover()"
+              class="bg-green-600 hover:bg-green-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+              <span>🏠</span> <span>Build House</span>
+            </button>
+            <button id="pp-btn-build-hotel" onclick="buildHotelFromPopover()"
+              class="bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+              <span>🏨</span> <span>Build Hotel</span>
+            </button>
+          </div>
+
+          <!-- Destroy/Sell Building -->
+          <button id="pp-btn-destroy" onclick="destroyBuildingFromPopover()"
+            class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span>🔨</span> <span id="pp-destroy-text">Sell Building</span>
+          </button>
+
+          <!-- Mortgage Actions -->
+          <button id="pp-btn-mortgage" onclick="mortgagePropertyFromPopover()"
+            class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span>🏚️</span> <span>Mortgage</span>
+          </button>
+          <button id="pp-btn-unmortgage" onclick="unmortgagePropertyFromPopover()"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span>🔓</span> <span>Unmortgage</span>
+          </button>
+
+          <!-- Liquidate/Sell to Bank -->
+          <button id="pp-btn-liquidate" onclick="liquidatePropertyFromPopover()"
+            class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] uppercase tracking-wide transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span>💰</span> <span>Liquidate</span>
+          </button>
+
+          <!-- Action Hint -->
+          <div class="pt-1">
+            <p id="pp-action-hint" class="text-[10px] text-slate-400 text-center leading-relaxed"></p>
           </div>
         </div>
       </div>
 
+      <!-- Close Button -->
+      <button onclick="closePropertyPopover()"
+        class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold text-[10px] uppercase tracking-widest transition-colors border-t border-white/5">
+        Close
+      </button>
     </div>
+  </div>
 
-
-    <!-- NEW Property Popover (Rebuilt) -->
-    <div id="property-popover" class="hidden fixed inset-0 z-[10000] pointer-events-none font-sans">
-      <!-- Invisible Backdrop -->
-      <div class="absolute inset-0 pointer-events-auto" onclick="closePropertyPopover()"></div>
-
-      <!-- Content Card -->
-      <div id="property-popover-content"
-        class="absolute w-[300px] bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 pointer-events-auto flex flex-col transition-all duration-200 opacity-0 scale-95">
-
-        <!-- Header -->
-        <div id="pp-color-bar" class="h-5 w-full bg-slate-700"></div>
-        <div class="px-4 py-3 border-b border-white/5 bg-slate-800/50">
-          <h3 id="pp-name" class="text-base font-black text-white uppercase tracking-tight leading-tight">Property Name
-          </h3>
-          <div class="flex justify-between items-center mt-2">
-            <p id="pp-cost" class="text-sm text-emerald-400 font-bold">Rs 0</p>
-            <p id="pp-buildings" class="text-[11px] text-slate-400 font-medium">No buildings</p>
-          </div>
-        </div>
-
-        <!-- Body -->
-        <div class="px-4 py-3 space-y-2.5 max-h-[360px] overflow-y-auto">
-          <!-- Actions -->
-          <div class="space-y-2">
-            <!-- Building Actions -->
-            <div id="pp-building-actions" class="grid grid-cols-2 gap-2">
-              <button id="pp-btn-build-house" onclick="buildHouseFromPopover()"
-                class="bg-green-600 hover:bg-green-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
-                <span>🏠</span> <span>Build House</span>
-              </button>
-              <button id="pp-btn-build-hotel" onclick="buildHotelFromPopover()"
-                class="bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
-                <span>🏨</span> <span>Build Hotel</span>
-              </button>
-            </div>
-
-            <!-- Destroy/Sell Building -->
-            <button id="pp-btn-destroy" onclick="destroyBuildingFromPopover()"
-              class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              <span>🔨</span> <span id="pp-destroy-text">Sell Building</span>
-            </button>
-
-            <!-- Mortgage Actions -->
-            <button id="pp-btn-mortgage" onclick="mortgagePropertyFromPopover()"
-              class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              <span>🏚️</span> <span>Mortgage</span>
-            </button>
-            <button id="pp-btn-unmortgage" onclick="unmortgagePropertyFromPopover()"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              <span>🔓</span> <span>Unmortgage</span>
-            </button>
-
-            <!-- Liquidate/Sell to Bank -->
-            <button id="pp-btn-liquidate" onclick="liquidatePropertyFromPopover()"
-              class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] uppercase tracking-wide transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              <span>💰</span> <span>Liquidate</span>
-            </button>
-
-            <!-- Action Hint -->
-            <div class="pt-1">
-              <p id="pp-action-hint" class="text-[10px] text-slate-400 text-center leading-relaxed"></p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Close Button -->
-        <button onclick="closePropertyPopover()"
-          class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold text-[10px] uppercase tracking-widest transition-colors border-t border-white/5">
-          Close
-        </button>
-      </div>
-    </div>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
 </body>
 
 </html>

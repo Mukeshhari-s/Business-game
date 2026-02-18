@@ -40,6 +40,28 @@ const hotelSupplyEl = document.getElementById('hotelSupply');
 const buildablePropertiesEl = document.getElementById('buildableProperties');
 const declareBankruptcyBtn = document.getElementById('declareBankruptcyBtn');
 
+// Room Settings Elements
+const startCashSelect = document.getElementById('startCashSelect');
+const maxPlayersSelect = document.getElementById('maxPlayersSelect');
+const mapSelect = document.getElementById('mapSelect');
+const mortgageToggle = document.getElementById('mortgageToggle');
+
+console.log('🧪 Diagnostic - Element Check:', {
+  startCashSelect: !!startCashSelect,
+  maxPlayersSelect: !!maxPlayersSelect,
+  mapSelect: !!mapSelect,
+  mortgageToggle: !!mortgageToggle
+});
+
+// Lobby View Elements
+const lobbyChoiceView = document.getElementById('lobbyChoiceView');
+const lobbyCreateView = document.getElementById('lobbyCreateView');
+const lobbyJoinView = document.getElementById('lobbyJoinView');
+const showCreateBtn = document.getElementById('showCreateBtn');
+const showJoinBtn = document.getElementById('showJoinBtn');
+const backToLobbyBtns = document.querySelectorAll('.backToLobbyBtn');
+const nameInputJoin = document.getElementById('nameInputJoin');
+
 // Board data themed after richup.io layout (order follows Monopoly indices clockwise starting at GO top-left)
 const boardData = [
   { name: 'GO', color: null },
@@ -138,21 +160,63 @@ function getCellGridPosition(index) {
 }
 
 
-// Event Listeners
-if (createBtn && nameInput) {
-  createBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    if (!name) return showToast('Please enter your name', 'error');
-    socket.emit('create_room', { name });
+// Lobby View Toggling
+if (showCreateBtn && lobbyChoiceView && lobbyCreateView) {
+  showCreateBtn.addEventListener('click', () => {
+    lobbyChoiceView.classList.add('hidden');
+    lobbyCreateView.classList.remove('hidden');
   });
 }
 
-if (joinBtn && nameInput && roomInput) {
-  joinBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    const roomId = roomInput.value.trim().toUpperCase();
+if (showJoinBtn && lobbyChoiceView && lobbyJoinView) {
+  showJoinBtn.addEventListener('click', () => {
+    lobbyChoiceView.classList.add('hidden');
+    lobbyJoinView.classList.remove('hidden');
+  });
+}
+
+if (backToLobbyBtns) {
+  backToLobbyBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      lobbyCreateView.classList.add('hidden');
+      lobbyJoinView.classList.add('hidden');
+      lobbyChoiceView.classList.remove('hidden');
+    });
+  });
+}
+
+// Event Listeners
+if (document.getElementById('createBtn')) {
+  document.getElementById('createBtn').addEventListener('click', () => {
+    const nameEl = document.getElementById('nameInput');
+    const cashEl = document.getElementById('startCashSelect');
+    const maxPlayersEl = document.getElementById('maxPlayersSelect');
+    const mapEl = document.getElementById('mapSelect');
+    const mortgageEl = document.getElementById('mortgageToggle');
+
+    const name = nameEl ? nameEl.value.trim() : '';
+
     if (!name) return showToast('Please enter your name', 'error');
-    if (!roomId) return showToast('Please enter a room code', 'error');
+
+    const settings = {
+      startingBalance: cashEl ? parseInt(cashEl.value) : 1500,
+      maxPlayers: maxPlayersEl ? parseInt(maxPlayersEl.value) : 4,
+      map: mapEl ? mapEl.value : 'world',
+      mortgageEnabled: mortgageEl ? mortgageEl.checked : true
+    };
+
+    socket.emit('create_room', { name, settings });
+  });
+}
+
+if (joinBtn && nameInputJoin && roomInput) {
+  joinBtn.addEventListener('click', () => {
+    const name = nameInputJoin.value.trim();
+    const roomId = roomInput.value.trim().toUpperCase();
+    if (!name || !roomId) {
+      showToast('Both name and room code are required', 'error');
+      return;
+    }
     socket.emit('join_room', { roomId, name });
   });
 }
@@ -203,7 +267,7 @@ socket.on('room_created', ({ roomId, playerId }) => {
   sessionStorage.setItem('monopolyLobby', JSON.stringify({
     roomId,
     playerId,
-    name: nameInput.value
+    name: nameInput.value || lobbyData.name
   }));
 
   roomStatus && (roomStatus.textContent = `Room created! Share code: ${roomId}`);
@@ -224,7 +288,7 @@ socket.on('room_joined', ({ roomId, playerId }) => {
   sessionStorage.setItem('monopolyLobby', JSON.stringify({
     roomId,
     playerId,
-    name: nameInput.value || lobbyData.name
+    name: nameInputJoin.value || nameInput.value || lobbyData.name
   }));
 
   roomStatus && (roomStatus.textContent = `Joined room ${roomId}`);
@@ -612,8 +676,13 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
       buildHotelBtn.classList.remove('hidden');
       buildHotelBtn.disabled = true; // Always disabled until 4 houses
 
-      mortgageBtn.classList.remove('hidden');
-      mortgageBtn.disabled = !isMyProperty || !isMyTurn;
+      const mortgageAllowed = gameState.settings?.mortgageEnabled !== false;
+      if (mortgageAllowed) {
+        mortgageBtn.classList.remove('hidden');
+        mortgageBtn.disabled = !isMyProperty || !isMyTurn;
+      } else {
+        mortgageBtn.classList.add('hidden');
+      }
 
       liquidateBtn.classList.remove('hidden');
       liquidateBtn.disabled = !isMyProperty || !isMyTurn;
@@ -626,19 +695,26 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
         actionHint.textContent = '⏳ Wait for your turn to build';
         actionHint.className = 'text-[9px] text-yellow-400 text-center mt-1';
       } else {
-        actionHint.textContent = `🏠 House: Rs ${houseCost} | 🏚️ Mortgage: Rs ${mortgageValue}`;
+        const hintText = mortgageAllowed ? `🏠 House: Rs ${houseCost} | 🏚️ Mortgage: Rs ${mortgageValue}` : `🏠 House: Rs ${houseCost}`;
+        actionHint.textContent = hintText;
       }
     } else {
       // Railroad/Utility - can't build
       buildHouseBtn.classList.add('hidden');
       buildHotelBtn.classList.add('hidden');
 
-      mortgageBtn.classList.remove('hidden');
-      mortgageBtn.disabled = !isMyProperty || !isMyTurn;
+      const mortgageAllowed = gameState.settings?.mortgageEnabled !== false;
+      if (mortgageAllowed) {
+        mortgageBtn.classList.remove('hidden');
+        mortgageBtn.disabled = !isMyProperty || !isMyTurn;
+      } else {
+        mortgageBtn.classList.add('hidden');
+      }
 
       liquidateBtn.classList.remove('hidden');
       liquidateBtn.disabled = !isMyProperty || !isMyTurn;
 
+      const mortgageValue = Math.floor(cell.price / 2);
       if (!isMyProperty) {
         actionHint.textContent = owner ? `Owned by ${owner.name} | Special Property` : '✨ Special Property - Available';
         actionHint.className = owner ? 'text-[9px] text-cyan-400 text-center mt-1' : 'text-[9px] text-emerald-400 text-center mt-1';
@@ -646,8 +722,8 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
         actionHint.textContent = '⏳ Wait for your turn to manage';
         actionHint.className = 'text-[9px] text-yellow-400 text-center mt-1';
       } else {
-        const mortgageValue = Math.floor(cell.price / 2);
-        actionHint.textContent = `🏚️ Mortgage value: Rs ${mortgageValue}`;
+        const hintText = mortgageAllowed ? `🚆 Special Property | 🏚️ Mortgage: Rs ${mortgageValue}` : `🚆 Special Property`;
+        actionHint.textContent = hintText;
       }
     }
   }
@@ -746,18 +822,9 @@ function closePropertyModal() {
 }
 
 
-// function sellPropertyFromPopover - bridge for the new button
-function sellPropertyFromPopover() {
-  liquidateFromModal();
-}
-
 // Redefine liquidateFromModal to use the new close function
 function liquidateFromModal() {
-  if (selectedPropertyIndex === null) return;
-  if (confirm('Are you sure you want to permanently sell this property for 50% of its value?')) {
-    socket.emit('sell_property', { propertyIndex: selectedPropertyIndex });
-    closePropertyPopover();
-  }
+  liquidatePropertyFromPopover();
 }
 
 // New property management functions
@@ -828,7 +895,6 @@ window.openPropertyModal = openPropertyModal;
 window.closePropertyModal = closePropertyModal; // mapped to closePropertyPopover
 window.closePropertyPopover = closePropertyPopover;
 window.liquidateFromModal = liquidateFromModal;
-window.sellPropertyFromPopover = sellPropertyFromPopover;
 window.buildHouseFromPopover = buildHouseFromPopover;
 window.buildHotelFromPopover = buildHotelFromPopover;
 window.destroyBuildingFromPopover = destroyBuildingFromPopover;
@@ -1914,7 +1980,13 @@ socket.on('connect', () => {
 
     // Priority 2: One-time lobby actions (create/join)
     if (action === 'create' && name) {
-      socket.emit('create_room', { name });
+      const settings = lobbyData.settings || {
+        startingBalance: 1500,
+        maxPlayers: 4,
+        map: 'world',
+        mortgageEnabled: true
+      };
+      socket.emit('create_room', { name, settings });
       autoActionSent = true;
       // Don't remove sessionStorage - it will be updated with roomId/playerId after success
     } else if (action === 'join' && name && roomId) {

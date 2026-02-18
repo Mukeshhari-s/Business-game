@@ -4,13 +4,13 @@ export default function initSockets(io) {
   const roomManager = new RoomManager(io);
 
   io.on('connection', (socket) => {
-    socket.on('create_room', ({ name }) => {
+    socket.on('create_room', ({ name, settings }) => {
       if (!name) {
         socket.emit('error_message', { message: 'Name is required.' });
         return;
       }
 
-      const result = roomManager.createRoom(name, socket.id);
+      const result = roomManager.createRoom(name, socket.id, settings);
       if (result.error) {
         socket.emit('error_message', { message: result.error });
         return;

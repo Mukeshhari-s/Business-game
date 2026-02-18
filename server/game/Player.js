@@ -1,12 +1,12 @@
 import { randomUUID } from 'crypto';
 
 export default class Player {
-  constructor(name, socketId) {
+  constructor(name, socketId, initialBalance = 1500) {
     this.playerId = randomUUID();
     this.name = name;
     this.socketId = socketId;
     this.position = 0;
-    this.balance = 1500;
+    this.balance = initialBalance;
     this.properties = [];
     this.jailCards = 0;
     this.inJail = false;
