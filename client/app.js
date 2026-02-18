@@ -1,10 +1,12 @@
-const socket = io('http://localhost:3000');
+// Connect to the server dynamically (works for localhost and deployed apps)
+const socket = io(window.location.origin);
 let currentRoomId = null;
 let myPlayerId = null;
 let gameState = null;
 let lastDiceRoll = null;
 const lobbyData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
 console.log('📦 Loaded session data:', lobbyData);
+console.log('🔌 Connecting to:', window.location.origin);
 let autoActionSent = false;
 let isAnimating = false;
 let displayedPositions = {}; // Track visual positions to sync with animations
@@ -198,6 +200,11 @@ if (document.getElementById('createBtn')) {
 
     if (!name) return showToast('Please enter your name', 'error');
 
+    // Check socket connection
+    if (!socket.connected) {
+      return showToast('Not connected to server. Please wait...', 'error');
+    }
+
     const settings = {
       startingBalance: cashEl ? parseInt(cashEl.value) : 1500,
       maxPlayers: maxPlayersEl ? parseInt(maxPlayersEl.value) : 4,
@@ -205,6 +212,7 @@ if (document.getElementById('createBtn')) {
       mortgageEnabled: mortgageEl ? mortgageEl.checked : true
     };
 
+    console.log('🎮 Creating room with:', { name, settings });
     socket.emit('create_room', { name, settings });
   });
 }
@@ -217,6 +225,13 @@ if (joinBtn && nameInputJoin && roomInput) {
       showToast('Both name and room code are required', 'error');
       return;
     }
+
+    // Check socket connection
+    if (!socket.connected) {
+      return showToast('Not connected to server. Please wait...', 'error');
+    }
+
+    console.log('🚪 Joining room:', { roomId, name });
     socket.emit('join_room', { roomId, name });
   });
 }
@@ -1967,6 +1982,8 @@ initBoard();
 // Connection status logging
 socket.on('connect', () => {
   console.log('✅ Connected to server. Socket ID:', socket.id);
+  showToast('Connected to server!', 'success');
+  
   if (!autoActionSent && lobbyData) {
     const { action, name, roomId, playerId } = lobbyData;
 
@@ -1986,10 +2003,12 @@ socket.on('connect', () => {
         map: 'world',
         mortgageEnabled: true
       };
+      console.log('🎮 Auto-creating room from lobby data...');
       socket.emit('create_room', { name, settings });
       autoActionSent = true;
       // Don't remove sessionStorage - it will be updated with roomId/playerId after success
     } else if (action === 'join' && name && roomId) {
+      console.log('🚪 Auto-joining room from lobby data...');
       socket.emit('join_room', { roomId, name });
       autoActionSent = true;
       // Don't remove sessionStorage - it will be updated with roomId/playerId after success
@@ -2000,6 +2019,11 @@ socket.on('connect', () => {
 socket.on('disconnect', () => {
   console.log('❌ Disconnected from server');
   showToast('Connection lost. Reconnecting...', 'error');
+});
+
+socket.on('connect_error', (error) => {
+  console.error('❌ Connection error:', error);
+  showToast('Failed to connect to server. Check your connection.', 'error');
 });
 
 socket.on('reconnect', () => {

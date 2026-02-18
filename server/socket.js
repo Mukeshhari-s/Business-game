@@ -4,7 +4,10 @@ export default function initSockets(io) {
   const roomManager = new RoomManager(io);
 
   io.on('connection', (socket) => {
+    console.log(`✅ Client connected: ${socket.id}`);
+
     socket.on('create_room', ({ name, settings }) => {
+      console.log(`🎮 Create room request from ${socket.id}, name: ${name}`);
       if (!name) {
         socket.emit('error_message', { message: 'Name is required.' });
         return;
@@ -12,12 +15,14 @@ export default function initSockets(io) {
 
       const result = roomManager.createRoom(name, socket.id, settings);
       if (result.error) {
+        console.log(`❌ Failed to create room: ${result.error}`);
         socket.emit('error_message', { message: result.error });
         return;
       }
 
       const { roomId, player } = result;
       socket.join(roomId);
+      console.log(`✅ Room ${roomId} created by ${player.name} (${player.playerId.substring(0, 8)}...)`);
       socket.emit('room_created', { roomId, playerId: player.playerId });
       io.to(roomId).emit('player_joined', { player: player.toPublic() });
       const room = roomManager.getRoom(roomId);
@@ -25,6 +30,7 @@ export default function initSockets(io) {
     });
 
     socket.on('join_room', ({ roomId, name }) => {
+      console.log(`🚪 Join room request: ${roomId}, name: ${name}, socket: ${socket.id}`);
       if (!roomId || !name) {
         socket.emit('error_message', { message: 'Room code and name are required.' });
         return;
@@ -33,12 +39,14 @@ export default function initSockets(io) {
       const normalized = roomId.toUpperCase();
       const result = roomManager.joinRoom(normalized, name, socket.id);
       if (result.error) {
+        console.log(`❌ Failed to join room ${normalized}: ${result.error}`);
         socket.emit('error_message', { message: result.error });
         return;
       }
 
       const { room, player } = result;
       socket.join(normalized);
+      console.log(`✅ ${player.name} joined room ${normalized}`);
       // Tell the joining player their own ID so their client can enable actions
       socket.emit('room_joined', { roomId: normalized, playerId: player.playerId });
       io.to(normalized).emit('player_joined', { player: player.toPublic() });
@@ -204,6 +212,7 @@ export default function initSockets(io) {
     });
 
     socket.on('disconnect', () => {
+      console.log(`❌ Client disconnected: ${socket.id}`);
       roomManager.handleDisconnect(socket.id);
     });
   });
