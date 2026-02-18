@@ -27,7 +27,7 @@ export default class GameRoom {
       mortgageEnabled: settings.mortgageEnabled !== undefined ? settings.mortgageEnabled : true
     };
     this.players = [];
-    this.board = new Board();
+    this.board = new Board(this.settings.map || 'world');
     this.currentTurnIndex = 0;
     this.gameStatus = 'waiting';
     this.gameLog = [];

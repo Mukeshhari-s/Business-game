@@ -78,49 +78,104 @@ const showJoinBtn = document.getElementById('showJoinBtn');
 const backToLobbyBtns = document.querySelectorAll('.backToLobbyBtn');
 const nameInputJoin = document.getElementById('nameInputJoin');
 
-// Board data themed after richup.io layout (order follows Monopoly indices clockwise starting at GO top-left)
-const boardData = [
-  { name: 'GO', color: null },
-  { name: 'Vaikalmedu', color: 'brazil' },
-  { name: 'Pudhaiyal', color: null },
-  { name: 'Thopupalayam', color: 'brazil' },
-  { name: 'Varumana vari', color: null },
-  { name: 'Vettaiyan Airways', color: 'railroad' },
-  { name: 'Paramathi', color: 'israel' },
-  { name: 'Surprise', color: null },
-  { name: 'P Velur', color: 'israel' },
-  { name: 'Kabilarmalai', color: 'israel' },
-  { name: 'Epistine Island', color: null },
-  { name: 'Velarivelli', color: 'italy' },
-  { name: 'U K Consultancy', color: 'utility' },
-  { name: 'Polampatti', color: 'italy' },
-  { name: 'Boat Theeru', color: 'italy' },
-  { name: 'Eagle Tractors', color: 'railroad' },
-  { name: 'Karur', color: 'germany' },
-  { name: 'Pudhaiyal', color: null },
-  { name: 'Namakkal main', color: 'germany' },
-  { name: 'Erode', color: 'germany' },
-  { name: 'Sorgavasal', color: null },
-  { name: 'Pollachi', color: 'china' },
-  { name: 'Surprise', color: null },
-  { name: 'Paladdam', color: 'china' },
-  { name: 'Udumalpet', color: 'china' },
-  { name: 'Vettaiyan waterways', color: 'railroad' },
-  { name: 'Unjalur', color: 'france' },
-  { name: 'Noyal', color: 'france' },
-  { name: 'Kathirvel vathukadai', color: 'utility' },
-  { name: 'Kodumudi', color: 'france' },
-  { name: 'Book your tickets', color: null },
-  { name: 'Sala Palayam', color: 'uk' },
-  { name: 'Govindham Palyam', color: 'uk' },
-  { name: 'Pudhaiyal', color: null },
-  { name: 'Valaiyal Karan Pudhur', color: 'uk' },
-  { name: 'Vettaiyan Roadways', color: 'railroad' },
-  { name: 'Surprise', color: null },
-  { name: 'Mettur Dam', color: 'usa' },
-  { name: 'Aadambara Vari', color: null },
-  { name: 'Kolathur Beach', color: 'usa' },
-];
+// Board data per map (order follows Monopoly indices clockwise starting at GO top-left)
+const boardMaps = {
+  world: [
+    { name: 'GO', color: null },
+    { name: 'Vaikalmedu', color: 'brazil' },
+    { name: 'Pudhaiyal', color: null },
+    { name: 'Thopupalayam', color: 'brazil' },
+    { name: 'Varumana vari', color: null },
+    { name: 'Vettaiyan Airways', color: 'railroad' },
+    { name: 'Paramathi', color: 'israel' },
+    { name: 'Surprise', color: null },
+    { name: 'P Velur', color: 'israel' },
+    { name: 'Kabilarmalai', color: 'israel' },
+    { name: 'Jail', color: null },
+    { name: 'Velarivelli', color: 'italy' },
+    { name: 'U K Consultancy', color: 'utility' },
+    { name: 'Boat Theeru', color: 'italy' },
+    { name: 'Polampatti', color: 'italy' },
+    { name: 'Eagle Tractors', color: 'railroad' },
+    { name: 'Karur', color: 'germany' },
+    { name: 'Pudhaiyal', color: null },
+    { name: 'Namakkal main', color: 'germany' },
+    { name: 'Erode', color: 'germany' },
+    { name: 'Vacation', color: null },
+    { name: 'Pollachi', color: 'china' },
+    { name: 'Surprise', color: null },
+    { name: 'Paladdam', color: 'china' },
+    { name: 'Udumalpet', color: 'china' },
+    { name: 'Vettaiyan waterways', color: 'railroad' },
+    { name: 'Unjalur', color: 'france' },
+    { name: 'Noyal', color: 'france' },
+    { name: 'Kathirvel vathukadai', color: 'utility' },
+    { name: 'Kodumudi', color: 'france' },
+    { name: 'Go To Jail', color: null },
+    { name: 'Sala Palayam', color: 'uk' },
+    { name: 'Govindham Palyam', color: 'uk' },
+    { name: 'Pudhaiyal', color: null },
+    { name: 'Valaiyal Karan Pudhur', color: 'uk' },
+    { name: 'Vettaiyan Roadways', color: 'railroad' },
+    { name: 'Surprise', color: null },
+    { name: 'Mettur Dam', color: 'usa' },
+    { name: 'Aadambara Vari', color: null },
+    { name: 'Kolathur Beach', color: 'usa' },
+  ],
+  legends: [
+    { name: 'GO', color: null },
+    { name: 'Osaka Bay', color: 'japan' },
+    { name: 'Festival Fund', color: null },
+    { name: 'Shibuya Crossing', color: 'japan' },
+    { name: 'Cultural Tax', color: null },
+    { name: 'Shinkansen Rail', color: 'railroad' },
+    { name: 'Valencia Harbor', color: 'spain' },
+    { name: 'Discovery', color: null },
+    { name: 'Seville Plaza', color: 'spain' },
+    { name: 'Bilbao Docks', color: 'spain' },
+    { name: 'Harbor Detention', color: null },
+    { name: 'Vancouver Quay', color: 'canada' },
+    { name: 'Niagara Energy', color: 'utility' },
+    { name: 'Toronto Market', color: 'canada' },
+    { name: 'Montreal Mile', color: 'canada' },
+    { name: 'Polar Express Rail', color: 'railroad' },
+    { name: 'Delhi Bazaar', color: 'india' },
+    { name: 'Heritage Chest', color: null },
+    { name: 'Jaipur Gates', color: 'india' },
+    { name: 'Kochi Port', color: 'india' },
+    { name: 'Safari Rest Stop', color: null },
+    { name: 'Sydney Harbour', color: 'australia' },
+    { name: 'Discovery', color: null },
+    { name: 'Brisbane Bay', color: 'australia' },
+    { name: 'Perth Outback', color: 'australia' },
+    { name: 'Coral Coast Rail', color: 'railroad' },
+    { name: 'Oaxaca Street', color: 'mexico' },
+    { name: 'Cancun Shore', color: 'mexico' },
+    { name: 'Maya Utilities', color: 'utility' },
+    { name: 'Tulum Ruins', color: 'mexico' },
+    { name: 'Go To Jail', color: null },
+    { name: 'Cape Town Ridge', color: 'southafrica' },
+    { name: 'Durban Market', color: 'southafrica' },
+    { name: 'Heritage Fund', color: null },
+    { name: 'Pretoria Square', color: 'southafrica' },
+    { name: 'Savannah Rail', color: 'railroad' },
+    { name: 'Discovery', color: null },
+    { name: 'Stockholm Quay', color: 'sweden' },
+    { name: 'Fjord Tax', color: null },
+    { name: 'Gothenburg Pier', color: 'sweden' },
+  ],
+};
+
+function resolveMapKey() {
+  const key = gameState?.settings?.map || lobbyData?.settings?.map || lobbyData?.map;
+  return boardMaps[key] ? key : 'world';
+}
+
+function getBoardData() {
+  return boardMaps[resolveMapKey()] || boardMaps.world;
+}
+
+let lastRenderedMapKey = null; // Track which map the board grid currently reflects
 
 const playerColors = [
   { name: 'Red', value: '#e74c3c' },
@@ -393,7 +448,9 @@ socket.on('room_created', ({ roomId, playerId }) => {
   sessionStorage.setItem('monopolyLobby', JSON.stringify({
     roomId,
     playerId,
-    name: nameInput.value || lobbyData.name
+    name: nameInput.value || lobbyData.name,
+    map: settings.map,
+    settings
   }));
 
   roomStatus && (roomStatus.textContent = `Room created! Share code: ${roomId}`);
@@ -440,7 +497,9 @@ socket.on('room_joined', ({ roomId, playerId }) => {
   sessionStorage.setItem('monopolyLobby', JSON.stringify({
     roomId,
     playerId,
-    name: nameInputJoin.value || nameInput.value || lobbyData.name
+    name: nameInputJoin.value || nameInput.value || lobbyData.name,
+    map: lobbyData.map,
+    settings: lobbyData.settings
   }));
 
   roomStatus && (roomStatus.textContent = `Joined room ${roomId}`);
@@ -633,7 +692,8 @@ socket.on('player_moved', ({ playerId, from, to }) => {
       animateTokenMovement(playerId, from, to);
 
       setTimeout(() => {
-        showToast(`${player.name} moved from ${boardData[from].name} to ${boardData[to].name}`, 'info');
+        const activeBoard = getBoardData();
+        showToast(`${player.name} moved from ${activeBoard[from].name} to ${activeBoard[to].name}`, 'info');
         displayedPositions[playerId] = to; // Update visual position after animation
         isAnimating = false;
         renderState(gameState);
@@ -645,7 +705,8 @@ socket.on('player_moved', ({ playerId, from, to }) => {
 socket.on('property_bought', ({ playerId, propertyIndex, price }) => {
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   if (player) {
-    showToast(`${player.name} bought ${boardData[propertyIndex].name} for Rs ${price}`, 'success');
+    const activeBoard = getBoardData();
+    showToast(`${player.name} bought ${activeBoard[propertyIndex].name} for Rs ${price}`, 'success');
   }
 });
 
@@ -660,14 +721,16 @@ socket.on('rent_paid', ({ fromPlayerId, toPlayerId, amount, propertyIndex }) => 
 socket.on('house_built', ({ playerId, propertyIndex, houses }) => {
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   if (player) {
-    showToast(`${player.name} built a house on ${boardData[propertyIndex].name} (${houses} total)`, 'success');
+    const activeBoard = getBoardData();
+    showToast(`${player.name} built a house on ${activeBoard[propertyIndex].name} (${houses} total)`, 'success');
   }
 });
 
 socket.on('hotel_built', ({ playerId, propertyIndex }) => {
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   if (player) {
-    showToast(`${player.name} built a hotel on ${boardData[propertyIndex].name}!`, 'success');
+    const activeBoard = getBoardData();
+    showToast(`${player.name} built a hotel on ${activeBoard[propertyIndex].name}!`, 'success');
   }
 });
 
@@ -1281,10 +1344,15 @@ function initBoard() {
   const boardGrid = document.getElementById('board-grid');
   if (!boardGrid) return;
 
+  const activeMapKey = resolveMapKey();
   const cells = boardGrid.querySelectorAll('.cell');
-  if (cells.length === 40) return; // Already initialized
+  const alreadyBuilt = cells.length === 40;
+
+  if (alreadyBuilt && activeMapKey === lastRenderedMapKey) return; // Already initialized for this map
 
   boardGrid.innerHTML = '';
+  const activeBoard = getBoardData();
+  lastRenderedMapKey = activeMapKey;
 
   // Create all 40 cells with grid positioning
   for (let i = 0; i < 40; i++) {
@@ -1296,7 +1364,7 @@ function initBoard() {
     cell.style.gridRow = row + 1;
     cell.style.gridColumn = col + 1;
 
-    const cellData = boardData[i];
+    const cellData = activeBoard[i];
 
     // Orientation classes
     if (row === 0) cell.classList.add('top');
@@ -1367,6 +1435,9 @@ function renderBuildableProperties(state) {
 // Render game state
 function renderState(state) {
   if (!state) return;
+
+  // Ensure board grid matches the active map
+  initBoard();
 
   gameSection.classList.remove('hidden');
   connectionScreen?.classList.add('hidden');
@@ -2088,7 +2159,7 @@ function renderTrades(state) {
     const getPropertyBadges = (propIndices) => {
       if (!propIndices || !propIndices.length) return '<span class="text-slate-600 italic">None</span>';
       return propIndices.map(idx => {
-        const prop = boardData[idx];
+        const prop = getBoardData()[idx];
         const colorClass = prop?.color ? `color-${prop.color}` : 'bg-slate-700';
         return `
           <div class="flex items-center gap-1 mb-1">

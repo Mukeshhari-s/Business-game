@@ -32,56 +32,134 @@ class VacationCell extends Cell {
   }
 }
 
+const MAPS = {
+  world: [
+    { type: 'go', name: 'GO' },
+    { type: 'property', name: 'Vaikalmedu', price: 60, rent: 2, group: 'brazil' },
+    { type: 'neutral', name: 'Pudhaiyal' },
+    { type: 'property', name: 'Thopupalayam', price: 60, rent: 4, group: 'brazil' },
+    { type: 'tax', name: 'Varumana vari', amount: 200 },
+    { type: 'property', name: 'Vettaiyan Airways', price: 200, rent: 25, group: 'railroad', buildable: false },
+    { type: 'property', name: 'Paramathi', price: 100, rent: 6, group: 'israel' },
+    { type: 'neutral', name: 'Surprise' },
+    { type: 'property', name: 'P Velur', price: 100, rent: 6, group: 'israel' },
+    { type: 'property', name: 'Kabilarmalai', price: 120, rent: 8, group: 'israel' },
+    { type: 'jail', name: 'Jail' },
+    { type: 'property', name: 'Velarivelli', price: 140, rent: 10, group: 'italy' },
+    { type: 'property', name: 'U K Consultancy', price: 150, rent: 15, group: 'utility', buildable: false },
+    { type: 'property', name: 'Boat Theeru', price: 140, rent: 10, group: 'italy' },
+    { type: 'property', name: 'Polampatti', price: 160, rent: 12, group: 'italy' },
+    { type: 'property', name: 'Eagle Tractors', price: 200, rent: 25, group: 'railroad', buildable: false },
+    { type: 'property', name: 'Karur', price: 180, rent: 14, group: 'germany' },
+    { type: 'neutral', name: 'Pudhaiyal' },
+    { type: 'property', name: 'Namakkal main', price: 180, rent: 14, group: 'germany' },
+    { type: 'property', name: 'Erode', price: 200, rent: 16, group: 'germany' },
+    { type: 'vacation', name: 'Vacation' },
+    { type: 'property', name: 'Pollachi', price: 220, rent: 18, group: 'china' },
+    { type: 'neutral', name: 'Surprise' },
+    { type: 'property', name: 'Paladdam', price: 220, rent: 18, group: 'china' },
+    { type: 'property', name: 'Udumalpet', price: 240, rent: 20, group: 'china' },
+    { type: 'property', name: 'Vettaiyan waterways', price: 200, rent: 25, group: 'railroad', buildable: false },
+    { type: 'property', name: 'Unjalur', price: 260, rent: 22, group: 'france' },
+    { type: 'property', name: 'Noyal', price: 260, rent: 22, group: 'france' },
+    { type: 'property', name: 'Kathirvel vathukadai', price: 150, rent: 15, group: 'utility', buildable: false },
+    { type: 'property', name: 'Kodumudi', price: 280, rent: 24, group: 'france' },
+    { type: 'go-to-jail', name: 'Go To Jail' },
+    { type: 'property', name: 'Sala Palayam', price: 300, rent: 26, group: 'uk' },
+    { type: 'property', name: 'Govindham Palyam', price: 300, rent: 26, group: 'uk' },
+    { type: 'neutral', name: 'Pudhaiyal' },
+    { type: 'property', name: 'Valaiyal Karan Pudhur', price: 320, rent: 28, group: 'uk' },
+    { type: 'property', name: 'Vettaiyan Roadways', price: 200, rent: 25, group: 'railroad', buildable: false },
+    { type: 'neutral', name: 'Surprise' },
+    { type: 'property', name: 'Mettur Dam', price: 350, rent: 35, group: 'usa' },
+    { type: 'tax', name: 'Aadambara Vari', amount: 100 },
+    { type: 'property', name: 'Kolathur Beach', price: 400, rent: 50, group: 'usa' },
+  ],
+  legends: [
+    { type: 'go', name: 'GO' },
+    { type: 'property', name: 'Osaka Bay', price: 60, rent: 2, group: 'japan' },
+    { type: 'neutral', name: 'Festival Fund' },
+    { type: 'property', name: 'Shibuya Crossing', price: 60, rent: 4, group: 'japan' },
+    { type: 'tax', name: 'Cultural Tax', amount: 200 },
+    { type: 'property', name: 'Shinkansen Rail', price: 200, rent: 25, group: 'railroad', buildable: false },
+    { type: 'property', name: 'Valencia Harbor', price: 100, rent: 6, group: 'spain' },
+    { type: 'neutral', name: 'Discovery' },
+    { type: 'property', name: 'Seville Plaza', price: 100, rent: 6, group: 'spain' },
+    { type: 'property', name: 'Bilbao Docks', price: 120, rent: 8, group: 'spain' },
+    { type: 'jail', name: 'Harbor Detention' },
+    { type: 'property', name: 'Vancouver Quay', price: 140, rent: 10, group: 'canada' },
+    { type: 'property', name: 'Niagara Energy', price: 150, rent: 15, group: 'utility', buildable: false },
+    { type: 'property', name: 'Toronto Market', price: 140, rent: 10, group: 'canada' },
+    { type: 'property', name: 'Montreal Mile', price: 160, rent: 12, group: 'canada' },
+    { type: 'property', name: 'Polar Express Rail', price: 200, rent: 25, group: 'railroad', buildable: false },
+    { type: 'property', name: 'Delhi Bazaar', price: 180, rent: 14, group: 'india' },
+    { type: 'neutral', name: 'Heritage Chest' },
+    { type: 'property', name: 'Jaipur Gates', price: 180, rent: 14, group: 'india' },
+    { type: 'property', name: 'Kochi Port', price: 200, rent: 16, group: 'india' },
+    { type: 'vacation', name: 'Safari Rest Stop' },
+    { type: 'property', name: 'Sydney Harbour', price: 220, rent: 18, group: 'australia' },
+    { type: 'neutral', name: 'Discovery' },
+    { type: 'property', name: 'Brisbane Bay', price: 220, rent: 18, group: 'australia' },
+    { type: 'property', name: 'Perth Outback', price: 240, rent: 20, group: 'australia' },
+    { type: 'property', name: 'Coral Coast Rail', price: 200, rent: 25, group: 'railroad', buildable: false },
+    { type: 'property', name: 'Oaxaca Street', price: 260, rent: 22, group: 'mexico' },
+    { type: 'property', name: 'Cancun Shore', price: 260, rent: 22, group: 'mexico' },
+    { type: 'property', name: 'Maya Utilities', price: 150, rent: 15, group: 'utility', buildable: false },
+    { type: 'property', name: 'Tulum Ruins', price: 280, rent: 24, group: 'mexico' },
+    { type: 'go-to-jail', name: 'Go To Jail' },
+    { type: 'property', name: 'Cape Town Ridge', price: 300, rent: 26, group: 'southafrica' },
+    { type: 'property', name: 'Durban Market', price: 300, rent: 26, group: 'southafrica' },
+    { type: 'neutral', name: 'Heritage Fund' },
+    { type: 'property', name: 'Pretoria Square', price: 320, rent: 28, group: 'southafrica' },
+    { type: 'property', name: 'Savannah Rail', price: 200, rent: 25, group: 'railroad', buildable: false },
+    { type: 'neutral', name: 'Discovery' },
+    { type: 'property', name: 'Stockholm Quay', price: 350, rent: 35, group: 'sweden' },
+    { type: 'tax', name: 'Fjord Tax', amount: 100 },
+    { type: 'property', name: 'Gothenburg Pier', price: 400, rent: 50, group: 'sweden' },
+  ],
+};
+
 export default class Board {
-  constructor() {
-    this.cells = this.buildBoard();
+  constructor(mapKey = 'world') {
+    this.mapKey = MAPS[mapKey] ? mapKey : 'world';
+    this.cells = this.buildBoard(MAPS[this.mapKey]);
   }
 
-  buildBoard() {
+  buildBoard(mapDef) {
     const cells = [];
-    cells[0] = new GoCell();
-    cells[1] = new PropertyCell(1, 'Vaikalmedu', 60, 2, 'brazil');
-    cells[2] = new Cell(2, 'Pudhaiyal', 'neutral');
-    cells[3] = new PropertyCell(3, 'Thopupalayam', 60, 4, 'brazil');
-    cells[4] = new TaxCell(4, 'Varumana vari', 200);
-    cells[5] = new PropertyCell(5, 'Vettaiyan Airways', 200, 25, 'railroad', false);
-    cells[6] = new PropertyCell(6, 'Paramathi', 100, 6, 'israel');
-    cells[7] = new Cell(7, 'Surprise', 'neutral');
-    cells[8] = new PropertyCell(8, 'P Velur', 100, 6, 'israel');
-    cells[9] = new PropertyCell(9, 'Kabilarmalai', 120, 8, 'israel');
 
-    cells[10] = new JailCell(10);
-    cells[11] = new PropertyCell(11, 'Velarivelli', 140, 10, 'italy');
-    cells[12] = new PropertyCell(12, 'U K Consultancy', 150, 15, 'utility', false);
-    cells[14] = new PropertyCell(14, 'Polampatti', 160, 12, 'italy');
-    cells[13] = new PropertyCell(13, 'Boat Theeru', 140, 10, 'italy');
-    cells[15] = new PropertyCell(15, 'Eagle Tractors', 200, 25, 'railroad', false);
-    cells[16] = new PropertyCell(16, 'Karur', 180, 14, 'germany');
-    cells[17] = new Cell(17, 'Pudhaiyal', 'neutral');
-    cells[18] = new PropertyCell(18, 'Namakkal main', 180, 14, 'germany');
-    cells[19] = new PropertyCell(19, 'Erode', 200, 16, 'germany');
-
-    cells[20] = new VacationCell(20);
-    cells[21] = new PropertyCell(21, 'Pollachi', 220, 18, 'china');
-    cells[22] = new Cell(22, 'Surprise', 'neutral');
-    cells[23] = new PropertyCell(23, 'Paladdam', 220, 18, 'china');
-    cells[24] = new PropertyCell(24, 'Udumalpet', 240, 20, 'china');
-    cells[25] = new PropertyCell(25, 'Vettaiyan waterways', 200, 25, 'railroad', false);
-    cells[26] = new PropertyCell(26, 'Unjalur', 260, 22, 'france');
-    cells[27] = new PropertyCell(27, 'Noyal', 260, 22, 'france');
-    cells[28] = new PropertyCell(28, 'Kathirvel vathukadai', 150, 15, 'utility', false);
-    cells[29] = new PropertyCell(29, 'Kodumudi', 280, 24, 'france');
-
-    cells[30] = new GoToJailCell(30);
-    cells[31] = new PropertyCell(31, 'Sala Palayam', 300, 26, 'uk');
-    cells[32] = new PropertyCell(32, 'Govindham Palyam', 300, 26, 'uk');
-    cells[33] = new Cell(33, 'Pudhaiyal', 'neutral');
-    cells[34] = new PropertyCell(34, 'Valaiyal Karan Pudhur', 320, 28, 'uk');
-    cells[35] = new PropertyCell(35, 'Vettaiyan Roadways', 200, 25, 'railroad', false);
-    cells[36] = new Cell(36, 'Surprise', 'neutral');
-    cells[37] = new PropertyCell(37, 'Mettur Dam', 350, 35, 'usa');
-    cells[38] = new TaxCell(38, 'Aadambara Vari', 100);
-    cells[39] = new PropertyCell(39, 'Kolathur Beach', 400, 50, 'usa');
+    mapDef.forEach((def, index) => {
+      switch (def.type) {
+        case 'go':
+          cells[index] = new GoCell();
+          break;
+        case 'jail':
+          cells[index] = new JailCell(index);
+          break;
+        case 'vacation':
+          cells[index] = new VacationCell(index);
+          break;
+        case 'go-to-jail':
+          cells[index] = new GoToJailCell(index);
+          break;
+        case 'tax':
+          cells[index] = new TaxCell(index, def.name, def.amount);
+          break;
+        case 'property':
+          cells[index] = new PropertyCell(
+            index,
+            def.name,
+            def.price,
+            def.rent,
+            def.group,
+            def.buildable === undefined ? true : def.buildable,
+          );
+          break;
+        default:
+          cells[index] = new Cell(index, def.name, 'neutral');
+          break;
+      }
+    });
 
     return cells;
   }
