@@ -252,6 +252,12 @@
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Room Code</span>
                 <span id="roomCode" class="font-black text-2xl text-indigo-400 tracking-wider">-</span>
               </div>
+              <button id="leaveGameBtn" class="ml-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2" title="Leave this game and return to lobby">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                LEAVE
+              </button>
             </div>
           </div>
         </div>
@@ -472,21 +478,21 @@
       </div>
 
       <!-- Right Panel: Players & Properties -->
-      <div class="space-y-4 xl:sticky xl:top-6 self-start">
+      <div class="space-y-3 xl:sticky xl:top-6 self-start">
         <!-- Property Status Card -->
-        <div class="glass-card-premium rounded-2xl p-3 relative overflow-hidden">
+        <div class="glass-card-premium rounded-2xl p-2.5 relative overflow-hidden">
           <div class="flex items-center gap-2 mb-2">
-            <div class="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="p-1.5 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                 </path>
               </svg>
             </div>
-            <h3 class="text-lg font-black text-white drop-shadow-sm">Property</h3>
+            <h3 class="text-sm font-black text-white drop-shadow-sm">Property</h3>
           </div>
           <div id="propertyStatus"
-            class="p-2.5 bg-white/10 backdrop-blur-md rounded-xl text-xs text-white/90 font-medium border border-white/20 shadow-inner">
+            class="p-2 bg-white/10 backdrop-blur-md rounded-xl text-[10px] text-white/90 font-medium border border-white/20 shadow-inner">
             <div class="flex items-center gap-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -497,11 +503,11 @@
           </div>
 
           <button id="openTradeBtn"
-            class="premium-btn w-full mt-3 py-3 bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 hover:from-amber-700 hover:via-orange-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
+            class="premium-btn w-full mt-2.5 py-2 bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 hover:from-amber-700 hover:via-orange-600 hover:to-amber-600 text-white text-xs font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group">
             <span
               class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
             <span class="relative flex items-center justify-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
               </svg>
@@ -510,11 +516,11 @@
           </button>
 
           <button id="declareBankruptcyBtn"
-            class="premium-btn w-full mt-2 py-3 bg-gradient-to-r from-red-600 via-orange-600 to-red-700 hover:from-red-700 hover:via-orange-700 hover:to-red-800 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 hidden relative overflow-hidden group">
+            class="premium-btn w-full mt-2 py-2 bg-gradient-to-r from-red-600 via-orange-600 to-red-700 hover:from-red-700 hover:via-orange-700 hover:to-red-800 text-white text-xs font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 hidden relative overflow-hidden group">
             <span
               class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
             <span class="relative flex items-center justify-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
               DECLARE BANKRUPTCY
@@ -523,51 +529,51 @@
         </div>
 
         <!-- Players Card -->
-        <div class="glass-card-premium rounded-2xl p-3 relative overflow-hidden">
-          <div class="flex items-center gap-3 mb-2">
-            <div class="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg shadow-lg">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="glass-card-premium rounded-2xl p-2.5 relative overflow-hidden">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="p-1.5 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg shadow-lg">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
                 </path>
               </svg>
             </div>
-            <h3 class="text-lg font-black text-white drop-shadow-sm">Players</h3>
+            <h3 class="text-sm font-black text-white drop-shadow-sm">Players</h3>
           </div>
-          <div id="playersList" class="space-y-2"></div>
+          <div id="playersList" class="space-y-1.5"></div>
         </div>
 
         <!-- Trade Inbox -->
-        <div class="glass-card-premium rounded-2xl p-4 relative overflow-hidden">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="glass-card-premium rounded-2xl p-2.5 relative overflow-hidden">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="p-1.5 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-black text-white drop-shadow-sm">Trade Inbox</h3>
+            <h3 class="text-base font-black text-white drop-shadow-sm">Trade Inbox</h3>
           </div>
-          <div id="tradeInboxList" class="space-y-3">
-            <p class="text-sm text-slate-400 italic">No pending trades</p>
+          <div id="tradeInboxList" class="space-y-2">
+            <p class="text-xs text-slate-400 italic">No pending trades</p>
           </div>
         </div>
 
         <!-- Build Houses/Hotels Card -->
-        <div class="glass-card-premium rounded-2xl p-4 relative overflow-hidden">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg shadow-lg">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="glass-card-premium rounded-2xl p-2.5 relative overflow-hidden">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="p-1.5 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg shadow-lg">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                 </path>
               </svg>
             </div>
-            <h3 class="text-xl font-black text-white drop-shadow-sm">Development</h3>
+            <h3 class="text-base font-black text-white drop-shadow-sm">Development</h3>
           </div>
-          <div id="buildingControls" class="space-y-3">
-            <div class="p-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-              <p class="text-xs text-white/80 font-medium flex items-center gap-2">
+          <div id="buildingControls" class="space-y-2">
+            <div class="p-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
+              <p class="text-[10px] text-white/80 font-medium flex items-center gap-2">
                 <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>

@@ -10,6 +10,7 @@ console.log('🔌 Connecting to:', window.location.origin);
 let autoActionSent = false;
 let isAnimating = false;
 let displayedPositions = {}; // Track visual positions to sync with animations
+let isLeavingGame = false; // Flag to prevent reconnection when leaving
 
 // DOM Elements
 const nameInput = document.getElementById('nameInput');
@@ -41,6 +42,7 @@ const houseSupplyEl = document.getElementById('houseSupply');
 const hotelSupplyEl = document.getElementById('hotelSupply');
 const buildablePropertiesEl = document.getElementById('buildableProperties');
 const declareBankruptcyBtn = document.getElementById('declareBankruptcyBtn');
+const leaveGameBtn = document.getElementById('leaveGameBtn');
 
 // Room Settings Elements
 const startCashSelect = document.getElementById('startCashSelect');
@@ -263,20 +265,48 @@ declareBankruptcyBtn.addEventListener('click', () => {
   }
 });
 
+leaveGameBtn.addEventListener('click', () => {
+  if (confirm('Are you sure you want to leave this game?\n\nYou will be disconnected from the current room.')) {
+    leaveGame();
+  }
+});
+
 // Initialize UI based on session data
 if (lobbyData.roomId && lobbyData.playerId) {
   console.log('🔄 Existing session detected, preparing for reconnection...');
   // Show game section immediately while reconnecting
   connectionScreen?.classList.add('hidden');
   gameSection?.classList.remove('hidden');
+  leaveGameBtn?.classList.remove('hidden'); // Show leave button
   if (roomCode) roomCode.textContent = lobbyData.roomId;
   if (playerIdEl) playerIdEl.textContent = lobbyData.playerId.substring(0, 8) + '...';
+  
+  // Set a timeout for reconnection - if it fails, return to lobby
+  const reconnectTimeout = setTimeout(() => {
+    if (!currentRoomId || !myPlayerId) {
+      console.log('⏰ Reconnection timeout - returning to lobby');
+      showToast('Could not reconnect to previous game. Please create or join a room.', 'warning');
+      leaveGame();
+    }
+  }, 5000); // 5 second timeout
+  
+  // Store timeout ID to clear it on successful reconnection
+  window.reconnectTimeoutId = reconnectTimeout;
+} else {
+  // No session - hide leave button and show lobby
+  leaveGameBtn?.classList.add('hidden');
 }
 
 // Socket Event Handlers
 socket.on('room_created', ({ roomId, playerId }) => {
   currentRoomId = roomId;
   myPlayerId = playerId;
+
+  // Clear reconnection timeout if exists
+  if (window.reconnectTimeoutId) {
+    clearTimeout(window.reconnectTimeoutId);
+    window.reconnectTimeoutId = null;
+  }
 
   // Save session for reconnection
   sessionStorage.setItem('monopolyLobby', JSON.stringify({
@@ -290,6 +320,7 @@ socket.on('room_created', ({ roomId, playerId }) => {
   playerIdEl && (playerIdEl.textContent = playerId.substring(0, 8) + '...');
   connectionScreen?.classList.add('hidden');
   gameSection?.classList.remove('hidden');
+  leaveGameBtn?.classList.remove('hidden'); // Show leave button
   showToast(`Room ${roomId} created successfully!`, 'success');
 });
 
@@ -298,6 +329,12 @@ socket.on('room_joined', ({ roomId, playerId }) => {
   console.log('✅ Joined room:', roomId, 'with player ID:', playerId);
   currentRoomId = roomId;
   myPlayerId = playerId;
+
+  // Clear reconnection timeout if exists
+  if (window.reconnectTimeoutId) {
+    clearTimeout(window.reconnectTimeoutId);
+    window.reconnectTimeoutId = null;
+  }
 
   // Save session for reconnection
   sessionStorage.setItem('monopolyLobby', JSON.stringify({
@@ -311,6 +348,7 @@ socket.on('room_joined', ({ roomId, playerId }) => {
   playerIdEl && (playerIdEl.textContent = playerId.substring(0, 8) + '...');
   connectionScreen?.classList.add('hidden');
   gameSection?.classList.remove('hidden');
+  leaveGameBtn?.classList.remove('hidden'); // Show leave button
   showToast(`Joined room ${roomId}`, 'success');
 });
 
@@ -323,6 +361,13 @@ socket.on('reconnected', ({ playerId }) => {
   myPlayerId = playerId;
   currentRoomId = lobbyData.roomId; // Restore from session
   showToast('Reconnected to game!', 'success');
+  
+  // Clear reconnection timeout
+  if (window.reconnectTimeoutId) {
+    clearTimeout(window.reconnectTimeoutId);
+    window.reconnectTimeoutId = null;
+  }
+  
   // Make sure UI is updated
   if (roomCode) roomCode.textContent = currentRoomId;
   if (playerIdEl) playerIdEl.textContent = playerId.substring(0, 8) + '...';
@@ -335,8 +380,13 @@ socket.on('player_reconnected', ({ player }) => {
 });
 
 socket.on('reconnect_failed', ({ message }) => {
-  showToast(`Reconnection failed: ${message}`, 'error');
+  console.log('❌ Reconnection failed:', message);
+  showToast(`Reconnection failed: ${message}. Returning to lobby...`, 'error');
   sessionStorage.removeItem('monopolyLobby');
+  // Return to lobby after failed reconnection
+  setTimeout(() => {
+    leaveGame();
+  }, 2000);
 });
 
 socket.on('game_started', () => {
@@ -1129,7 +1179,7 @@ function renderBuildableProperties(state) {
 
   const me = state.players.find(p => p.playerId === myPlayerId);
   if (!me || me.isBankrupt) {
-    buildablePropertiesEl.innerHTML = '<p class="text-sm text-slate-500 italic">Not available</p>';
+    buildablePropertiesEl.innerHTML = '<p class="text-xs text-slate-500 italic">Not available</p>';
     return;
   }
 
@@ -1138,7 +1188,7 @@ function renderBuildableProperties(state) {
   );
 
   if (myProperties.length === 0) {
-    buildablePropertiesEl.innerHTML = '<p class="text-sm text-slate-500 italic">You don\'t own any buildable properties</p>';
+    buildablePropertiesEl.innerHTML = '<p class="text-xs text-slate-500 italic">You don\'t own any buildable properties</p>';
     return;
   }
 
@@ -1146,15 +1196,15 @@ function renderBuildableProperties(state) {
 
   myProperties.forEach(cell => {
     const propertyDiv = document.createElement('div');
-    propertyDiv.className = `p-3 flex justify-between items-center bg-gradient-to-r ${cell.isMortgaged ? 'from-slate-900 to-black opacity-60' : 'from-slate-800 to-slate-900'} rounded-lg border ${cell.isMortgaged ? 'border-amber-900/50' : 'border-slate-700'} cursor-pointer hover:border-slate-500 transition-all`;
+    propertyDiv.className = `p-2 flex justify-between items-center bg-gradient-to-r ${cell.isMortgaged ? 'from-slate-900 to-black opacity-60' : 'from-slate-800 to-slate-900'} rounded-lg border ${cell.isMortgaged ? 'border-amber-900/50' : 'border-slate-700'} cursor-pointer hover:border-slate-500 transition-all`;
     propertyDiv.onclick = () => openPropertyModal(cell.index);
 
     const nameDiv = document.createElement('div');
-    nameDiv.className = 'font-bold text-sm text-white flex items-center gap-2';
-    nameDiv.innerHTML = `${cell.name} ${cell.isMortgaged ? '<span class="text-[10px] bg-amber-900/80 text-amber-400 px-1 rounded">MORTGAGED</span>' : ''}`;
+    nameDiv.className = 'font-bold text-xs text-white flex items-center gap-2';
+    nameDiv.innerHTML = `${cell.name} ${cell.isMortgaged ? '<span class="text-[9px] bg-amber-900/80 text-amber-400 px-1 rounded">MORTGAGED</span>' : ''}`;
 
     const priceDiv = document.createElement('div');
-    priceDiv.className = 'text-xs font-bold text-yellow-500';
+    priceDiv.className = 'text-[10px] font-bold text-yellow-500';
     priceDiv.textContent = `Rs ${cell.price}`;
 
     propertyDiv.appendChild(nameDiv);
@@ -1353,7 +1403,7 @@ function renderState(state) {
   playersList.innerHTML = '';
   state.players.forEach((player, index) => {
     const card = document.createElement('div');
-    card.className = 'relative py-1.5 px-1 transition-all duration-300 border-b border-white/5 last:border-0 group';
+    card.className = 'relative py-1.5 px-2 transition-all duration-300 border-b border-white/5 last:border-0 group';
 
     if (player.playerId === state.currentTurnPlayerId) {
       // Simple highlight with a color for the current player
@@ -1363,29 +1413,29 @@ function renderState(state) {
     }
 
     const header = document.createElement('div');
-    header.className = 'flex justify-between items-center relative z-10';
+    header.className = 'flex justify-between items-center gap-2 relative z-10';
 
     const tokenColor = document.createElement('div');
-    tokenColor.className = 'w-7 h-7 rounded-lg border-2 border-white/20 shadow-sm flex items-center justify-center font-black text-white text-[10px]';
+    tokenColor.className = 'w-6 h-6 rounded-lg border-2 border-white/20 shadow-sm flex items-center justify-center font-black text-white text-[9px]';
     tokenColor.style.background = `linear-gradient(135deg, ${playerColors[index % playerColors.length]}, ${adjustBrightness(playerColors[index % playerColors.length], -20)})`;
     tokenColor.textContent = player.name[0].toUpperCase();
 
     const nameSpan = document.createElement('span');
-    nameSpan.className = 'font-bold text-white text-sm flex-1 ml-2';
+    nameSpan.className = 'font-bold text-white text-xs flex-1 ml-2 truncate';
     nameSpan.textContent = player.name;
     if (player.playerId === myPlayerId) {
       const youBadge = document.createElement('span');
-      youBadge.className = 'ml-1.5 px-1.5 py-0.5 bg-indigo-500/80 text-white text-[8px] font-bold rounded-md';
+      youBadge.className = 'ml-1 px-1 py-0.5 bg-indigo-500/80 text-white text-[7px] font-bold rounded-md';
       youBadge.textContent = 'YOU';
       nameSpan.appendChild(youBadge);
     }
 
     const balanceAmount = document.createElement('div');
-    balanceAmount.className = 'text-2xl font-black text-yellow-400 text-right drop-shadow-[0_0_10px_rgba(250,204,21,0.3)]';
+    balanceAmount.className = 'text-sm font-black text-yellow-400 text-right drop-shadow-[0_0_10px_rgba(250,204,21,0.3)] shrink-0';
     balanceAmount.textContent = `$${player.balance}`;
 
     const nameContainer = document.createElement('div');
-    nameContainer.className = 'flex items-center flex-1';
+    nameContainer.className = 'flex items-center flex-1 min-w-0';
     nameContainer.appendChild(tokenColor);
     nameContainer.appendChild(nameSpan);
 
@@ -1393,7 +1443,7 @@ function renderState(state) {
     header.appendChild(balanceAmount);
 
     const statusDiv = document.createElement('div');
-    statusDiv.className = 'text-[10px] font-medium mt-0.5 relative z-10';
+    statusDiv.className = 'text-[9px] font-medium mt-0.5 relative z-10';
     const statusText = player.isBankrupt ? 'Bankrupt' : 'Active';
     const statusColor = player.isBankrupt ? 'text-rose-400' : 'text-cyan-300';
     statusDiv.className += ` ${statusColor}`;
@@ -1420,14 +1470,14 @@ function renderState(state) {
   if (state.pendingPropertyIndex !== null) {
     const cell = state.board.cells[state.pendingPropertyIndex];
     propertyStatus.innerHTML = `
-      <div class="font-bold text-white mb-1">🏠 ${cell.name}</div>
-      <div class="text-sm text-slate-300 mb-2">Price: Rs ${cell.price} | Rent: Rs ${cell.rent}</div>
-      <div class="text-sm text-emerald-400 font-semibold">Click "Buy Property" to purchase!</div>
+      <div class="font-bold text-white mb-1 text-xs">🏠 ${cell.name}</div>
+      <div class="text-[10px] text-slate-300 mb-1.5">Price: Rs ${cell.price} | Rent: Rs ${cell.rent}</div>
+      <div class="text-[10px] text-emerald-400 font-semibold">Click "Buy Property" to purchase!</div>
     `;
-    propertyStatus.className = 'p-4 bg-emerald-900/30 border-2 border-emerald-500/50 rounded-lg text-sm';
+    propertyStatus.className = 'p-2.5 bg-emerald-900/30 border-2 border-emerald-500/50 rounded-lg text-[10px]';
   } else {
     propertyStatus.innerHTML = 'No property action pending';
-    propertyStatus.className = 'p-4 bg-slate-800/50 rounded-lg text-sm text-slate-400 font-medium';
+    propertyStatus.className = 'p-2.5 bg-slate-800/50 rounded-lg text-[10px] text-slate-400 font-medium';
   }
 
   // Update buildable properties
@@ -1815,7 +1865,7 @@ function renderTrades(state) {
   );
 
   if (incoming.length === 0) {
-    tradeInboxList.innerHTML = '<p class="text-sm text-slate-500 italic">No pending trades</p>';
+    tradeInboxList.innerHTML = '<p class="text-xs text-slate-500 italic">No pending trades</p>';
     return;
   }
 
@@ -1824,21 +1874,21 @@ function renderTrades(state) {
     const from = state.players.find((p) => p.playerId === trade.fromPlayerId);
 
     const card = document.createElement('div');
-    card.className = 'p-4 rounded-xl border border-slate-700 bg-slate-800 shadow-sm space-y-3';
+    card.className = 'p-2.5 rounded-xl border border-slate-700 bg-slate-800 shadow-sm space-y-2';
 
     const header = document.createElement('div');
     header.className = 'flex justify-between items-center';
     header.innerHTML = `
       <div>
-        <div class="text-xs text-slate-500">From</div>
-        <div class="font-bold text-white">${from ? from.name : 'Player'}</div>
+        <div class="text-[9px] text-slate-500">From</div>
+        <div class="font-bold text-white text-xs">${from ? from.name : 'Player'}</div>
       </div>
-      <span class="text-xs font-bold px-2 py-1 rounded-full bg-amber-900/50 text-amber-400">Pending</span>
+      <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-900/50 text-amber-400">Pending</span>
     `;
     card.appendChild(header);
 
     const detail = document.createElement('div');
-    detail.className = 'text-xs text-slate-300 grid grid-cols-2 gap-2';
+    detail.className = 'text-[10px] text-slate-300 grid grid-cols-2 gap-1.5';
     const offeredList = [];
     if ((trade.offered?.properties || []).length) offeredList.push(`Properties: ${trade.offered.properties.length}`);
     if (trade.offered?.money) offeredList.push(`Money: $${trade.offered.money}`);
@@ -1850,32 +1900,32 @@ function renderTrades(state) {
     if (trade.requested?.jailCards) requestedList.push(`Jail Cards: ${trade.requested.jailCards}`);
 
     detail.innerHTML = `
-      <div class="p-3 bg-slate-900/50 rounded-lg">
-        <div class="font-bold text-white mb-1">They Offer</div>
+      <div class="p-2 bg-slate-900/50 rounded-lg">
+        <div class="font-bold text-white mb-1 text-[10px]">They Offer</div>
         <div>${offeredList.join('<br>') || '<span class="text-slate-500">Nothing</span>'}</div>
       </div>
-      <div class="p-3 bg-slate-900/50 rounded-lg">
-        <div class="font-bold text-white mb-1">You Give</div>
+      <div class="p-2 bg-slate-900/50 rounded-lg">
+        <div class="font-bold text-white mb-1 text-[10px]">You Give</div>
         <div>${requestedList.join('<br>') || '<span class="text-slate-500">Nothing</span>'}</div>
       </div>
     `;
     card.appendChild(detail);
 
     const actions = document.createElement('div');
-    actions.className = 'flex gap-2';
+    actions.className = 'flex gap-1.5';
 
     const acceptBtn = document.createElement('button');
-    acceptBtn.className = 'flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg';
+    acceptBtn.className = 'flex-1 px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-[10px] font-bold rounded-lg';
     acceptBtn.textContent = 'Accept';
     acceptBtn.onclick = () => socket.emit('trade_accept', { tradeId: trade.tradeId });
 
     const rejectBtn = document.createElement('button');
-    rejectBtn.className = 'flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg';
+    rejectBtn.className = 'flex-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-lg';
     rejectBtn.textContent = 'Reject';
     rejectBtn.onclick = () => socket.emit('trade_reject', { tradeId: trade.tradeId });
 
     const counterBtn = document.createElement('button');
-    counterBtn.className = 'flex-1 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg';
+    counterBtn.className = 'flex-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold rounded-lg';
     counterBtn.textContent = 'Counter';
     counterBtn.onclick = () => {
       const counterDraft = {
@@ -1900,6 +1950,39 @@ function renderTrades(state) {
 // ============================================
 
 // Toast notification system
+function leaveGame() {
+  // Set flag to prevent reconnection
+  isLeavingGame = true;
+  
+  // Clear session
+  sessionStorage.removeItem('monopolyLobby');
+  currentRoomId = null;
+  myPlayerId = null;
+  gameState = null;
+  autoActionSent = false;
+  
+  // Disconnect socket
+  socket.disconnect();
+  
+  // Show lobby, hide game
+  gameSection?.classList.add('hidden');
+  connectionScreen?.classList.remove('hidden');
+  leaveGameBtn?.classList.add('hidden');
+  
+  // Clear any reconnection timeout
+  if (window.reconnectTimeoutId) {
+    clearTimeout(window.reconnectTimeoutId);
+    window.reconnectTimeoutId = null;
+  }
+  
+  // Reconnect socket after a short delay
+  setTimeout(() => {
+    isLeavingGame = false; // Clear flag before reconnecting
+    socket.connect();
+    showToast('Returned to lobby', 'info');
+  }, 300);
+}
+
 function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast ${type} font-semibold`;
@@ -1984,8 +2067,17 @@ socket.on('connect', () => {
   console.log('✅ Connected to server. Socket ID:', socket.id);
   showToast('Connected to server!', 'success');
   
-  if (!autoActionSent && lobbyData) {
-    const { action, name, roomId, playerId } = lobbyData;
+  // Don't auto-reconnect if user just left the game
+  if (isLeavingGame) {
+    console.log('🚫 Skipping auto-reconnect - user left game');
+    return;
+  }
+  
+  // Re-check sessionStorage to get fresh data (not the cached lobbyData)
+  const currentSessionData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
+  
+  if (!autoActionSent && Object.keys(currentSessionData).length > 0) {
+    const { action, name, roomId, playerId } = currentSessionData;
 
     // Priority 1: Persistent session reconnection
     if (roomId && playerId) {
@@ -1997,7 +2089,7 @@ socket.on('connect', () => {
 
     // Priority 2: One-time lobby actions (create/join)
     if (action === 'create' && name) {
-      const settings = lobbyData.settings || {
+      const settings = currentSessionData.settings || {
         startingBalance: 1500,
         maxPlayers: 4,
         map: 'world',
