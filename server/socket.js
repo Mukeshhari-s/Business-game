@@ -166,6 +166,15 @@ export default function initSockets(io) {
       room.handleTradeCounter(socket.id, tradeId, draft || {});
     });
 
+    socket.on('trade_cancel', ({ tradeId }) => {
+      const room = roomManager.getRoomBySocket(socket.id);
+      if (!room) {
+        socket.emit('error_message', { message: 'You are not in a room.' });
+        return;
+      }
+      room.handleTradeCancel(socket.id, tradeId);
+    });
+
     socket.on('sell_property', ({ propertyIndex }) => {
       const room = roomManager.getRoomBySocket(socket.id);
       if (!room) {

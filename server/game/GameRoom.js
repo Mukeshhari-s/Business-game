@@ -125,12 +125,26 @@ export default class GameRoom {
     // If the game is active, we DON'T treat disconnect as bankruptcy immediately.
     // We allow them to reconnect.
     if (this.gameStatus !== 'active') {
-      // Waiting lobby: remove entirely.
-      this.players = this.players.filter((p) => p.socketId !== socketId);
+      // Waiting lobby: don't remove immediately. Set a timeout (30s) to remove them if they don't reconnect.
+      console.log(`⏳ Player ${player.name} left lobby. Removal scheduled in 30s.`);
+      setTimeout(() => {
+        const p = this.getPlayerById(player.playerId);
+        if (p && !p.connected && this.gameStatus === 'waiting') {
+          console.log(`👋 Removing ${p.name} from lobby (reconnection timeout)`);
+          this.players = this.players.filter((pl) => pl.playerId !== player.playerId);
+          this.broadcastState();
+        }
+      }, 30000);
     }
 
     this.ensureTurnIsValid();
     this.checkGameOver();
+
+    // Host migration
+    if (player.playerId === this.hostId) {
+      this.promoteNextHost();
+    }
+
     this.broadcastState();
   }
 
@@ -151,6 +165,18 @@ export default class GameRoom {
 
   getPlayerById(playerId) {
     return this.players.find((p) => p.playerId === playerId) || null;
+  }
+
+  promoteNextHost() {
+    const nextHost = this.players.find(p => p.connected && !p.isBankrupt);
+    if (nextHost) {
+      this.hostId = nextHost.playerId;
+      this.log(`${nextHost.name} is now the host.`);
+      console.log(`👑 Host migrated to: ${nextHost.name} (${this.hostId})`);
+    } else {
+      this.hostId = null;
+      console.log('⚠️ No active players left to promote to host.');
+    }
   }
 
   reconnectPlayer(playerId, socketId) {
@@ -1091,6 +1117,26 @@ export default class GameRoom {
     this.broadcastState();
   }
 
+  handleTradeCancel(socketId, tradeId) {
+    const player = this.getPlayerBySocketId(socketId);
+    if (!player) return;
+
+    const trade = this.pendingTrades.get(tradeId);
+    if (!trade) {
+      this.sendError(socketId, 'Trade not found.');
+      return;
+    }
+
+    // Only the sender can cancel (withdraw) their offer
+    if (player.playerId !== trade.fromPlayerId) {
+      this.sendError(socketId, 'Only the sender can withdraw this trade offer.');
+      return;
+    }
+
+    this.cancelTrade(trade, 'Withdrawn by sender');
+    this.broadcastState();
+  }
+
   handleTradeCounter(socketId, tradeId, draft) {
     if (this.gameStatus !== 'active') {
       this.sendError(socketId, 'Game is not active.');
@@ -1352,6 +1398,12 @@ export default class GameRoom {
     } else if (this.checkGameOver()) {
       return;
     }
+
+    // Host migration if bankrupt player was host
+    if (player.playerId === this.hostId) {
+      this.promoteNextHost();
+    }
+
     this.broadcastState();
   }
 

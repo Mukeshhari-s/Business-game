@@ -1,261 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Monopoly Elite - Game</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
 
-<!-- Background blobs -->
-<div class="fixed inset-0 pointer-events-none">
-  <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-20"></div>
-  <div class="absolute top-0 right-1/4 w-96 h-96 bg-pink-500 rounded-full blur-3xl opacity-20"></div>
-  <div class="absolute bottom-0 left-1/3 w-96 h-96 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
-</div>
+  <!-- Background blobs -->
+  <div class="fixed inset-0 pointer-events-none">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-20"></div>
+    <div class="absolute top-0 right-1/4 w-96 h-96 bg-pink-500 rounded-full blur-3xl opacity-20"></div>
+    <div class="absolute bottom-0 left-1/3 w-96 h-96 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
+  </div>
 
-<div class="container mx-auto px-4 py-6 max-w-[1800px] relative z-10">
+  <div class="relative z-10 layout-wrapper py-6">
 
-  <!-- HEADER -->
-  <div class="text-center mb-6">
-    <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200"
+    <!-- HEADER -->
+    <div class="text-center mb-6">
+      <h1
+        class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200"
         style="font-family: 'Montserrat', sans-serif;">
-      MONOPOLY ELITE
-    </h1>
-  </div>
+        MONOPOLY ELITE
+      </h1>
+    </div>
 
-  <!-- MAIN GRID -->
-  <div class="main-grid">
+    <!-- MAIN GRID -->
+    <div class="main-grid">
 
-    <!-- ================= BOARD SECTION ================= -->
-    <div class="relative flex justify-center board-wrapper">
+      <!-- ================= BOARD SECTION ================= -->
+      <div class="relative flex justify-center board-wrapper">
 
-      <div id="monopoly-board"
-        class="relative w-[85vmin] h-[85vmin] max-w-[900px] max-h-[900px]">
+        <div id="monopoly-board" class="relative w-[85vmin] h-[85vmin] max-w-[900px] max-h-[900px]">
 
-        <div class="absolute inset-0 bg-green-800 rounded-3xl shadow-2xl"></div>
+          <div class="absolute inset-0 bg-green-800 rounded-3xl shadow-2xl"></div>
 
-        <!-- Board Grid for Cells -->
-        <div id="board-grid" class="absolute inset-0 grid grid-cols-11 grid-rows-11"></div>
+          <!-- Board Grid for Cells -->
+          <div id="board-grid" class="absolute inset-0 grid grid-cols-11 grid-rows-11"></div>
 
-        <!-- CENTER OVERLAY -->
-        <div class="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <!-- CENTER OVERLAY -->
+          <div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
 
-          <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-6 w-[85%] max-w-md pointer-events-auto">
+            <div class="board-center-card pointer-events-auto">
 
-            <div class="text-center mb-4">
-              <h2 class="font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-pink-600 to-red-600">
-                MONOPOLY
-              </h2>
-              <div id="currentTurn"
-                   class="mt-2 text-sm font-bold text-indigo-600">
-                Waiting...
+              <div class="text-center w-full">
+                <h2
+                  class="font-black text-2xl text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-400 to-red-500 tracking-tighter uppercase italic">
+                  BUSINESS
+                </h2>
+                <div id="currentTurn" class="mt-1 text-[11px] font-bold text-indigo-300 uppercase tracking-widest">
+                  Waiting...
+                </div>
               </div>
-            </div>
 
-            <!-- DICE -->
-            <div class="flex justify-center gap-4 mb-4">
-              <div id="die1"
-                   class="w-16 h-16 bg-white border-4 border-gray-800 rounded-2xl flex items-center justify-center text-3xl font-black shadow-xl">?</div>
-              <div id="die2"
-                   class="w-16 h-16 bg-white border-4 border-gray-800 rounded-2xl flex items-center justify-center text-3xl font-black shadow-xl">?</div>
-            </div>
+              <!-- DICE -->
+              <div class="flex justify-center gap-4 py-1">
+                <div id="die1"
+                  class="w-14 h-14 bg-white border-2 border-slate-700 rounded-xl flex items-center justify-center text-3xl font-black shadow-lg text-slate-900">
+                  ?</div>
+                <div id="die2"
+                  class="w-14 h-14 bg-white border-2 border-slate-700 rounded-xl flex items-center justify-center text-3xl font-black shadow-lg text-slate-900">
+                  ?</div>
+              </div>
 
-            <div id="diceTotal"
-                 class="text-center text-sm font-bold text-purple-600 mb-4"></div>
+              <div id="diceTotal" class="text-center text-[11px] font-black text-yellow-400 uppercase"></div>
 
-            <!-- ACTION BUTTONS -->
-            <div class="grid grid-cols-2 gap-3">
+              <!-- ACTION BUTTONS -->
+              <div class="grid grid-cols-2 gap-2 w-full">
 
-              <button id="rollBtn"
-                      class="bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-xl font-bold transition">
-                🎲 Roll Dice
-              </button>
-
-              <button id="buyBtn"
-                      class="bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl font-bold transition">
-                🏠 Buy Property
-              </button>
-
-              <button id="endTurnBtnCenter"
-                      class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl font-bold transition col-span-2">
-                ⏭ End Turn
-              </button>
-
-              <label id="bailWrapper"
-                     class="col-span-2 hidden items-center gap-3 bg-yellow-100 border border-yellow-400 rounded-xl p-3">
-                <input type="checkbox" id="bailCheckbox" class="w-4 h-4 text-yellow-600">
-                <span class="text-sm font-bold text-yellow-800">Pay Rs 50 bail</span>
-              </label>
-
-              <div id="startGameContainer" class="col-span-2 hidden">
-                <button id="startGameBtn"
-                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 rounded-xl font-bold">
-                  ▶️ Waiting To Start
+                <button id="rollBtn"
+                  class="bg-gradient-to-br from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white py-2.5 rounded-xl font-black text-xs shadow-lg transform active:scale-95 transition-all">
+                  🎲 ROLL
                 </button>
+
+                <button id="buyBtn"
+                  class="bg-gradient-to-br from-emerald-500 to-teal-700 hover:from-emerald-600 hover:to-teal-800 text-white py-2.5 rounded-xl font-black text-xs shadow-lg transform active:scale-95 transition-all">
+                  🏠 BUY
+                </button>
+
+                <button id="endTurnBtnCenter"
+                  class="bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white py-2.5 rounded-xl font-black text-xs shadow-lg transform active:scale-95 transition-all col-span-2">
+                  ⏭ NEXT TURN
+                </button>
+
+                <label id="bailWrapper"
+                  class="col-span-2 hidden items-center gap-3 bg-amber-500/20 border border-amber-500/50 rounded-xl p-3">
+                  <input type="checkbox" id="bailCheckbox"
+                    class="w-4 h-4 rounded border-amber-500 text-amber-500 focus:ring-amber-500 bg-slate-900">
+                  <span class="text-xs font-bold text-amber-400">Pay Rs 50 bail</span>
+                </label>
+
+                <div id="startGameContainer" class="col-span-2 hidden z-[60] relative">
+                  <button id="startGameBtn" onclick="window.forceStart()"
+                    class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 rounded-xl font-black text-sm shadow-xl animate-pulse relative z-[70] pointer-events-auto">
+                    START GAME
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- GAME LOG -->
+              <div id="gameLog" class="board-log w-full bg-black/40 rounded-xl border border-white/5 mt-2">
               </div>
 
             </div>
+          </div>
 
-            <!-- GAME LOG -->
-            <div id="gameLog"
-                 class="mt-4 max-h-24 overflow-y-auto text-xs bg-gray-100 rounded-lg p-2">
+        </div>
+      </div>
+
+      <!-- ================= RIGHT SIDEBAR ================= -->
+      <div class="space-y-6 sidebar-panel">
+
+        <!-- GAME INFO -->
+        <div class="glass-card-premium rounded-2xl p-5 shadow-xl">
+          <h3 class="text-xl font-black mb-4">Game Info</h3>
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+              <span>Room Code</span>
+              <span id="roomCode" class="font-bold">-</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Your ID</span>
+              <span id="playerId" class="font-mono">-</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Status</span>
+              <span id="gameStatus" class="font-bold text-green-600">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRADE + PROPERTY SIDE BY SIDE -->
+        <div class="grid md:grid-cols-2 gap-6">
+
+          <!-- TRADE INBOX -->
+          <div class="glass-card-premium rounded-2xl p-5 shadow-xl">
+            <h3 class="text-xl font-black mb-4">Trade Inbox</h3>
+            <div id="tradeInboxList" class="space-y-3 max-h-64 overflow-y-auto">
+              <p class="text-sm text-gray-500 italic">No pending trades</p>
+            </div>
+          </div>
+
+          <!-- PROPERTY -->
+          <div class="glass-card-premium rounded-2xl p-5 shadow-xl">
+            <h3 class="text-xl font-black mb-4">Property</h3>
+            <div id="propertyStatus" class="p-3 bg-gray-100 rounded-xl text-sm text-gray-600">
+              No property action pending
             </div>
 
+            <div class="space-y-3">
+              <button id="openTradeBtn"
+                class="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] transition">
+                TRADE ASSETS
+              </button>
+
+              <button id="declareBankruptcyBtn"
+                class="w-full py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] transition"
+                style="display: none;">
+                ⚠️ DECLARE BANKRUPTCY
+              </button>
+            </div>
           </div>
+
         </div>
 
-      </div>
-    </div>
-
-    <!-- ================= RIGHT SIDEBAR ================= -->
-    <div class="space-y-6 sidebar-panel">
-
-      <!-- GAME INFO -->
-      <div class="bg-white rounded-2xl p-5 shadow-xl">
-        <h3 class="text-xl font-black mb-4">Game Info</h3>
-        <div class="space-y-3 text-sm">
-          <div class="flex justify-between">
-            <span>Room Code</span>
-            <span id="roomCode" class="font-bold">-</span>
-          </div>
-          <div class="flex justify-between">
-            <span>Your ID</span>
-            <span id="playerId" class="font-mono">-</span>
-          </div>
-          <div class="flex justify-between">
-            <span>Status</span>
-            <span id="gameStatus" class="font-bold text-green-600">-</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- TRADE + PROPERTY SIDE BY SIDE -->
-      <div class="grid md:grid-cols-2 gap-6">
-
-        <!-- TRADE INBOX -->
-        <div class="bg-white rounded-2xl p-5 shadow-xl">
-          <h3 class="text-xl font-black mb-4">Trade Inbox</h3>
-          <div id="tradeInboxList"
-               class="space-y-3 max-h-64 overflow-y-auto">
-            <p class="text-sm text-gray-500 italic">No pending trades</p>
-          </div>
+        <!-- PLAYERS -->
+        <div class="glass-card-premium rounded-2xl p-5 shadow-xl">
+          <h3 class="text-xl font-black mb-4">Players</h3>
+          <div id="playersList" class="space-y-3"></div>
         </div>
 
-        <!-- PROPERTY -->
-        <div class="bg-white rounded-2xl p-5 shadow-xl">
-          <h3 class="text-xl font-black mb-4">Property</h3>
-          <div id="propertyStatus"
-               class="p-3 bg-gray-100 rounded-xl text-sm text-gray-600">
-            No property action pending
-          </div>
-
-          <div class="space-y-3">
-            <button id="openTradeBtn"
-                    class="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] transition">
-              TRADE ASSETS
-            </button>
-
-            <button id="declareBankruptcyBtn"
-                    class="w-full py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] transition" style="display: none;">
-              ⚠️ DECLARE BANKRUPTCY
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- PLAYERS -->
-      <div class="bg-white rounded-2xl p-5 shadow-xl">
-        <h3 class="text-xl font-black mb-4">Players</h3>
-        <div id="playersList" class="space-y-3"></div>
       </div>
 
     </div>
-
   </div>
-</div>
 
-<!-- Property Popover -->
-<div id="property-popover" class="hidden fixed inset-0 z-[10000] pointer-events-none font-sans">
-  <!-- Invisible Backdrop -->
-  <div class="absolute inset-0 pointer-events-auto" onclick="closePropertyPopover()"></div>
+  <!-- Property Popover -->
+  <div id="property-popover" class="hidden fixed inset-0 z-[10000] pointer-events-none font-sans">
+    <!-- Invisible Backdrop -->
+    <div class="absolute inset-0 pointer-events-auto" onclick="closePropertyPopover()"></div>
 
-  <!-- Content Card -->
-  <div id="property-popover-content"
-    class="absolute w-[300px] bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 pointer-events-auto flex flex-col transition-all duration-200 opacity-0 scale-95">
+    <!-- Content Card -->
+    <div id="property-popover-content"
+      class="absolute w-[300px] bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 pointer-events-auto flex flex-col transition-all duration-200 opacity-0 scale-95">
 
-    <!-- Header -->
-    <div id="pp-color-bar" class="h-5 w-full bg-slate-700"></div>
-    <div class="px-4 py-3 border-b border-white/5 bg-slate-800/50">
-      <h3 id="pp-name" class="text-base font-black text-white uppercase tracking-tight leading-tight">Property Name
-      </h3>
-      <div class="flex justify-between items-center mt-2">
-        <p id="pp-cost" class="text-sm text-emerald-400 font-bold">Rs 0</p>
-        <p id="pp-buildings" class="text-[11px] text-slate-400 font-medium">No buildings</p>
-      </div>
-    </div>
-
-    <!-- Body -->
-    <div class="px-4 py-3 space-y-2.5 max-h-[360px] overflow-y-auto">
-
-      <!-- Actions -->
-      <div class="space-y-2">
-        <!-- Building Actions -->
-        <div id="pp-building-actions" class="grid grid-cols-2 gap-2">
-          <button id="pp-btn-build-house" onclick="buildHouseFromPopover()"
-            class="bg-green-600 hover:bg-green-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
-            <span>🏠</span> <span>Build House</span>
-          </button>
-          <button id="pp-btn-build-hotel" onclick="buildHotelFromPopover()"
-            class="bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
-            <span>🏨</span> <span>Build Hotel</span>
-          </button>
-        </div>
-
-        <!-- Destroy/Sell Building -->
-        <button id="pp-btn-destroy" onclick="destroyBuildingFromPopover()"
-          class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-          <span>🔨</span> <span id="pp-destroy-text">Sell Building</span>
-        </button>
-
-        <!-- Mortgage Actions -->
-        <button id="pp-btn-mortgage" onclick="mortgagePropertyFromPopover()"
-          class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-          <span>🏚️</span> <span>Mortgage</span>
-        </button>
-        <button id="pp-btn-unmortgage" onclick="unmortgagePropertyFromPopover()"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-          <span>🔓</span> <span>Unmortgage</span>
-        </button>
-
-        <!-- Liquidate/Sell to Bank -->
-        <button id="pp-btn-liquidate" onclick="liquidatePropertyFromPopover()"
-          class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] uppercase tracking-wide transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-          <span>💰</span> <span>Liquidate</span>
-        </button>
-        
-        <!-- Action Hint -->
-        <div class="pt-1">
-          <p id="pp-action-hint" class="text-[10px] text-slate-400 text-center leading-relaxed"></p>
+      <!-- Header -->
+      <div id="pp-color-bar" class="h-5 w-full bg-slate-700"></div>
+      <div class="px-4 py-3 border-b border-white/5 bg-slate-800/50">
+        <h3 id="pp-name" class="text-base font-black text-white uppercase tracking-tight leading-tight">Property Name
+        </h3>
+        <div class="flex justify-between items-center mt-2">
+          <p id="pp-cost" class="text-sm text-emerald-400 font-bold">Rs 0</p>
+          <p id="pp-buildings" class="text-[11px] text-slate-400 font-medium">No buildings</p>
         </div>
       </div>
-    </div>
 
-    <!-- Close Button -->
-    <button onclick="closePropertyPopover()"
-      class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold text-[10px] uppercase tracking-widest transition-colors border-t border-white/5">
-      Close
-    </button>
+      <!-- Body -->
+      <div class="px-4 py-3 space-y-2.5 max-h-[360px] overflow-y-auto">
+
+        <!-- Actions -->
+        <div class="space-y-2">
+          <!-- Building Actions -->
+          <div id="pp-building-actions" class="grid grid-cols-2 gap-2">
+            <button id="pp-btn-build-house" onclick="buildHouseFromPopover()"
+              class="bg-green-600 hover:bg-green-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+              <span>🏠</span> <span>Build House</span>
+            </button>
+            <button id="pp-btn-build-hotel" onclick="buildHotelFromPopover()"
+              class="bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+              <span>🏨</span> <span>Build Hotel</span>
+            </button>
+          </div>
+
+          <!-- Destroy/Sell Building -->
+          <button id="pp-btn-destroy" onclick="destroyBuildingFromPopover()"
+            class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span>🔨</span> <span id="pp-destroy-text">Sell Building</span>
+          </button>
+
+          <!-- Mortgage Actions -->
+          <button id="pp-btn-mortgage" onclick="mortgagePropertyFromPopover()"
+            class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span>🏚️</span> <span>Mortgage</span>
+          </button>
+          <button id="pp-btn-unmortgage" onclick="unmortgagePropertyFromPopover()"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span>🔓</span> <span>Unmortgage</span>
+          </button>
+
+          <!-- Liquidate/Sell to Bank -->
+          <button id="pp-btn-liquidate" onclick="liquidatePropertyFromPopover()"
+            class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 px-3 rounded-lg font-bold text-[11px] uppercase tracking-wide transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span>💰</span> <span>Liquidate</span>
+          </button>
+
+          <!-- Action Hint -->
+          <div class="pt-1">
+            <p id="pp-action-hint" class="text-[10px] text-slate-400 text-center leading-relaxed"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Close Button -->
+      <button onclick="closePropertyPopover()"
+        class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold text-[10px] uppercase tracking-widest transition-colors border-t border-white/5">
+        Close
+      </button>
+    </div>
   </div>
-</div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="app.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
 
 </body>
+
 </html>

@@ -13,7 +13,14 @@
   --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* Reset & Base Styles */
+.layout-wrapper {
+  width: 100% !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -59,6 +66,8 @@ html {
   box-shadow: 0 20px 60px 0 rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
 }
 
 .glass-card-premium:hover {
@@ -238,11 +247,13 @@ input:focus {
 
 /* Custom Board Styling - Tailwind handles most UI */
 
-/* Monopoly Board Grid - Premium Edition */
+/* Monopoly Board Grid */
 #board-grid {
-  gap: 1px !important;
-  grid-template-columns: 1.65fr repeat(9, 1fr) 1.65fr !important;
-  grid-template-rows: 1.65fr repeat(9, 1fr) 1.65fr !important;
+  display: grid !important;
+  grid-template-columns: 2.0fr repeat(9, 1fr) 2.0fr !important;
+  grid-template-rows: 2.0fr repeat(9, 1fr) 2.0fr !important;
+  gap: 2px !important;
+  z-index: 10;
 }
 
 /* Main layout grid to keep sidebar on the right for desktop widths */
@@ -268,18 +279,28 @@ input:focus {
 
 @media (min-width: 1024px) {
   .main-grid {
-    flex-direction: row;
+    display: grid !important;
+    grid-template-columns: 5% 60% 5% 25% 5% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
     align-items: flex-start;
+    overflow-x: hidden !important;
   }
 
   .board-wrapper {
-    flex: 0 0 60%;
-    max-width: 60%;
+    grid-column: 2 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
   }
 
   .sidebar-panel {
-    flex: 0 0 40%;
-    max-width: 40%;
+    grid-column: 4 !important;
+    width: 100% !important;
+    padding-right: 0.5rem;
+    /* Small safety buffer */
   }
 }
 
@@ -289,10 +310,12 @@ input:focus {
 }
 
 #monopoly-board {
-  width: min(100vw, 95vh);
-  height: min(100vw, 95vh);
-  max-width: 95vh;
+  width: 100%;
+  height: auto;
   aspect-ratio: 1 / 1;
+  max-width: 90vh;
+  /* Prevent it from being taller than screen */
+  box-sizing: border-box;
   background: linear-gradient(135deg, #c8e6cf 0%, #b8dcc5 25%, #a8d2bb 50%, #b8dcc5 75%, #c8e6cf 100%);
   background-size: 200% 200%;
   animation: gradientShift 15s ease infinite;
@@ -300,12 +323,6 @@ input:focus {
   border-image: linear-gradient(135deg, #1a472a, #2f4f2f, #1a472a) 1;
   border-radius: 20px;
   margin: 0 auto;
-  display: grid;
-  /* Make the outer ring tiles larger without growing the overall board */
-  grid-template-columns: 2.0fr repeat(9, 1fr) 2.0fr;
-  grid-template-rows: 2.0fr repeat(9, 1fr) 2.0fr;
-  gap: 2px;
-  padding: 4px;
   position: relative;
   box-shadow:
     0 30px 90px rgba(0, 0, 0, 0.3),
@@ -344,32 +361,24 @@ input:focus {
   }
 }
 
-.board-center {
-  grid-column: 2 / 11;
-  grid-row: 2 / 11;
+.board-center-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-  border: 4px solid #334155;
-  border-radius: 12px;
-  padding: 16px 20px 32px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  border: 3px solid #334155;
+  border-radius: 24px;
+  padding: 18px 20px;
   box-shadow:
-    inset 0 0 50px rgba(0, 0, 0, 0.5),
-    inset 0 2px 4px rgba(255, 255, 255, 0.05),
-    0 10px 30px rgba(0, 0, 0, 0.6);
-  gap: 10px;
-  overflow-y: auto;
-  overflow-x: hidden;
+    0 20px 50px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  gap: 12px;
+  width: 90%;
+  max-width: 440px;
   position: relative;
-  z-index: 1;
-  width: 55%;
-  height: 55%;
-  margin: auto;
-  aspect-ratio: 1 / 1;
-  display: flex;
-  flex-direction: column;
+  z-index: 50;
 }
 
 .board-center>* {

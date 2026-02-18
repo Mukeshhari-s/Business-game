@@ -1,10 +1,10 @@
 // Connect to the server dynamically (works for localhost and deployed apps)
 const socket = io(window.location.origin);
-let currentRoomId = null;
-let myPlayerId = null;
+const lobbyData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
+let currentRoomId = lobbyData.roomId || null;
+let myPlayerId = lobbyData.playerId || null;
 let gameState = null;
 let lastDiceRoll = null;
-const lobbyData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
 console.log('📦 Loaded session data:', lobbyData);
 console.log('🔌 Connecting to:', window.location.origin);
 let autoActionSent = false;
@@ -253,11 +253,35 @@ endTurnBtnCenter.addEventListener('click', () => {
   socket.emit('end_turn');
 });
 
-startGameBtn.addEventListener('click', () => {
+const handleStartAction = () => {
+  console.log('🚀 Start Game action triggered!');
+  console.log('Current context:', {
+    myPlayerId,
+    currentRoomId,
+    hostId: gameState?.hostId,
+    isHost: myPlayerId === gameState?.hostId,
+    gameStatus: gameState?.gameStatus
+  });
   socket.emit('start_game');
-  startGameBtn.disabled = true;
-  startGameBtn.textContent = 'Starting...';
-});
+  if (startGameBtn) {
+    startGameBtn.disabled = true;
+    startGameBtn.textContent = 'Starting...';
+
+    // Fallback: Re-enable if no response after 5s
+    setTimeout(() => {
+      if (gameState && gameState.gameStatus === 'waiting' && startGameBtn.disabled) {
+        console.log('⚠️ Start game timed out or failed. Re-enabling button.');
+        startGameBtn.disabled = false;
+        startGameBtn.textContent = 'START GAME';
+      }
+    }, 5000);
+  }
+};
+
+// Expose to window for manual console bypass if needed
+window.forceStart = handleStartAction;
+
+startGameBtn.addEventListener('click', handleStartAction);
 
 declareBankruptcyBtn.addEventListener('click', () => {
   if (confirm('Are you sure you want to declare bankruptcy?\n\nAll your properties will be sold and you will be out of the game. You can watch others playing.\n\nClick OK to proceed or Cancel to continue playing.')) {
@@ -280,7 +304,7 @@ if (lobbyData.roomId && lobbyData.playerId) {
   leaveGameBtn?.classList.remove('hidden'); // Show leave button
   if (roomCode) roomCode.textContent = lobbyData.roomId;
   if (playerIdEl) playerIdEl.textContent = lobbyData.playerId.substring(0, 8) + '...';
-  
+
   // Set a timeout for reconnection - if it fails, return to lobby
   const reconnectTimeout = setTimeout(() => {
     if (!currentRoomId || !myPlayerId) {
@@ -289,7 +313,7 @@ if (lobbyData.roomId && lobbyData.playerId) {
       leaveGame();
     }
   }, 5000); // 5 second timeout
-  
+
   // Store timeout ID to clear it on successful reconnection
   window.reconnectTimeoutId = reconnectTimeout;
 } else {
@@ -350,6 +374,9 @@ socket.on('room_joined', ({ roomId, playerId }) => {
   gameSection?.classList.remove('hidden');
   leaveGameBtn?.classList.remove('hidden'); // Show leave button
   showToast(`Joined room ${roomId}`, 'success');
+
+  // Trigger render in case we missed a state update
+  if (typeof gameState !== 'undefined' && gameState) renderState(gameState);
 });
 
 socket.on('player_joined', ({ player }) => {
@@ -361,18 +388,21 @@ socket.on('reconnected', ({ playerId }) => {
   myPlayerId = playerId;
   currentRoomId = lobbyData.roomId; // Restore from session
   showToast('Reconnected to game!', 'success');
-  
+
   // Clear reconnection timeout
   if (window.reconnectTimeoutId) {
     clearTimeout(window.reconnectTimeoutId);
     window.reconnectTimeoutId = null;
   }
-  
+
   // Make sure UI is updated
   if (roomCode) roomCode.textContent = currentRoomId;
   if (playerIdEl) playerIdEl.textContent = playerId.substring(0, 8) + '...';
   connectionScreen?.classList.add('hidden');
   gameSection?.classList.remove('hidden');
+
+  // Trigger render in case we missed a state update during reconnection
+  if (typeof gameState !== 'undefined' && gameState) renderState(gameState);
 });
 
 socket.on('player_reconnected', ({ player }) => {
@@ -382,7 +412,11 @@ socket.on('player_reconnected', ({ player }) => {
 socket.on('reconnect_failed', ({ message }) => {
   console.log('❌ Reconnection failed:', message);
   showToast(`Reconnection failed: ${message}. Returning to lobby...`, 'error');
-  sessionStorage.removeItem('monopolyLobby');
+
+  // Only remove if it's truly a "not found" error, not just a temporary issue
+  if (message.includes('not found')) {
+    sessionStorage.removeItem('monopolyLobby');
+  }
   // Return to lobby after failed reconnection
   setTimeout(() => {
     leaveGame();
@@ -460,24 +494,23 @@ socket.on('dice_rolled', ({ playerId, dice }) => {
         const p = gameState.players.find(player => player.playerId === playerId);
         if (p) displayedPositions[playerId] = p.position;
       }
-      // Note: we don't set isAnimating=false here yet because player_moved is coming
       renderState(gameState);
-    }, 500);
-  }, 1000);
+    }, 300); // Reduced from 500ms
+  }, 600); // Reduced from 1000ms
 
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   const playerName = player ? player.name : 'Player';
 
   setTimeout(() => {
     showToast(`🎲 ${playerName} rolled ${dice.die1} + ${dice.die2} = ${dice.total}`, 'info');
-  }, 1500); // Delayed toast to match settlement
+  }, 1000); // Reduced from 1500ms
 });
 
 socket.on('player_moved', ({ playerId, from, to }) => {
   isAnimating = true;
   const player = gameState ? gameState.players.find(p => p.playerId === playerId) : null;
   if (player) {
-    // Wait for dice to stop before moving token (1000ms dice + 200ms buffer)
+    // Wait for dice to stop before moving token (600ms dice + 100ms buffer)
     setTimeout(() => {
       // Animate token movement with 3D effect
       animateTokenMovement(playerId, from, to);
@@ -487,8 +520,8 @@ socket.on('player_moved', ({ playerId, from, to }) => {
         displayedPositions[playerId] = to; // Update visual position after animation
         isAnimating = false;
         renderState(gameState);
-      }, 800);
-    }, 1200);
+      }, 500); // Reduced from 800ms
+    }, 700); // Reduced from 1200ms
   }
 });
 
@@ -1101,15 +1134,15 @@ function calcHotelCost(cell) {
   return houseCost * HOTEL_COST_MULTIPLIER;
 }
 
-// Initialize board
+// Initialize board (once)
 function initBoard() {
-  monopolyBoard.innerHTML = '';
+  const boardGrid = document.getElementById('board-grid');
+  if (!boardGrid) return;
 
-  // Center branding (already in HTML, just update reference)
-  const center = monopolyBoard.querySelector('.board-center');
-  if (center) {
-    gameLog = center.querySelector('#gameLog');
-  }
+  const cells = boardGrid.querySelectorAll('.cell');
+  if (cells.length === 40) return; // Already initialized
+
+  boardGrid.innerHTML = '';
 
   // Create all 40 cells with grid positioning
   for (let i = 0; i < 40; i++) {
@@ -1118,57 +1151,32 @@ function initBoard() {
     cell.id = `cell-${i}`;
 
     const { row, col } = cellPositions[i];
-    cell.style.gridRow = row + 1; // grid is 1-based
+    cell.style.gridRow = row + 1;
     cell.style.gridColumn = col + 1;
 
     const cellData = boardData[i];
-    const stateCell = gameState && gameState.board ? gameState.board.cells[i] : null;
 
-    // Orientation classes for label direction
+    // Orientation classes
     if (row === 0) cell.classList.add('top');
     if (row === 10) cell.classList.add('bottom');
     if (col === 10) cell.classList.add('right');
     if (col === 0) cell.classList.add('left');
 
-    // Corner highlighting
     if (i === 0 || i === 10 || i === 20 || i === 30) {
       cell.classList.add('corner');
     }
 
-    // Add cell content
     const nameDiv = document.createElement('div');
     nameDiv.className = 'cell-name';
     nameDiv.textContent = cellData.name;
-
-    if (stateCell && stateCell.type === 'neutral' && !cellData.color) {
-      cell.classList.add('neutral-cell');
-    }
 
     if (cellData.color) {
       const colorDiv = document.createElement('div');
       colorDiv.className = `cell-color color-${cellData.color}`;
       cell.appendChild(colorDiv);
-
-      if (stateCell && stateCell.type === 'property') {
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'cell-info';
-        infoDiv.innerHTML = `<div class="cell-price">Rs ${stateCell.price}</div>`;
-        cell.appendChild(infoDiv);
-      }
     }
 
     cell.appendChild(nameDiv);
-
-    // Add click listener for property management
-    // Check if it's a property cell (has color = buildable property)
-    if (stateCell && stateCell.type === 'property') {
-      cell.classList.add('cursor-pointer', 'hover:bg-white/5', 'transition-colors');
-      cell.onclick = () => {
-        console.log('🖱️ Clicked cell:', i, cellData.name);
-        openPropertyModal(i);
-      };
-    }
-
     monopolyBoard.appendChild(cell);
   }
 }
@@ -1231,18 +1239,43 @@ function renderState(state) {
 
   // Show/hide start button for host in waiting state
   if (state.gameStatus === 'waiting' && state.hostId === myPlayerId) {
+    if (startGameContainer.classList.contains('hidden')) {
+      console.log('👑 Host detected! Showing START GAME button.');
+    }
     startGameContainer.classList.remove('hidden');
-    const minPlayers = 2;
-    const canStart = state.players.filter(p => !p.isBankrupt).length >= minPlayers;
-    startGameBtn.disabled = !canStart;
+    const minPlayers = 2; // Richup style minimum
+    const playersCount = state.players.filter(p => !p.isBankrupt).length;
+    const canStart = playersCount >= minPlayers;
 
-    // Update button title/tooltip to show why it's disabled
-    if (!canStart) {
-      startGameBtn.title = `Need ${minPlayers} players to start (${state.players.filter(p => !p.isBankrupt).length}/${minPlayers})`;
-    } else {
-      startGameBtn.title = 'Click to start the game';
+    console.log(`📊 Start condition check: ${playersCount}/${minPlayers} players. canStart=${canStart}`);
+
+    // Ensure the container itself is clickable and high enough
+    if (startGameContainer) {
+      startGameContainer.style.pointerEvents = 'auto';
+      startGameContainer.style.zIndex = '100';
+    }
+
+    if (startGameBtn) {
+      startGameBtn.disabled = !canStart;
+      startGameBtn.style.pointerEvents = canStart ? 'auto' : 'none';
+
+      // Update button visual state
+      if (!canStart) {
+        startGameBtn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale-[0.5]');
+        startGameBtn.classList.remove('animate-pulse');
+        startGameBtn.title = `Need at least ${minPlayers} players to start (Currently: ${playersCount})`;
+        console.log('⛔ Button disabled: Not enough players');
+      } else {
+        startGameBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale-[0.5]');
+        startGameBtn.classList.add('animate-pulse');
+        startGameBtn.title = 'Click to start the game';
+        console.log('✅ Button enabled: Ready to start!');
+      }
     }
   } else {
+    if (state.gameStatus === 'waiting') {
+      console.log('⏳ Not the host. Host is:', state.hostId, 'My ID:', myPlayerId);
+    }
     startGameContainer.classList.add('hidden');
   }
 
@@ -1257,56 +1290,60 @@ function renderState(state) {
     }
   }
 
-  // Rebuild board each state update so cell colors reflect country groups
-  initBoard();
-
-  // Update ownership indicators
+  // Update board state without full rebuild
   state.board.cells.forEach((cell, index) => {
     const cellEl = document.getElementById(`cell-${index}`);
     if (!cellEl) return;
 
-    // Remove old owner indicator
-    const oldIndicator = cellEl.querySelector('.owner-indicator');
-    if (oldIndicator) oldIndicator.remove();
+    // Update click listeners if not set
+    if (cell.type === 'property' && !cellEl.onclick) {
+      cellEl.classList.add('cursor-pointer', 'hover:bg-white/5', 'transition-colors');
+      cellEl.onclick = () => openPropertyModal(index);
 
-    // Add owner indicator for owned properties
-    if (cell.type === 'property' && cell.ownerId) {
-      const playerIndex = state.players.findIndex(p => p.playerId === cell.ownerId);
-      if (playerIndex !== -1) {
-        // Add has-owner class for pulse animation
-        cellEl.classList.add('has-owner');
+      // Add price info if not exists
+      if (!cellEl.querySelector('.cell-info')) {
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'cell-info';
+        infoDiv.innerHTML = `<div class="cell-price">Rs ${cell.price}</div>`;
+        cellEl.appendChild(infoDiv);
+      }
+    }
 
-        const indicator = document.createElement('div');
-        indicator.className = 'owner-indicator';
-        indicator.style.background = playerColors[playerIndex % playerColors.length];
-        cellEl.appendChild(indicator);
+    // Owner and indicators
+    const playerIndex = cell.ownerId ? state.players.findIndex(p => p.playerId === cell.ownerId) : -1;
+    if (playerIndex !== -1) {
+      cellEl.classList.add('has-owner');
 
-        // Owner bar below name for clearer ownership
-        const nameDiv = cellEl.querySelector('.cell-name');
-        let ownerBar = cellEl.querySelector('.owner-bar');
-        if (!ownerBar) {
-          ownerBar = document.createElement('div');
-          ownerBar.className = 'owner-bar';
-          cellEl.appendChild(ownerBar);
+      let ownerBar = cellEl.querySelector('.owner-bar');
+      if (!ownerBar) {
+        ownerBar = document.createElement('div');
+        ownerBar.className = 'owner-bar';
+        cellEl.appendChild(ownerBar);
+      }
+      ownerBar.style.background = playerColors[playerIndex % playerColors.length];
+
+      // Buildings
+      if (cell.buildable && (cell.houses > 0 || cell.hotels > 0)) {
+        let buildingIndicator = cellEl.querySelector('.building-indicator');
+        if (!buildingIndicator) {
+          buildingIndicator = document.createElement('div');
+          buildingIndicator.className = 'building-indicator';
+          cellEl.appendChild(buildingIndicator);
         }
-        ownerBar.style.background = playerColors[playerIndex % playerColors.length];
 
-        // Add house/hotel indicators
-        if (cell.buildable && (cell.houses > 0 || cell.hotels > 0)) {
-          let buildingIndicator = cellEl.querySelector('.building-indicator');
-          if (!buildingIndicator) {
-            buildingIndicator = document.createElement('div');
-            buildingIndicator.className = 'building-indicator';
-            cellEl.appendChild(buildingIndicator);
-          }
+        // Only update if count changed
+        const currentBuildingCount = buildingIndicator.children.length;
+        const targetBuildingCount = cell.hotels > 0 ? 1 : cell.houses;
+        const isHotel = cell.hotels > 0;
+
+        if (currentBuildingCount !== targetBuildingCount || (isHotel && !buildingIndicator.querySelector('.hotel-icon'))) {
           buildingIndicator.innerHTML = '';
-
-          if (cell.hotels > 0) {
+          if (isHotel) {
             const hotelIcon = document.createElement('div');
             hotelIcon.className = 'hotel-icon';
             hotelIcon.textContent = 'H';
             buildingIndicator.appendChild(hotelIcon);
-          } else if (cell.houses > 0) {
+          } else {
             for (let i = 0; i < cell.houses; i++) {
               const houseIcon = document.createElement('div');
               houseIcon.className = 'house-icon';
@@ -1314,25 +1351,26 @@ function renderState(state) {
             }
           }
         }
+      } else {
+        const bInd = cellEl.querySelector('.building-indicator');
+        if (bInd) bInd.remove();
       }
     } else {
-      // Remove has-owner class if no owner
       cellEl.classList.remove('has-owner', 'is-mortgaged');
       const bar = cellEl.querySelector('.owner-bar');
       if (bar) bar.remove();
-      const buildingInd = cellEl.querySelector('.building-indicator');
-      if (buildingInd) buildingInd.remove();
+      const bInd = cellEl.querySelector('.building-indicator');
+      if (bInd) bInd.remove();
     }
 
-    // Add mortgage visual indicator
+    // Mortgage indicator
     if (cell.isMortgaged) {
       cellEl.classList.add('is-mortgaged');
-      let mortgageBadge = cellEl.querySelector('.mortgage-badge');
-      if (!mortgageBadge) {
-        mortgageBadge = document.createElement('div');
-        mortgageBadge.className = 'mortgage-badge';
-        mortgageBadge.textContent = 'M';
-        cellEl.appendChild(mortgageBadge);
+      if (!cellEl.querySelector('.mortgage-badge')) {
+        const badge = document.createElement('div');
+        badge.className = 'mortgage-badge';
+        badge.textContent = 'M';
+        cellEl.appendChild(badge);
       }
     } else {
       cellEl.classList.remove('is-mortgaged');
@@ -1341,59 +1379,44 @@ function renderState(state) {
     }
   });
 
-  // Update player tokens
-  document.querySelectorAll('.player-token').forEach(token => token.remove());
-
+  // Efficient token updates
   state.players.forEach((player, index) => {
-    if (player.isBankrupt) return;
+    if (player.isBankrupt) {
+      const oldToken = document.getElementById(`token-${player.playerId}`);
+      if (oldToken) oldToken.remove();
+      return;
+    }
 
-    // Use displayedPosition if available, otherwise fallback to actual position
     const visualPos = (displayedPositions[player.playerId] !== undefined)
       ? displayedPositions[player.playerId]
       : player.position;
 
-    // If it's a new state but not animating, sync displayed position
     if (!isAnimating) {
       displayedPositions[player.playerId] = player.position;
     }
 
-    const cellEl = document.getElementById(`cell-${visualPos}`);
-    if (cellEl) {
-      const token = document.createElement('div');
+    let token = document.getElementById(`token-${player.playerId}`);
+    if (!token) {
+      token = document.createElement('div');
+      token.id = `token-${player.playerId}`;
       token.className = 'player-token';
       token.style.background = playerColors[index % playerColors.length];
       token.title = player.name;
+    }
 
-      // Position token based on which side of the board
+    const cellEl = document.getElementById(`cell-${visualPos}`);
+    if (cellEl && token.parentElement !== cellEl) {
+      // Reposition within cell
+      const offset = index * 18; // Slightly smaller offset
       const { row, col } = getCellGridPosition(visualPos);
-      const offset = index * 20;
 
-      // Determine positioning based on board side
-      if (row === 0) {
-        // Top row: align horizontally at bottom of cell
-        token.style.left = `${5 + offset}px`;
-        token.style.bottom = `5px`;
-        token.style.top = 'auto';
-        token.style.right = 'auto';
-      } else if (row === 10) {
-        // Bottom row: align horizontally at top of cell
-        token.style.left = `${5 + offset}px`;
-        token.style.top = `5px`;
-        token.style.bottom = 'auto';
-        token.style.right = 'auto';
-      } else if (col === 0) {
-        // Left column: align vertically on LEFT side of cell
-        token.style.left = `5px`;
-        token.style.top = `${5 + offset}px`;
-        token.style.right = 'auto';
-        token.style.bottom = 'auto';
-      } else if (col === 10) {
-        // Right column: align vertically on RIGHT side of cell
-        token.style.right = `5px`;
-        token.style.top = `${5 + offset}px`;
-        token.style.left = 'auto';
-        token.style.bottom = 'auto';
-      }
+      token.style.left = 'auto'; token.style.right = 'auto';
+      token.style.top = 'auto'; token.style.bottom = 'auto';
+
+      if (row === 0) { token.style.left = `${5 + offset}px`; token.style.bottom = `5px`; }
+      else if (row === 10) { token.style.left = `${5 + offset}px`; token.style.top = `5px`; }
+      else if (col === 0) { token.style.left = `5px`; token.style.top = `${5 + offset}px`; }
+      else if (col === 10) { token.style.right = `5px`; token.style.top = `${5 + offset}px`; }
 
       cellEl.appendChild(token);
     }
@@ -1439,6 +1462,23 @@ function renderState(state) {
     nameContainer.appendChild(tokenColor);
     nameContainer.appendChild(nameSpan);
 
+    // Dynamic Trade Button for other players
+    if (player.playerId !== myPlayerId && !player.isBankrupt && state.gameStatus === 'active') {
+      const quickTradeBtn = document.createElement('button');
+      quickTradeBtn.className = 'ml-auto mr-2 p-1.5 bg-purple-500/10 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-all opacity-0 group-hover:opacity-100';
+      quickTradeBtn.title = `Trade with ${player.name}`;
+      quickTradeBtn.innerHTML = `
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+      `;
+      quickTradeBtn.onclick = (e) => {
+        e.stopPropagation();
+        openTradeModal({ toPlayerId: player.playerId });
+      };
+      header.appendChild(quickTradeBtn);
+    }
+
     header.appendChild(nameContainer);
     header.appendChild(balanceAmount);
 
@@ -1454,10 +1494,16 @@ function renderState(state) {
     playersList.appendChild(card);
   });
 
+  // Ensure board is initialized
+  initBoard();
+
+  // Refresh gameLog reference in case it was modified
+  if (!gameLog) gameLog = document.getElementById('gameLog');
+
   // Update game log
   if (gameLog) {
     gameLog.innerHTML = '';
-    state.gameLog.slice(-15).forEach(msg => {
+    state.gameLog.slice(-20).forEach(msg => {
       const msgEl = document.createElement('div');
       msgEl.className = 'log-message';
       msgEl.textContent = msg;
@@ -1860,86 +1906,123 @@ submitTradeBtn.addEventListener('click', () => {
 // Render incoming trades
 function renderTrades(state) {
   if (!tradeInboxList) return;
-  const incoming = (state.pendingTrades || []).filter(
-    (t) => t.status === 'PENDING' && t.toPlayerId === myPlayerId,
+
+  // Show ALL pending trades (Transparency)
+  const allPending = (state.pendingTrades || []).filter(
+    (t) => t.status === 'PENDING'
   );
 
-  if (incoming.length === 0) {
-    tradeInboxList.innerHTML = '<p class="text-xs text-slate-500 italic">No pending trades</p>';
+  if (allPending.length === 0) {
+    tradeInboxList.innerHTML = '<p class="text-[10px] text-slate-500 italic text-center py-4 bg-slate-900/30 rounded-xl border border-dashed border-slate-800">No active negotiations</p>';
     return;
   }
 
   tradeInboxList.innerHTML = '';
-  incoming.forEach((trade) => {
+  allPending.forEach((trade) => {
     const from = state.players.find((p) => p.playerId === trade.fromPlayerId);
+    const to = state.players.find((p) => p.playerId === trade.toPlayerId);
+    const isMeInvolved = trade.fromPlayerId === myPlayerId || trade.toPlayerId === myPlayerId;
+    const isTargetMe = trade.toPlayerId === myPlayerId;
 
     const card = document.createElement('div');
-    card.className = 'p-2.5 rounded-xl border border-slate-700 bg-slate-800 shadow-sm space-y-2';
+    card.className = `p-3 rounded-xl border ${isMeInvolved ? 'border-purple-500/50 bg-purple-900/10' : 'border-slate-700 bg-slate-800/50'} shadow-lg space-y-3 transition-all hover:scale-[1.01]`;
 
     const header = document.createElement('div');
-    header.className = 'flex justify-between items-center';
+    header.className = 'flex justify-between items-start';
     header.innerHTML = `
-      <div>
-        <div class="text-[9px] text-slate-500">From</div>
-        <div class="font-bold text-white text-xs">${from ? from.name : 'Player'}</div>
+      <div class="space-y-0.5">
+        <div class="flex items-center gap-1.5">
+           <span class="font-black text-white text-[11px] uppercase tracking-wider">${from ? from.name : 'Unknown'}</span>
+           <span class="text-slate-500 text-[10px]">➜</span>
+           <span class="font-black text-white text-[11px] uppercase tracking-wider">${to ? to.name : 'Unknown'}</span>
+        </div>
+        <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+          Pending Negotiation
+        </div>
       </div>
-      <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-900/50 text-amber-400">Pending</span>
+      ${isMeInvolved ? '<span class="text-[8px] font-black px-1.5 py-0.5 rounded bg-purple-500 text-white uppercase">Your Deal</span>' : ''}
     `;
     card.appendChild(header);
 
     const detail = document.createElement('div');
-    detail.className = 'text-[10px] text-slate-300 grid grid-cols-2 gap-1.5';
-    const offeredList = [];
-    if ((trade.offered?.properties || []).length) offeredList.push(`Properties: ${trade.offered.properties.length}`);
-    if (trade.offered?.money) offeredList.push(`Money: $${trade.offered.money}`);
-    if (trade.offered?.jailCards) offeredList.push(`Jail Cards: ${trade.offered.jailCards}`);
+    detail.className = 'grid grid-cols-2 gap-2 text-[10px]';
 
-    const requestedList = [];
-    if ((trade.requested?.properties || []).length) requestedList.push(`Properties: ${trade.requested.properties.length}`);
-    if (trade.requested?.money) requestedList.push(`Money: $${trade.requested.money}`);
-    if (trade.requested?.jailCards) requestedList.push(`Jail Cards: ${trade.requested.jailCards}`);
+    const getPropertyBadges = (propIndices) => {
+      if (!propIndices || !propIndices.length) return '<span class="text-slate-600 italic">None</span>';
+      return propIndices.map(idx => {
+        const prop = boardData[idx];
+        const colorClass = prop?.color ? `color-${prop.color}` : 'bg-slate-700';
+        return `
+          <div class="flex items-center gap-1 mb-1">
+            <div class="w-1.5 h-3 rounded-sm ${colorClass}"></div>
+            <span class="truncate text-slate-200">${prop?.name || 'Property'}</span>
+          </div>
+        `;
+      }).join('');
+    };
+
+    const offeredItems = [];
+    if (trade.offered?.money) offeredItems.push(`<div class="text-emerald-400 font-black mb-1">Rs ${trade.offered.money}</div>`);
+    if (trade.offered?.jailCards) offeredItems.push(`<div class="text-blue-400 font-bold mb-1">🎫 ${trade.offered.jailCards} Jail Card</div>`);
+    offeredItems.push(getPropertyBadges(trade.offered?.properties));
+
+    const requestedItems = [];
+    if (trade.requested?.money) requestedItems.push(`<div class="text-emerald-400 font-black mb-1">Rs ${trade.requested.money}</div>`);
+    if (trade.requested?.jailCards) requestedItems.push(`<div class="text-blue-400 font-bold mb-1">🎫 ${trade.requested.jailCards} Jail Card</div>`);
+    requestedItems.push(getPropertyBadges(trade.requested?.properties));
 
     detail.innerHTML = `
-      <div class="p-2 bg-slate-900/50 rounded-lg">
-        <div class="font-bold text-white mb-1 text-[10px]">They Offer</div>
-        <div>${offeredList.join('<br>') || '<span class="text-slate-500">Nothing</span>'}</div>
+      <div class="p-2.5 bg-slate-900/60 rounded-lg border border-white/5">
+        <div class="text-[8px] font-black text-slate-500 uppercase tracking-tighter mb-1.5">${from?.name || 'Player'} Offers</div>
+        <div class="max-h-[80px] overflow-y-auto custom-scrollbar">${offeredItems.join('')}</div>
       </div>
-      <div class="p-2 bg-slate-900/50 rounded-lg">
-        <div class="font-bold text-white mb-1 text-[10px]">You Give</div>
-        <div>${requestedList.join('<br>') || '<span class="text-slate-500">Nothing</span>'}</div>
+      <div class="p-2.5 bg-slate-900/60 rounded-lg border border-white/5">
+        <div class="text-[8px] font-black text-slate-500 uppercase tracking-tighter mb-1.5">${to?.name || 'Player'} Gives</div>
+        <div class="max-h-[80px] overflow-y-auto custom-scrollbar">${requestedItems.join('')}</div>
       </div>
     `;
     card.appendChild(detail);
 
+    // Only show controls if target is me or I'm the sender (cancel option)
     const actions = document.createElement('div');
-    actions.className = 'flex gap-1.5';
+    actions.className = 'flex gap-2 pt-1';
 
-    const acceptBtn = document.createElement('button');
-    acceptBtn.className = 'flex-1 px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-[10px] font-bold rounded-lg';
-    acceptBtn.textContent = 'Accept';
-    acceptBtn.onclick = () => socket.emit('trade_accept', { tradeId: trade.tradeId });
+    if (isTargetMe) {
+      const acceptBtn = document.createElement('button');
+      acceptBtn.className = 'flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase rounded-lg shadow-lg hover:shadow-emerald-900/20 transition-all active:scale-95';
+      acceptBtn.textContent = 'Accept';
+      acceptBtn.onclick = () => socket.emit('trade_accept', { tradeId: trade.tradeId });
 
-    const rejectBtn = document.createElement('button');
-    rejectBtn.className = 'flex-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-lg';
-    rejectBtn.textContent = 'Reject';
-    rejectBtn.onclick = () => socket.emit('trade_reject', { tradeId: trade.tradeId });
+      const rejectBtn = document.createElement('button');
+      rejectBtn.className = 'flex-1 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-black uppercase rounded-lg shadow-lg hover:shadow-rose-900/20 transition-all active:scale-95';
+      rejectBtn.textContent = 'Reject';
+      rejectBtn.onclick = () => socket.emit('trade_reject', { tradeId: trade.tradeId });
 
-    const counterBtn = document.createElement('button');
-    counterBtn.className = 'flex-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold rounded-lg';
-    counterBtn.textContent = 'Counter';
-    counterBtn.onclick = () => {
-      const counterDraft = {
-        toPlayerId: trade.fromPlayerId,
-        offered: { ...trade.requested },
-        requested: { ...trade.offered },
+      const counterBtn = document.createElement('button');
+      counterBtn.className = 'flex-1 py-1.5 bg-amber-500 hover:bg-amber-400 text-white text-[10px] font-black uppercase rounded-lg shadow-lg hover:shadow-amber-900/20 transition-all active:scale-95';
+      counterBtn.textContent = 'Counter';
+      counterBtn.onclick = () => {
+        const counterDraft = {
+          toPlayerId: trade.fromPlayerId,
+          offered: { ...trade.requested },
+          requested: { ...trade.offered },
+        };
+        openTradeModal(counterDraft);
       };
-      openTradeModal(counterDraft);
-    };
 
-    actions.appendChild(acceptBtn);
-    actions.appendChild(rejectBtn);
-    actions.appendChild(counterBtn);
-    card.appendChild(actions);
+      actions.appendChild(acceptBtn);
+      actions.appendChild(rejectBtn);
+      actions.appendChild(counterBtn);
+      card.appendChild(actions);
+    } else if (trade.fromPlayerId === myPlayerId) {
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'w-full py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-black uppercase rounded-lg transition-all';
+      cancelBtn.textContent = 'Withdraw Offer';
+      cancelBtn.onclick = () => socket.emit('trade_cancel', { tradeId: trade.tradeId });
+      actions.appendChild(cancelBtn);
+      card.appendChild(actions);
+    }
 
     tradeInboxList.appendChild(card);
   });
@@ -1953,28 +2036,28 @@ function renderTrades(state) {
 function leaveGame() {
   // Set flag to prevent reconnection
   isLeavingGame = true;
-  
+
   // Clear session
   sessionStorage.removeItem('monopolyLobby');
   currentRoomId = null;
   myPlayerId = null;
   gameState = null;
   autoActionSent = false;
-  
+
   // Disconnect socket
   socket.disconnect();
-  
+
   // Show lobby, hide game
   gameSection?.classList.add('hidden');
   connectionScreen?.classList.remove('hidden');
   leaveGameBtn?.classList.add('hidden');
-  
+
   // Clear any reconnection timeout
   if (window.reconnectTimeoutId) {
     clearTimeout(window.reconnectTimeoutId);
     window.reconnectTimeoutId = null;
   }
-  
+
   // Reconnect socket after a short delay
   setTimeout(() => {
     isLeavingGame = false; // Clear flag before reconnecting
@@ -2066,21 +2149,22 @@ initBoard();
 socket.on('connect', () => {
   console.log('✅ Connected to server. Socket ID:', socket.id);
   showToast('Connected to server!', 'success');
-  
+
   // Don't auto-reconnect if user just left the game
   if (isLeavingGame) {
     console.log('🚫 Skipping auto-reconnect - user left game');
     return;
   }
-  
+
   // Re-check sessionStorage to get fresh data (not the cached lobbyData)
   const currentSessionData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
-  
+
   if (!autoActionSent && Object.keys(currentSessionData).length > 0) {
     const { action, name, roomId, playerId } = currentSessionData;
 
     // Priority 1: Persistent session reconnection
-    if (roomId && playerId) {
+    if (action === 'reconnect' || (roomId && playerId)) {
+      console.log('🔄 Session detected. Room:', roomId, 'Player:', playerId);
       console.log('🔄 Attempting session reconnection...');
       socket.emit('reconnect_room', { roomId, playerId });
       autoActionSent = true;

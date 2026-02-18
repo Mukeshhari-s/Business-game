@@ -8,6 +8,7 @@ export default class RoomManager {
     this.io = io;
     this.rooms = new Map();
     this.socketRoomMap = new Map();
+    this.cleanupTimeouts = new Map(); // Add this to track pending cleanups
   }
 
   generateRoomId() {
@@ -43,13 +44,30 @@ export default class RoomManager {
   }
 
   reconnectToRoom(roomId, playerId, socketId) {
-    const room = this.rooms.get(roomId);
-    if (!room) return { error: 'Room not found' };
+    const normalizedId = roomId?.toUpperCase();
+    console.log(`📡 Reconnection attempt: Room ${normalizedId}, Player ${playerId}`);
+
+    const room = this.rooms.get(normalizedId);
+    if (!room) {
+      console.log(`❌ Reconnection failed: Room ${normalizedId} not found in active rooms:`, Array.from(this.rooms.keys()));
+      return { error: 'Room not found' };
+    }
+
+    // Cancel pending cleanup if any
+    if (this.cleanupTimeouts.has(normalizedId)) {
+      console.log(`🧹 Cancelling cleanup for room ${normalizedId} - player reconnected`);
+      clearTimeout(this.cleanupTimeouts.get(normalizedId));
+      this.cleanupTimeouts.delete(normalizedId);
+    }
 
     const { player, error } = room.reconnectPlayer(playerId, socketId);
-    if (error) return { error };
+    if (error) {
+      console.log(`❌ Reconnection failed for player ${playerId}: ${error}`);
+      return { error };
+    }
 
-    this.socketRoomMap.set(socketId, roomId);
+    this.socketRoomMap.set(socketId, normalizedId);
+    console.log(`✅ Player ${player.name} reconnected to room ${normalizedId}`);
     return { room, player };
   }
 
@@ -75,9 +93,20 @@ export default class RoomManager {
   cleanupRoomIfEmpty(roomId) {
     const room = this.rooms.get(roomId);
     if (!room) return;
+
     const hasConnectedPlayers = room.players.some((p) => !p.isBankrupt && p.connected);
     if (!hasConnectedPlayers) {
-      this.rooms.delete(roomId);
+      // Don't delete immediately, wait 60 seconds
+      if (this.cleanupTimeouts.has(roomId)) return;
+
+      console.log(`🧹 Room ${roomId} is empty. Scheduling cleanup in 60s...`);
+      const timeout = setTimeout(() => {
+        console.log(`🧹 Cleaning up empty room: ${roomId}`);
+        this.rooms.delete(roomId);
+        this.cleanupTimeouts.delete(roomId);
+      }, 60000);
+
+      this.cleanupTimeouts.set(roomId, timeout);
     }
   }
 }
