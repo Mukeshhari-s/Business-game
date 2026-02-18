@@ -6,6 +6,13 @@ import { fileURLToPath } from 'url';
 import cors from 'cors';
 import initSockets from './socket.js';
 
+// Optional server logging control
+const LOG_LEVEL = (process.env.LOG_LEVEL || '').toLowerCase();
+if (LOG_LEVEL === 'silent') {
+  // Suppress console.log noise in the server terminal while keeping warnings/errors
+  console.log = () => {};
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

@@ -135,6 +135,11 @@ const playerColors = [
   { name: 'Black', value: '#2c3e50' }
 ];
 
+// Ensure we always derive a stable color per player (even before selection completes)
+function resolvePlayerColor(player, index) {
+  return player?.color || playerColors[index % playerColors.length].value;
+}
+
 let selectedColor = null; // Player's chosen color
 let hasSelectedColor = false; // Track if player has confirmed their color
 
@@ -1460,7 +1465,7 @@ function renderState(state) {
       }
       // Use player's chosen color
       const ownerPlayer = state.players[playerIndex];
-      ownerBar.style.background = ownerPlayer?.color || playerColors[playerIndex % playerColors.length].value;
+      ownerBar.style.background = resolvePlayerColor(ownerPlayer, playerIndex);
 
       // Buildings
       if (cell.buildable && (cell.houses > 0 || cell.hotels > 0)) {
@@ -1535,15 +1540,18 @@ function renderState(state) {
       displayedPositions[player.playerId] = player.position;
     }
 
+    const baseColor = resolvePlayerColor(player, index);
+
     let token = document.getElementById(`token-${player.playerId}`);
     if (!token) {
       token = document.createElement('div');
       token.id = `token-${player.playerId}`;
       token.className = 'player-token';
-      // Use player's chosen color
-      token.style.background = player.color || playerColors[index % playerColors.length].value;
       token.title = player.name;
     }
+
+    // Keep token color in sync with the player's chosen color
+    token.style.background = baseColor;
 
     const cellEl = document.getElementById(`cell-${visualPos}`);
     if (cellEl && token.parentElement !== cellEl) {
@@ -1581,8 +1589,7 @@ function renderState(state) {
 
     const tokenColor = document.createElement('div');
     tokenColor.className = 'w-6 h-6 rounded-lg border-2 border-white/20 shadow-sm flex items-center justify-center font-black text-white text-[9px]';
-    // Use player's chosen color
-    const baseColor = player.color || playerColors[index % playerColors.length].value;
+    const baseColor = resolvePlayerColor(player, index);
     tokenColor.style.background = `linear-gradient(135deg, ${baseColor}, ${adjustBrightness(baseColor, -20)})`;
     tokenColor.textContent = player.name[0].toUpperCase();
 
@@ -2352,25 +2359,22 @@ function animateTokenMovement(playerId, fromIndex, toIndex) {
   const playerIndex = gameState.players.findIndex(p => p.playerId === playerId);
   if (playerIndex === -1) return;
 
+  const player = gameState.players[playerIndex];
+  const baseColor = resolvePlayerColor(player, playerIndex);
+
   const fromCell = document.getElementById(`cell-${fromIndex}`);
   const toCell = document.getElementById(`cell-${toIndex}`);
   if (!fromCell || !toCell) return;
 
-  // Find the token
-  const tokens = fromCell.querySelectorAll('.player-token');
-  let token = null;
-  tokens.forEach(t => {
-    if (t.style.background && t.style.background.includes(playerColors[playerIndex % playerColors.length])) {
-      token = t;
-    }
-  });
+  // Find the token reliably by id
+  const token = document.getElementById(`token-${playerId}`);
 
   if (token) {
     // Add moving class for 3D animation
     token.classList.add('moving');
 
     // Create trail effect
-    createTokenTrail(fromCell, playerColors[playerIndex % playerColors.length]);
+    createTokenTrail(fromCell, baseColor);
 
     // Remove moving class after animation
     setTimeout(() => {
