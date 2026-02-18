@@ -101,7 +101,8 @@ export default class GameRoom {
       return { error: 'Name already taken in this room' };
     }
 
-    const player = new Player(trimmedName, socketId, this.settings.startingBalance);
+    // Create player without color initially
+    const player = new Player(trimmedName, socketId, this.settings.startingBalance, null);
     this.players.push(player);
 
     // First player is the host
@@ -177,6 +178,88 @@ export default class GameRoom {
       this.hostId = null;
       console.log('⚠️ No active players left to promote to host.');
     }
+  }
+
+  removePlayerPermanently(socketId) {
+    const player = this.getPlayerBySocketId(socketId);
+    if (!player) {
+      return { error: 'Player not found' };
+    }
+
+    const playerName = player.name;
+    console.log(`👋 Permanently removing ${playerName} from room ${this.roomId} (Status: ${this.gameStatus})`);
+
+    // Cancel all trades involving this player
+    this.cancelTradesForPlayer(player.playerId, 'Player left the game');
+
+    // Handle their properties (works for both 'waiting' and 'active' states)
+    let propertiesReturned = 0;
+    let housesReturned = 0;
+    let hotelsReturned = 0;
+    
+    // Return all properties to the bank
+    this.board.cells.forEach((cell) => {
+      if (cell.type === 'property' && cell.ownerId === player.playerId) {
+        propertiesReturned++;
+        
+        // Return houses/hotels to supply BEFORE clearing
+        housesReturned += cell.houses || 0;
+        hotelsReturned += cell.hotels || 0;
+        this.houseSupply += cell.houses || 0;
+        this.hotelSupply += cell.hotels || 0;
+        
+        // Clear property ownership and buildings
+        cell.ownerId = null;
+        cell.houses = 0;
+        cell.hotels = 0;
+        cell.isMortgaged = false;
+      }
+    });
+
+    if (propertiesReturned > 0) {
+      console.log(`📦 Returned ${propertiesReturned} properties, ${housesReturned} houses, ${hotelsReturned} hotels to bank`);
+    }
+
+    // If it was their turn during active game, advance to next player before removing
+    if (this.gameStatus === 'active') {
+      const currentPlayer = this.players[this.currentTurnIndex];
+      if (currentPlayer && currentPlayer.playerId === player.playerId) {
+        console.log(`⏭️ Advancing turn from leaving player ${playerName}`);
+        this.advanceTurn();
+      }
+    }
+
+    // Remove the player from the players array
+    const playerIndex = this.players.findIndex((p) => p.playerId === player.playerId);
+    if (playerIndex !== -1) {
+      this.players.splice(playerIndex, 1);
+      console.log(`✅ Removed ${playerName} from players array. Remaining players: ${this.players.length}`);
+      
+      // Adjust currentTurnIndex if needed
+      if (this.currentTurnIndex >= this.players.length && this.players.length > 0) {
+        this.currentTurnIndex = 0;
+      }
+    } else {
+      console.log(`⚠️ Player ${playerName} not found in players array!`);
+    }
+
+    // If the leaving player was the host, assign a new host
+    if (this.hostId === player.playerId && this.players.length > 0) {
+      console.log(`👑 Leaving player was host, promoting new host...`);
+      this.promoteNextHost();
+    }
+
+    this.log(`${playerName} left the game.`);
+    
+    console.log(`📢 Broadcasting updated state to room ${this.roomId}...`);
+    this.broadcastState();
+
+    // If no players left, the room will be cleaned up by RoomManager
+    if (this.players.length === 0) {
+      console.log(`🧹 Room ${this.roomId} is now empty.`);
+    }
+
+    return { success: true, playerName };
   }
 
   reconnectPlayer(playerId, socketId) {

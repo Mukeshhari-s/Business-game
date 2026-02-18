@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 
 export default class Player {
-  constructor(name, socketId, initialBalance = 1500) {
+  constructor(name, socketId, initialBalance = 1500, color = null) {
     this.playerId = randomUUID();
     this.name = name;
     this.socketId = socketId;
@@ -18,6 +18,7 @@ export default class Player {
     this.consecutiveDoubles = 0;
     this.turnHasRolled = false;
     this.canRollAgain = false;
+    this.color = color; // Player's chosen color
   }
 
   toPublic() {
@@ -37,6 +38,7 @@ export default class Player {
       consecutiveDoubles: this.consecutiveDoubles,
       turnHasRolled: this.turnHasRolled,
       canRollAgain: this.canRollAgain,
+      color: this.color, // Include color in public data
     };
   }
 }

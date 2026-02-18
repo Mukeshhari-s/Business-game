@@ -34,7 +34,7 @@ const die1 = document.getElementById('die1');
 const die2 = document.getElementById('die2');
 const diceTotal = document.getElementById('diceTotal');
 const propertyStatus = document.getElementById('propertyStatus');
-const monopolyBoard = document.getElementById('board-grid');
+const boardGrid = document.getElementById('board-grid');
 const bailWrapper = document.getElementById('bailWrapper');
 const startGameBtn = document.getElementById('startGameBtn');
 const startGameContainer = document.getElementById('startGameContainer');
@@ -43,6 +43,18 @@ const hotelSupplyEl = document.getElementById('hotelSupply');
 const buildablePropertiesEl = document.getElementById('buildableProperties');
 const declareBankruptcyBtn = document.getElementById('declareBankruptcyBtn');
 const leaveGameBtn = document.getElementById('leaveGameBtn');
+const colorSelectionModal = document.getElementById('colorSelectionModal');
+const colorPickerGrid = document.getElementById('colorPickerGrid');
+const confirmColorBtn = document.getElementById('confirmColorBtn');
+const colorModalError = document.getElementById('colorModalError');
+
+// Debug: Check if color modal elements exist
+console.log('🔍 Color modal elements check:', {
+  colorSelectionModal: !!colorSelectionModal,
+  colorPickerGrid: !!colorPickerGrid,
+  confirmColorBtn: !!confirmColorBtn,
+  colorModalError: !!colorModalError
+});
 
 // Room Settings Elements
 const startCashSelect = document.getElementById('startCashSelect');
@@ -110,7 +122,22 @@ const boardData = [
   { name: 'Kolathur Beach', color: 'usa' },
 ];
 
-const playerColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12'];
+const playerColors = [
+  { name: 'Red', value: '#e74c3c' },
+  { name: 'Blue', value: '#3498db' },
+  { name: 'Green', value: '#2ecc71' },
+  { name: 'Orange', value: '#f39c12' },
+  { name: 'Purple', value: '#9b59b6' },
+  { name: 'Pink', value: '#e91e63' },
+  { name: 'Cyan', value: '#00bcd4' },
+  { name: 'Yellow', value: '#ffeb3b' },
+  { name: 'Brown', value: '#795548' },
+  { name: 'Black', value: '#2c3e50' }
+];
+
+let selectedColor = null; // Player's chosen color
+let hasSelectedColor = false; // Track if player has confirmed their color
+
 const HOUSE_COST_RATE = 0.5;
 const HOTEL_COST_MULTIPLIER = 1;
 
@@ -238,20 +265,35 @@ if (joinBtn && nameInputJoin && roomInput) {
   });
 }
 
-rollBtn.addEventListener('click', () => {
-  rollBtn.disabled = true; // Prevent double-clicks
-  socket.emit('roll_dice', { payBail: bailCheckbox.checked });
-});
+// Roll dice button
+if (rollBtn) {
+  rollBtn.addEventListener('click', () => {
+    console.log('🎲 Roll dice button clicked');
+    rollBtn.disabled = true; // Prevent double-clicks
+    socket.emit('roll_dice', { payBail: bailCheckbox?.checked || false });
+  });
+  console.log('✅ Roll button event listener attached');
+} else {
+  console.error('❌ Roll button not found in DOM');
+}
 
-buyBtn.addEventListener('click', () => {
-  buyBtn.disabled = true; // Prevent double-clicks
-  socket.emit('buy_property');
-});
+// Buy property button
+if (buyBtn) {
+  buyBtn.addEventListener('click', () => {
+    console.log('🏠 Buy property button clicked');
+    buyBtn.disabled = true; // Prevent double-clicks
+    socket.emit('buy_property');
+  });
+}
 
-endTurnBtnCenter.addEventListener('click', () => {
-  endTurnBtnCenter.disabled = true; // Prevent double-clicks
-  socket.emit('end_turn');
-});
+// End turn button
+if (endTurnBtnCenter) {
+  endTurnBtnCenter.addEventListener('click', () => {
+    console.log('⏭ End turn button clicked');
+    endTurnBtnCenter.disabled = true; // Prevent double-clicks
+    socket.emit('end_turn');
+  });
+}
 
 const handleStartAction = () => {
   console.log('🚀 Start Game action triggered!');
@@ -281,7 +323,13 @@ const handleStartAction = () => {
 // Expose to window for manual console bypass if needed
 window.forceStart = handleStartAction;
 
-startGameBtn.addEventListener('click', handleStartAction);
+// Attach start button listener with delay to ensure DOM is ready
+if (startGameBtn) {
+  startGameBtn.addEventListener('click', handleStartAction);
+  console.log('✅ Start button event listener attached');
+} else {
+  console.error('❌ Start button not found in DOM');
+}
 
 declareBankruptcyBtn.addEventListener('click', () => {
   if (confirm('Are you sure you want to declare bankruptcy?\n\nAll your properties will be sold and you will be out of the game. You can watch others playing.\n\nClick OK to proceed or Cancel to continue playing.')) {
@@ -290,8 +338,12 @@ declareBankruptcyBtn.addEventListener('click', () => {
 });
 
 leaveGameBtn.addEventListener('click', () => {
-  if (confirm('Are you sure you want to leave this game?\n\nYou will be disconnected from the current room.')) {
+  console.log('🔴 Leave Game button clicked');
+  if (confirm('Are you sure you want to leave this game?\n\nYou will be permanently removed from the room.')) {
+    console.log('✅ User confirmed leave');
     leaveGame();
+  } else {
+    console.log('❌ User cancelled leave');
   }
 });
 
@@ -346,6 +398,25 @@ socket.on('room_created', ({ roomId, playerId }) => {
   gameSection?.classList.remove('hidden');
   leaveGameBtn?.classList.remove('hidden'); // Show leave button
   showToast(`Room ${roomId} created successfully!`, 'success');
+  
+  // Show color selection modal after creating room
+  setTimeout(() => {
+    if (!hasSelectedColor && myPlayerId) {
+      // Request current game state to ensure we have the latest player list
+      socket.emit('get_game_state');
+      
+      // Show color selection after a short delay to ensure registration
+      setTimeout(() => {
+        if (!hasSelectedColor) {
+          const takenColors = gameState?.players
+            ?.filter(p => p.color)
+            ?.map(p => p.color) || [];
+          console.log('🎨 Showing color selection modal for room creator. Taken colors:', takenColors);
+          showColorSelectionModal(takenColors);
+        }
+      }, 500);
+    }
+  }, 1500);
 });
 
 // Joining players receive their playerId here (host gets it via room_created)
@@ -377,10 +448,46 @@ socket.on('room_joined', ({ roomId, playerId }) => {
 
   // Trigger render in case we missed a state update
   if (typeof gameState !== 'undefined' && gameState) renderState(gameState);
+  
+  // Show color selection modal after joining
+  setTimeout(() => {
+    if (!hasSelectedColor && myPlayerId) {
+      // Request current game state to ensure we have the latest player list
+      socket.emit('get_game_state');
+      
+      // Show color selection after a short delay to ensure registration
+      setTimeout(() => {
+        if (!hasSelectedColor) {
+          const takenColors = gameState?.players
+            ?.filter(p => p.color)
+            ?.map(p => p.color) || [];
+          console.log('🎨 Showing color selection modal. Taken colors:', takenColors);
+          showColorSelectionModal(takenColors);
+        }
+      }, 500);
+    }
+  }, 1500);
 });
 
 socket.on('player_joined', ({ player }) => {
   showToast(`${player.name} joined the game`, 'info');
+});
+
+socket.on('color_selected', ({ color }) => {
+  console.log('🎨 RECEIVED color_selected event:', color);
+  console.log('🎨 Current selectedColor before:', selectedColor);
+  console.log('🎨 Current hasSelectedColor before:', hasSelectedColor);
+  
+  selectedColor = color;
+  hasSelectedColor = true;
+  
+  console.log('🎨 Updated selectedColor:', selectedColor);
+  console.log('🎨 Updated hasSelectedColor:', hasSelectedColor);
+  
+  hideColorSelectionModal();
+  showToast(`Color selected: ${playerColors.find(c => c.value === color)?.name || color}`, 'success');
+  
+  console.log('🎨 Color selection modal hidden and toast shown');
 });
 
 socket.on('reconnected', ({ playerId }) => {
@@ -407,6 +514,11 @@ socket.on('reconnected', ({ playerId }) => {
 
 socket.on('player_reconnected', ({ player }) => {
   showToast(`${player.name} reconnected`, 'info');
+});
+
+socket.on('player_left', ({ playerName }) => {
+  console.log(`👋 ${playerName} left the game - should trigger state update`);
+  showToast(`${playerName} left the game`, 'warning');
 });
 
 socket.on('reconnect_failed', ({ message }) => {
@@ -1044,10 +1156,35 @@ socket.on('error_message', ({ message }) => {
   showToast(message, 'error');
 });
 
+socket.on('left_game', ({ message }) => {
+  console.log('✅ Successfully left game:', message);
+  showToast('Successfully left the game', 'success');
+  
+  // Now complete the cleanup
+  completeLeaveGame();
+});
+
 socket.on('game_state_update', (state) => {
-  console.log('Game state updated:', state);
+  console.log('📥 Game state updated. Players count:', state.players?.length);
+  console.log('📥 Players:', state.players?.map(p => ({ name: p.name, color: p.color, id: p.playerId })).join(', '));
   gameState = state;
   renderState(state);
+  
+  // Show color modal if player hasn't selected color yet
+  if (!hasSelectedColor && myPlayerId) {
+    const me = state.players?.find(p => p.playerId === myPlayerId);
+    console.log('🔍 Looking for player with ID:', myPlayerId);
+    console.log('🔍 Found player:', me ? me.name : 'Not found');
+    console.log('🔍 Player color:', me ? me.color : 'None');
+    
+    if (me && !me.color) {
+      const takenColors = state.players
+        .filter(p => p.color)
+        .map(p => p.color);
+      console.log('🎨 Player found without color, showing selection modal. Taken colors:', takenColors);
+      showColorSelectionModal(takenColors);
+    }
+  }
 });
 
 // Trade notification listeners
@@ -1177,7 +1314,7 @@ function initBoard() {
     }
 
     cell.appendChild(nameDiv);
-    monopolyBoard.appendChild(cell);
+    boardGrid.appendChild(cell);
   }
 }
 
@@ -1252,22 +1389,23 @@ function renderState(state) {
     // Ensure the container itself is clickable and high enough
     if (startGameContainer) {
       startGameContainer.style.pointerEvents = 'auto';
-      startGameContainer.style.zIndex = '100';
+      startGameContainer.style.zIndex = '9999';
     }
 
     if (startGameBtn) {
       startGameBtn.disabled = !canStart;
-      startGameBtn.style.pointerEvents = canStart ? 'auto' : 'none';
+      startGameBtn.style.zIndex = '10000';
+      startGameBtn.style.position = 'relative';
 
       // Update button visual state
       if (!canStart) {
         startGameBtn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale-[0.5]');
-        startGameBtn.classList.remove('animate-pulse');
+        startGameBtn.classList.remove('animate-pulse', 'hover:scale-105', 'cursor-pointer');
         startGameBtn.title = `Need at least ${minPlayers} players to start (Currently: ${playersCount})`;
         console.log('⛔ Button disabled: Not enough players');
       } else {
         startGameBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale-[0.5]');
-        startGameBtn.classList.add('animate-pulse');
+        startGameBtn.classList.add('animate-pulse', 'hover:scale-105', 'cursor-pointer');
         startGameBtn.title = 'Click to start the game';
         console.log('✅ Button enabled: Ready to start!');
       }
@@ -1320,7 +1458,9 @@ function renderState(state) {
         ownerBar.className = 'owner-bar';
         cellEl.appendChild(ownerBar);
       }
-      ownerBar.style.background = playerColors[playerIndex % playerColors.length];
+      // Use player's chosen color
+      const ownerPlayer = state.players[playerIndex];
+      ownerBar.style.background = ownerPlayer?.color || playerColors[playerIndex % playerColors.length].value;
 
       // Buildings
       if (cell.buildable && (cell.houses > 0 || cell.hotels > 0)) {
@@ -1400,7 +1540,8 @@ function renderState(state) {
       token = document.createElement('div');
       token.id = `token-${player.playerId}`;
       token.className = 'player-token';
-      token.style.background = playerColors[index % playerColors.length];
+      // Use player's chosen color
+      token.style.background = player.color || playerColors[index % playerColors.length].value;
       token.title = player.name;
     }
 
@@ -1440,7 +1581,9 @@ function renderState(state) {
 
     const tokenColor = document.createElement('div');
     tokenColor.className = 'w-6 h-6 rounded-lg border-2 border-white/20 shadow-sm flex items-center justify-center font-black text-white text-[9px]';
-    tokenColor.style.background = `linear-gradient(135deg, ${playerColors[index % playerColors.length]}, ${adjustBrightness(playerColors[index % playerColors.length], -20)})`;
+    // Use player's chosen color
+    const baseColor = player.color || playerColors[index % playerColors.length].value;
+    tokenColor.style.background = `linear-gradient(135deg, ${baseColor}, ${adjustBrightness(baseColor, -20)})`;
     tokenColor.textContent = player.name[0].toUpperCase();
 
     const nameSpan = document.createElement('span');
@@ -1539,9 +1682,9 @@ function renderState(state) {
 
   // Set disabled states
   const isInDebt = me && me.balance < 0;
-  rollBtn.disabled = isAnimating || !canAct || (hasRolled && !canRollAgain) || isInDebt;
-  buyBtn.disabled = isAnimating || !canAct || state.pendingPropertyIndex === null || isInDebt;
-  endTurnBtnCenter.disabled = isAnimating || !canAct || !hasRolled || canRollAgain || isInDebt;
+  if (rollBtn) rollBtn.disabled = isAnimating || !canAct || (hasRolled && !canRollAgain) || isInDebt;
+  if (buyBtn) buyBtn.disabled = isAnimating || !canAct || state.pendingPropertyIndex === null || isInDebt;
+  if (endTurnBtnCenter) endTurnBtnCenter.disabled = isAnimating || !canAct || !hasRolled || canRollAgain || isInDebt;
 
   // Update button visibility and text based on state
   console.log('[DEBUG] Button visibility logic:', { gameActive, isMyTurn, hasRolled, canRollAgain, pendingPropertyIndex: state.pendingPropertyIndex });
@@ -1553,35 +1696,30 @@ function renderState(state) {
 
   if (!gameActive || !isMyTurn) {
     // Hide all buttons when not your turn or game not started
-    rollBtn.style.display = 'none';
-    buyBtn.style.display = 'none';
-    endTurnBtnCenter.style.display = 'none';
+    if (rollBtn) rollBtn.style.display = 'none';
+    if (buyBtn) buyBtn.style.display = 'none';
+    if (endTurnBtnCenter) endTurnBtnCenter.style.display = 'none';
     if (bailWrapper) bailWrapper.style.display = 'none';
   } else {
     // It's my turn and game is active
 
     // Roll Button logic
     if (!hasRolled || canRollAgain) {
-      rollBtn.style.display = 'block';
-      const label = canRollAgain ? '🎲 ROLL AGAIN (DOUBLES!)' : 'ROLL DICE';
-      const btnClass = canRollAgain
-        ? 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600'
-        : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700';
+      if (rollBtn) {
+        rollBtn.style.display = 'block';
+        rollBtn.style.pointerEvents = 'auto';
+        rollBtn.style.position = 'relative';
+        rollBtn.style.zIndex = '10000';
+        const label = canRollAgain ? '🎲 ROLL AGAIN (DOUBLES!)' : '🎲 ROLL';
+        const btnClass = canRollAgain
+          ? 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600'
+          : 'bg-gradient-to-br from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800';
 
-      rollBtn.className = `premium-btn w-full py-2 ${btnClass} text-white font-bold text-xs rounded-lg shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group/btn`;
-      rollBtn.innerHTML = `
-        <span class="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></span>
-        <span class="relative flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
-            </path>
-          </svg>
-          ${label}
-        </span>
-      `;
+        rollBtn.className = `premium-btn w-full py-2.5 ${btnClass} text-white font-bold text-xs rounded-xl shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group/btn cursor-pointer`;
+        rollBtn.textContent = label;
+      }
     } else {
-      rollBtn.style.display = 'none';
+      if (rollBtn) rollBtn.style.display = 'none';
     }
 
     // Bail Checkbox logic
@@ -1593,41 +1731,33 @@ function renderState(state) {
     if (hasRolled || canRollAgain) {
       // Buy Property button - Show if landed on buyable property, even on doubles
       if (state.pendingPropertyIndex !== null) {
-        buyBtn.style.display = 'block';
-        buyBtn.innerHTML = `
-          <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-          <span class="relative flex items-center justify-center gap-1.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-              </path>
-            </svg>
-            BUY PROPERTY
-          </span>
-        `;
+        if (buyBtn) {
+          buyBtn.style.display = 'block';
+          buyBtn.style.pointerEvents = 'auto';
+          buyBtn.style.position = 'relative';
+          buyBtn.style.zIndex = '10000';
+          buyBtn.textContent = '🏠 BUY';
+        }
       } else {
-        buyBtn.style.display = 'none';
+        if (buyBtn) buyBtn.style.display = 'none';
       }
 
       // End Turn button (only show if NOT able to roll again)
       if (hasRolled && !canRollAgain) {
-        endTurnBtnCenter.style.display = 'block';
-        endTurnBtnCenter.innerHTML = `
-          <span class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-          <span class="relative flex items-center justify-center gap-1.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-            </svg>
-            END TURN
-          </span>
-        `;
+        if (endTurnBtnCenter) {
+          endTurnBtnCenter.style.display = 'block';
+          endTurnBtnCenter.style.pointerEvents = 'auto';
+          endTurnBtnCenter.style.position = 'relative';
+          endTurnBtnCenter.style.zIndex = '10000';
+          endTurnBtnCenter.textContent = '⏭ NEXT TURN';
+        }
       } else {
-        endTurnBtnCenter.style.display = 'none';
+        if (endTurnBtnCenter) endTurnBtnCenter.style.display = 'none';
       }
     } else {
       // Haven't rolled yet
-      buyBtn.style.display = 'none';
-      endTurnBtnCenter.style.display = 'none';
+      if (buyBtn) buyBtn.style.display = 'none';
+      if (endTurnBtnCenter) endTurnBtnCenter.style.display = 'none';
     }
   }
 
@@ -2037,15 +2167,33 @@ function leaveGame() {
   // Set flag to prevent reconnection
   isLeavingGame = true;
 
-  // Clear session
+  console.log('🚪 Leaving game...');
+  
+  // Emit leave_game event to server to remove player permanently
+  if (socket.connected && currentRoomId && myPlayerId) {
+    console.log(`📤 Emitting leave_game for room ${currentRoomId}, player ${myPlayerId}`);
+    socket.emit('leave_game');
+    
+    // Wait for server to process before clearing everything
+    // The 'left_game' event handler will complete the cleanup
+    return;
+  }
+
+  // If not connected or no room/player, just clear and show lobby
+  completeLeaveGame();
+}
+
+function completeLeaveGame() {
+  console.log('🧹 Completing leave game cleanup...');
+  
+  // Clear session FIRST to prevent auto-rejoin
   sessionStorage.removeItem('monopolyLobby');
+  
   currentRoomId = null;
   myPlayerId = null;
   gameState = null;
   autoActionSent = false;
-
-  // Disconnect socket
-  socket.disconnect();
+  hasSelectedColor = false; // Reset color selection flag
 
   // Show lobby, hide game
   gameSection?.classList.add('hidden');
@@ -2058,12 +2206,119 @@ function leaveGame() {
     window.reconnectTimeoutId = null;
   }
 
-  // Reconnect socket after a short delay
+  // Reset flag after cleanup
   setTimeout(() => {
-    isLeavingGame = false; // Clear flag before reconnecting
-    socket.connect();
-    showToast('Returned to lobby', 'info');
-  }, 300);
+    isLeavingGame = false;
+  }, 500);
+}
+
+// ============================================
+// COLOR SELECTION MODAL
+// ============================================
+
+function showColorSelectionModal(takenColors = []) {
+  if (!colorSelectionModal) {
+    console.error('❌ Color selection modal element not found!');
+    return;
+  }
+  
+  if (hasSelectedColor) {
+    console.log('✅ Player already selected color, skipping modal');
+    return;
+  }
+  
+  console.log('🎨 Showing color selection modal. Taken colors:', takenColors);
+  console.log('🎨 Modal element exists:', !!colorSelectionModal);
+  console.log('🎨 hasSelectedColor:', hasSelectedColor);
+  
+  // Clear previous colors
+  colorPickerGrid.innerHTML = '';
+  selectedColor = null;
+  
+  // Create color buttons
+  playerColors.forEach((color) => {
+    const isTaken = takenColors.includes(color.value);
+    
+    const colorBtn = document.createElement('button');
+    colorBtn.type = 'button';
+    colorBtn.className = `w-full aspect-square rounded-xl border-4 transition-all duration-200 shadow-lg relative ${
+      isTaken 
+        ? 'border-gray-600 opacity-40 cursor-not-allowed' 
+        : 'border-transparent hover:border-white hover:scale-110 cursor-pointer'
+    }`;
+    colorBtn.style.backgroundColor = color.value;
+    colorBtn.title = isTaken ? `${color.name} (Taken)` : color.name;
+    colorBtn.dataset.color = color.value;
+    colorBtn.dataset.colorName = color.name;
+    colorBtn.disabled = isTaken;
+    
+    // Add checkmark for selected color
+    const checkmark = document.createElement('div');
+    checkmark.className = 'absolute inset-0 flex items-center justify-center opacity-0 transition-opacity';
+    checkmark.innerHTML = '<svg class="w-8 h-8 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+    colorBtn.appendChild(checkmark);
+    
+    // Add "X" for taken colors
+    if (isTaken) {
+      const xMark = document.createElement('div');
+      xMark.className = 'absolute inset-0 flex items-center justify-center';
+      xMark.innerHTML = '<svg class="w-8 h-8 text-red-500 drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>';
+      colorBtn.appendChild(xMark);
+    }
+
+    if (!isTaken) {
+      colorBtn.addEventListener('click', () => {
+        // Remove selection from all colors
+        colorPickerGrid.querySelectorAll('button').forEach(btn => {
+          btn.classList.remove('border-white', 'ring-4', 'ring-white/50');
+          const check = btn.querySelector('div');
+          if (check) check.classList.add('opacity-0');
+        });
+        
+        // Mark this color as selected
+        colorBtn.classList.add('border-white', 'ring-4', 'ring-white/50');
+        checkmark.classList.remove('opacity-0');
+        selectedColor = color.value;
+        colorModalError.classList.add('hidden');
+      });
+    }
+
+    colorPickerGrid.appendChild(colorBtn);
+  });
+  
+  // Show modal
+  colorSelectionModal.classList.remove('hidden');
+}
+
+function hideColorSelectionModal() {
+  if (colorSelectionModal) {
+    colorSelectionModal.classList.add('hidden');
+  }
+}
+
+// Confirm color button
+if (confirmColorBtn) {
+  confirmColorBtn.addEventListener('click', () => {
+    console.log('🎨 Confirm button clicked');
+    console.log('🎨 selectedColor:', selectedColor);
+    console.log('🎨 hasSelectedColor:', hasSelectedColor);
+    
+    if (!selectedColor) {
+      colorModalError.classList.remove('hidden');
+      console.log('❌ No color selected');
+      return;
+    }
+    
+    console.log('✅ Color confirmed:', selectedColor);
+    console.log('🎨 Sending color to server...');
+    
+    // Send color to server
+    socket.emit('select_color', { color: selectedColor });
+    
+    // Don't set hasSelectedColor here - wait for server confirmation
+    // hasSelectedColor = true;
+    // hideColorSelectionModal();
+  });
 }
 
 function showToast(message, type = 'info') {
@@ -2158,6 +2413,12 @@ socket.on('connect', () => {
 
   // Re-check sessionStorage to get fresh data (not the cached lobbyData)
   const currentSessionData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
+
+  // If session data is empty (user left game), don't try to reconnect
+  if (!currentSessionData || Object.keys(currentSessionData).length === 0) {
+    console.log('📭 No session data found, staying in lobby');
+    return;
+  }
 
   if (!autoActionSent && Object.keys(currentSessionData).length > 0) {
     const { action, name, roomId, playerId } = currentSessionData;

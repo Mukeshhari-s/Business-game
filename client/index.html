@@ -772,6 +772,32 @@
   </div>
 
 
+  <!-- Color Selection Modal -->
+  <div id="colorSelectionModal" class="hidden fixed inset-0 z-[10001] flex items-center justify-center p-4" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);">
+    <div class="bg-gradient-to-br from-slate-900 to-purple-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-white/10">
+      <div class="text-center mb-6">
+        <div class="inline-block p-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-4">
+          <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+          </svg>
+        </div>
+        <h2 class="text-3xl font-black text-white mb-2">Choose Your Color</h2>
+        <p class="text-purple-200 text-sm">Select a color for your game piece</p>
+      </div>
+      
+      <div id="colorPickerGrid" class="grid grid-cols-5 gap-3 mb-6">
+        <!-- Colors will be added dynamically -->
+      </div>
+      
+      <p id="colorModalError" class="text-sm text-red-400 text-center mb-4 hidden">Please select an available color</p>
+      
+      <button id="confirmColorBtn" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all">
+        Confirm Color
+      </button>
+    </div>
+  </div>
+
+
   <!-- NEW Property Popover (Rebuilt) -->
   <div id="property-popover" class="hidden fixed inset-0 z-[10000] pointer-events-none font-sans">
     <!-- Invisible Backdrop -->

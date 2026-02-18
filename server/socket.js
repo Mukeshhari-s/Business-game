@@ -53,6 +53,44 @@ export default function initSockets(io) {
       room.broadcastState();
     });
 
+    socket.on('select_color', ({ color }) => {
+      console.log(`🎨 Color selection request from ${socket.id}, color: ${color}`);
+      const room = roomManager.getRoomBySocket(socket.id);
+      if (!room) {
+        console.log(`❌ Player not in room: ${socket.id}`);
+        socket.emit('error_message', { message: 'You are not in a room.' });
+        return;
+      }
+
+      const player = room.getPlayerBySocketId(socket.id);
+      if (!player) {
+        console.log(`❌ Player not found for socket: ${socket.id}`);
+        socket.emit('error_message', { message: 'Player not found.' });
+        return;
+      }
+
+      console.log(`🔍 Checking if color ${color} is taken...`);
+      console.log(`👥 Room players:`, room.players.map(p => ({ name: p.name, color: p.color, id: p.playerId })));
+
+      // Check if color is already taken
+      if (color && room.players.some((p) => p.playerId !== player.playerId && p.color === color)) {
+        console.log(`❌ Color ${color} already taken`);
+        socket.emit('error_message', { message: 'This color is already taken by another player. Please choose a different color.' });
+        return;
+      }
+
+      // Assign color to player
+      player.color = color;
+      console.log(`✅ ${player.name} selected color ${color}`);
+      
+      // Broadcast updated state
+      console.log(`📡 Broadcasting updated state...`);
+      room.broadcastState();
+      console.log(`📤 Sending color_selected event to client...`);
+      socket.emit('color_selected', { color });
+      console.log(`✅ Color selection process completed`);
+    });
+
     socket.on('reconnect_room', ({ roomId, playerId }) => {
       if (!roomId || !playerId) {
         socket.emit('reconnect_failed', { message: 'Room ID and Player ID are required for reconnection.' });
@@ -218,6 +256,55 @@ export default function initSockets(io) {
         return;
       }
       room.endTurn(socket.id);
+    });
+
+    socket.on('leave_game', () => {
+      console.log(`🚪 Leave game request from ${socket.id}`);
+      const room = roomManager.getRoomBySocket(socket.id);
+      if (!room) {
+        socket.emit('error_message', { message: 'You are not in a room.' });
+        return;
+      }
+      
+      const player = room.getPlayerBySocketId(socket.id);
+      if (!player) {
+        socket.emit('error_message', { message: 'Player not found.' });
+        return;
+      }
+
+      const playerName = player.name;
+      const roomId = room.roomId;
+
+      console.log(`📝 Before removal - Players in room: ${room.players.map(p => p.name).join(', ')}`);
+
+      // Remove player completely from the game (this broadcasts state to room)
+      const result = room.removePlayerPermanently(socket.id);
+      if (result.error) {
+        socket.emit('error_message', { message: result.error });
+        return;
+      }
+
+      console.log(`📝 After removal - Players in room: ${room.players.map(p => p.name).join(', ')}`);
+
+      // Give a small delay to ensure broadcast reaches all clients before player leaves
+      setTimeout(() => {
+        // Notify the player they left successfully
+        socket.emit('left_game', { message: 'You have left the game.' });
+
+        // Notify other players in the room
+        socket.to(roomId).emit('player_left', { playerName });
+
+        // Now leave the socket.io room
+        socket.leave(roomId);
+        
+        // Clear the socket mapping
+        roomManager.socketRoomMap.delete(socket.id);
+        
+        // Cleanup room if empty
+        roomManager.cleanupRoomIfEmpty(roomId);
+
+        console.log(`✅ Player ${playerName} has left room ${roomId}`);
+      }, 100);
     });
 
     socket.on('disconnect', () => {
