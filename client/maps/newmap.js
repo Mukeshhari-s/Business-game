@@ -1,0 +1,48 @@
+(function registerNewMap() {
+  const newmap = [
+    { name: 'GO',                color: null },
+    { name: 'Osaka Bay',         color: 'japan',       price: 60  },
+    { name: 'Festival Fund',     color: null },
+    { name: 'Shibuya Crossing',  color: 'japan',       price: 60  },
+    { name: 'Cultural Tax',      color: null },
+    { name: 'Shinkansen Rail',   color: 'railroad',    price: 200 },
+    { name: 'Valencia Harbor',   color: 'spain',       price: 100 },
+    { name: 'Discovery',         color: null },
+    { name: 'Seville Plaza',     color: 'spain',       price: 100 },
+    { name: 'Bilbao Docks',      color: 'spain',       price: 120 },
+    { name: 'Harbor Detention',  color: null },
+    { name: 'Vancouver Quay',    color: 'canada',      price: 140 },
+    { name: 'Niagara Energy',    color: 'utility',     price: 150 },
+    { name: 'Toronto Market',    color: 'canada',      price: 140 },
+    { name: 'Montreal Mile',     color: 'canada',      price: 160 },
+    { name: 'Polar Express Rail',color: 'railroad',    price: 200 },
+    { name: 'Delhi Bazaar',      color: 'india',       price: 180 },
+    { name: 'Heritage Chest',    color: null },
+    { name: 'Jaipur Gates',      color: 'india',       price: 180 },
+    { name: 'Kochi Port',        color: 'india',       price: 200 },
+    { name: 'Safari Rest Stop',  color: null },
+    { name: 'Sydney Harbour',    color: 'australia',   price: 220 },
+    { name: 'Discovery',         color: null },
+    { name: 'Brisbane Bay',      color: 'australia',   price: 220 },
+    { name: 'Perth Outback',     color: 'australia',   price: 240 },
+    { name: 'Coral Coast Rail',  color: 'railroad',    price: 200 },
+    { name: 'Oaxaca Street',     color: 'mexico',      price: 260 },
+    { name: 'Cancun Shore',      color: 'mexico',      price: 260 },
+    { name: 'Maya Utilities',    color: 'utility',     price: 150 },
+    { name: 'Tulum Ruins',       color: 'mexico',      price: 280 },
+    { name: 'Go To Jail',        color: null },
+    { name: 'Cape Town Ridge',   color: 'southafrica', price: 300 },
+    { name: 'Durban Market',     color: 'southafrica', price: 300 },
+    { name: 'Heritage Fund',     color: null },
+    { name: 'Pretoria Square',   color: 'southafrica', price: 320 },
+    { name: 'Savannah Rail',     color: 'railroad',    price: 200 },
+    { name: 'Discovery',         color: null },
+    { name: 'Stockholm Quay',    color: 'sweden',      price: 350 },
+    { name: 'Fjord Tax',         color: null },
+    { name: 'Gothenburg Pier',   color: 'sweden',      price: 400 },
+  ];
+
+  window.MonopolyMaps = window.MonopolyMaps || {};
+  window.MonopolyMaps.newmap = newmap;
+
+})();

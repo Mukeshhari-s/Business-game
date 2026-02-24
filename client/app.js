@@ -1,10 +1,42 @@
 // Connect to the server dynamically (works for localhost and deployed apps)
 const socket = io(window.location.origin);
-const lobbyData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
+
+function getStoredLobbyData() {
+  try {
+    const sessionRaw = sessionStorage.getItem('monopolyLobby');
+    if (sessionRaw) return JSON.parse(sessionRaw) || {};
+  } catch (e) {
+    console.warn('Failed reading session storage lobby data:', e);
+  }
+
+  try {
+    const localRaw = localStorage.getItem('monopolyLobby');
+    if (localRaw) return JSON.parse(localRaw) || {};
+  } catch (e) {
+    console.warn('Failed reading local storage lobby data:', e);
+  }
+
+  return {};
+}
+
+function setStoredLobbyData(nextData) {
+  const data = { ...(getStoredLobbyData() || {}), ...(nextData || {}) };
+  const serialized = JSON.stringify(data);
+  sessionStorage.setItem('monopolyLobby', serialized);
+  localStorage.setItem('monopolyLobby', serialized);
+}
+
+function clearStoredLobbyData() {
+  sessionStorage.removeItem('monopolyLobby');
+  localStorage.removeItem('monopolyLobby');
+}
+
+const lobbyData = getStoredLobbyData();
 let currentRoomId = lobbyData.roomId || null;
 let myPlayerId = lobbyData.playerId || null;
 let gameState = null;
 let lastDiceRoll = null;
+let pendingCreateSettings = null;
 console.log('📦 Loaded session data:', lobbyData);
 console.log('🔌 Connecting to:', window.location.origin);
 let autoActionSent = false;
@@ -78,93 +110,44 @@ const showJoinBtn = document.getElementById('showJoinBtn');
 const backToLobbyBtns = document.querySelectorAll('.backToLobbyBtn');
 const nameInputJoin = document.getElementById('nameInputJoin');
 
-// Board data per map (order follows Monopoly indices clockwise starting at GO top-left)
-const boardMaps = {
-  world: [
-    { name: 'GO', color: null },
-    { name: 'Vaikalmedu', color: 'brazil' },
-    { name: 'Pudhaiyal', color: null },
-    { name: 'Thopupalayam', color: 'brazil' },
-    { name: 'Varumana vari', color: null },
-    { name: 'Vettaiyan Airways', color: 'railroad' },
-    { name: 'Paramathi', color: 'israel' },
-    { name: 'Surprise', color: null },
-    { name: 'P Velur', color: 'israel' },
-    { name: 'Kabilarmalai', color: 'israel' },
-    { name: 'Jail', color: null },
-    { name: 'Velarivelli', color: 'italy' },
-    { name: 'U K Consultancy', color: 'utility' },
-    { name: 'Boat Theeru', color: 'italy' },
-    { name: 'Polampatti', color: 'italy' },
-    { name: 'Eagle Tractors', color: 'railroad' },
-    { name: 'Karur', color: 'germany' },
-    { name: 'Pudhaiyal', color: null },
-    { name: 'Namakkal main', color: 'germany' },
-    { name: 'Erode', color: 'germany' },
-    { name: 'Vacation', color: null },
-    { name: 'Pollachi', color: 'china' },
-    { name: 'Surprise', color: null },
-    { name: 'Paladdam', color: 'china' },
-    { name: 'Udumalpet', color: 'china' },
-    { name: 'Vettaiyan waterways', color: 'railroad' },
-    { name: 'Unjalur', color: 'france' },
-    { name: 'Noyal', color: 'france' },
-    { name: 'Kathirvel vathukadai', color: 'utility' },
-    { name: 'Kodumudi', color: 'france' },
-    { name: 'Go To Jail', color: null },
-    { name: 'Sala Palayam', color: 'uk' },
-    { name: 'Govindham Palyam', color: 'uk' },
-    { name: 'Pudhaiyal', color: null },
-    { name: 'Valaiyal Karan Pudhur', color: 'uk' },
-    { name: 'Vettaiyan Roadways', color: 'railroad' },
-    { name: 'Surprise', color: null },
-    { name: 'Mettur Dam', color: 'usa' },
-    { name: 'Aadambara Vari', color: null },
-    { name: 'Kolathur Beach', color: 'usa' },
-  ],
-  legends: [
-    { name: 'GO', color: null },
-    { name: 'Osaka Bay', color: 'japan' },
-    { name: 'Festival Fund', color: null },
-    { name: 'Shibuya Crossing', color: 'japan' },
-    { name: 'Cultural Tax', color: null },
-    { name: 'Shinkansen Rail', color: 'railroad' },
-    { name: 'Valencia Harbor', color: 'spain' },
-    { name: 'Discovery', color: null },
-    { name: 'Seville Plaza', color: 'spain' },
-    { name: 'Bilbao Docks', color: 'spain' },
-    { name: 'Harbor Detention', color: null },
-    { name: 'Vancouver Quay', color: 'canada' },
-    { name: 'Niagara Energy', color: 'utility' },
-    { name: 'Toronto Market', color: 'canada' },
-    { name: 'Montreal Mile', color: 'canada' },
-    { name: 'Polar Express Rail', color: 'railroad' },
-    { name: 'Delhi Bazaar', color: 'india' },
-    { name: 'Heritage Chest', color: null },
-    { name: 'Jaipur Gates', color: 'india' },
-    { name: 'Kochi Port', color: 'india' },
-    { name: 'Safari Rest Stop', color: null },
-    { name: 'Sydney Harbour', color: 'australia' },
-    { name: 'Discovery', color: null },
-    { name: 'Brisbane Bay', color: 'australia' },
-    { name: 'Perth Outback', color: 'australia' },
-    { name: 'Coral Coast Rail', color: 'railroad' },
-    { name: 'Oaxaca Street', color: 'mexico' },
-    { name: 'Cancun Shore', color: 'mexico' },
-    { name: 'Maya Utilities', color: 'utility' },
-    { name: 'Tulum Ruins', color: 'mexico' },
-    { name: 'Go To Jail', color: null },
-    { name: 'Cape Town Ridge', color: 'southafrica' },
-    { name: 'Durban Market', color: 'southafrica' },
-    { name: 'Heritage Fund', color: null },
-    { name: 'Pretoria Square', color: 'southafrica' },
-    { name: 'Savannah Rail', color: 'railroad' },
-    { name: 'Discovery', color: null },
-    { name: 'Stockholm Quay', color: 'sweden' },
-    { name: 'Fjord Tax', color: null },
-    { name: 'Gothenburg Pier', color: 'sweden' },
-  ],
+// Board data and styles now come from per-map files
+const boardMaps = window.MonopolyMaps || {};
+const MAP_STYLE_SHEETS = {
+  common: 'maps/common.css',
+  world: 'maps/world.css',
+  legends: 'maps/legends.css',
+  newmap: 'maps/newmap.css',
 };
+let loadedMapStyleKey = null;
+
+function ensureMapStyles(mapKey) {
+  const head = document.head;
+  if (!head) return;
+
+  if (!document.getElementById('map-style-common') && MAP_STYLE_SHEETS.common) {
+    const commonLink = document.createElement('link');
+    commonLink.rel = 'stylesheet';
+    commonLink.href = MAP_STYLE_SHEETS.common;
+    commonLink.id = 'map-style-common';
+    head.appendChild(commonLink);
+  }
+
+  if (loadedMapStyleKey === mapKey) return;
+
+  Object.keys(MAP_STYLE_SHEETS).forEach(key => {
+    if (key === 'common') return;
+    const existing = document.getElementById(`map-style-${key}`);
+    if (existing) existing.remove();
+  });
+
+  const href = MAP_STYLE_SHEETS[mapKey] || MAP_STYLE_SHEETS.world;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  link.id = `map-style-${mapKey}`;
+  head.appendChild(link);
+  loadedMapStyleKey = mapKey;
+}
 
 function resolveMapKey() {
   const key = gameState?.settings?.map || lobbyData?.settings?.map || lobbyData?.map;
@@ -172,7 +155,9 @@ function resolveMapKey() {
 }
 
 function getBoardData() {
-  return boardMaps[resolveMapKey()] || boardMaps.world;
+  const mapKey = resolveMapKey();
+  ensureMapStyles(mapKey);
+  return boardMaps[mapKey] || boardMaps.world || [];
 }
 
 let lastRenderedMapKey = null; // Track which map the board grid currently reflects
@@ -300,6 +285,8 @@ if (document.getElementById('createBtn')) {
       map: mapEl ? mapEl.value : 'world',
       mortgageEnabled: mortgageEl ? mortgageEl.checked : true
     };
+
+    pendingCreateSettings = settings;
 
     console.log('🎮 Creating room with:', { name, settings });
     socket.emit('create_room', { name, settings });
@@ -445,13 +432,22 @@ socket.on('room_created', ({ roomId, playerId }) => {
   }
 
   // Save session for reconnection
-  sessionStorage.setItem('monopolyLobby', JSON.stringify({
+  const resolvedSettings = pendingCreateSettings || lobbyData.settings || {
+    startingBalance: 1500,
+    maxPlayers: 4,
+    map: 'world',
+    mortgageEnabled: true
+  };
+
+  setStoredLobbyData({
     roomId,
     playerId,
-    name: nameInput.value || lobbyData.name,
-    map: settings.map,
-    settings
-  }));
+    name: (nameInput && nameInput.value) || lobbyData.name,
+    map: resolvedSettings.map || 'world',
+    settings: resolvedSettings
+  });
+
+  pendingCreateSettings = null;
 
   roomStatus && (roomStatus.textContent = `Room created! Share code: ${roomId}`);
   roomCode.textContent = roomId;
@@ -469,7 +465,17 @@ socket.on('room_created', ({ roomId, playerId }) => {
       
       // Show color selection after a short delay to ensure registration
       setTimeout(() => {
-        if (!hasSelectedColor) {
+        if (hasSelectedColor) return;
+
+        const me = gameState?.players?.find(p => p.playerId === myPlayerId);
+        if (me?.color) {
+          hasSelectedColor = true;
+          selectedColor = me.color;
+          hideColorSelectionModal();
+          return;
+        }
+
+        if (me && !me.color) {
           const takenColors = gameState?.players
             ?.filter(p => p.color)
             ?.map(p => p.color) || [];
@@ -494,13 +500,13 @@ socket.on('room_joined', ({ roomId, playerId }) => {
   }
 
   // Save session for reconnection
-  sessionStorage.setItem('monopolyLobby', JSON.stringify({
+  setStoredLobbyData({
     roomId,
     playerId,
     name: nameInputJoin.value || nameInput.value || lobbyData.name,
-    map: lobbyData.map,
-    settings: lobbyData.settings
-  }));
+    map: lobbyData.map || 'world',
+    settings: lobbyData.settings || null
+  });
 
   roomStatus && (roomStatus.textContent = `Joined room ${roomId}`);
   roomCode.textContent = roomId;
@@ -521,7 +527,17 @@ socket.on('room_joined', ({ roomId, playerId }) => {
       
       // Show color selection after a short delay to ensure registration
       setTimeout(() => {
-        if (!hasSelectedColor) {
+        if (hasSelectedColor) return;
+
+        const me = gameState?.players?.find(p => p.playerId === myPlayerId);
+        if (me?.color) {
+          hasSelectedColor = true;
+          selectedColor = me.color;
+          hideColorSelectionModal();
+          return;
+        }
+
+        if (me && !me.color) {
           const takenColors = gameState?.players
             ?.filter(p => p.color)
             ?.map(p => p.color) || [];
@@ -591,7 +607,7 @@ socket.on('reconnect_failed', ({ message }) => {
 
   // Only remove if it's truly a "not found" error, not just a temporary issue
   if (message.includes('not found')) {
-    sessionStorage.removeItem('monopolyLobby');
+    clearStoredLobbyData();
   }
   // Return to lobby after failed reconnection
   setTimeout(() => {
@@ -1217,11 +1233,29 @@ socket.on('vacation_ended', ({ playerId }) => {
 
 socket.on('game_over', ({ winnerName }) => {
   showToast(`🎉 Game Over! Winner: ${winnerName}! 🎉`, 'success');
-  sessionStorage.removeItem('monopolyLobby');
+  clearStoredLobbyData();
 });
 
 socket.on('error_message', ({ message }) => {
   showToast(message, 'error');
+
+  // If color conflict occurs, refresh current state and keep color modal in sync
+  if (typeof message === 'string' && /color is already taken|choose a different color/i.test(message)) {
+    socket.emit('get_game_state');
+    setTimeout(() => {
+      if (!myPlayerId || !gameState?.players) return;
+      const me = gameState.players.find((p) => p.playerId === myPlayerId);
+      if (me?.color) {
+        hasSelectedColor = true;
+        selectedColor = me.color;
+        hideColorSelectionModal();
+        return;
+      }
+
+      const takenColors = gameState.players.filter((p) => p.color).map((p) => p.color);
+      showColorSelectionModal(takenColors);
+    }, 250);
+  }
 });
 
 socket.on('left_game', ({ message }) => {
@@ -1237,10 +1271,21 @@ socket.on('game_state_update', (state) => {
   console.log('📥 Players:', state.players?.map(p => ({ name: p.name, color: p.color, id: p.playerId })).join(', '));
   gameState = state;
   renderState(state);
+
+  // Sync color status from server state (important after refresh/reconnect)
+  const me = myPlayerId ? state.players?.find(p => p.playerId === myPlayerId) : null;
+  if (me?.color) {
+    if (!hasSelectedColor || selectedColor !== me.color) {
+      console.log('🎨 Syncing selected color from server state:', me.color);
+    }
+    hasSelectedColor = true;
+    selectedColor = me.color;
+    hideColorSelectionModal();
+    return;
+  }
   
   // Show color modal if player hasn't selected color yet
   if (!hasSelectedColor && myPlayerId) {
-    const me = state.players?.find(p => p.playerId === myPlayerId);
     console.log('🔍 Looking for player with ID:', myPlayerId);
     console.log('🔍 Found player:', me ? me.name : 'Not found');
     console.log('🔍 Player color:', me ? me.color : 'None');
@@ -1354,6 +1399,12 @@ function initBoard() {
   const activeBoard = getBoardData();
   lastRenderedMapKey = activeMapKey;
 
+  // Emoji fallbacks for newmap flag badges
+  const NEWMAP_FLAG_EMOJIS = {
+    japan: '🇯🇵', spain: '🇪🇸', canada: '🇨🇦', india: '🇮🇳',
+    australia: '🇦🇺', mexico: '🇲🇽', southafrica: '🇿🇦', sweden: '🇸🇪',
+  };
+
   // Create all 40 cells with grid positioning
   for (let i = 0; i < 40; i++) {
     const cell = document.createElement('div');
@@ -1380,16 +1431,134 @@ function initBoard() {
     nameDiv.className = 'cell-name';
     nameDiv.textContent = cellData.name;
 
-    if (cellData.color) {
+    const isCorner = (i === 0 || i === 10 || i === 20 || i === 30);
+
+    // ── Newmap: full-cell background image ──
+    if (activeMapKey === 'newmap') {
+      cell.classList.add('has-cell-bg');
+      const bgImg = document.createElement('img');
+      bgImg.className = 'cell-bg-img';
+      bgImg.src = `maps/newmap-images/cells/${i}.png`;
+      bgImg.alt = '';
+      bgImg.onerror = function () { this.style.display = 'none'; };
+      cell.appendChild(bgImg); // first child — sits behind everything
+    }
+
+    // Color bar — skipped for newmap (flag badge replaces it)
+    if (cellData.color && activeMapKey !== 'newmap') {
       const colorDiv = document.createElement('div');
       colorDiv.className = `cell-color color-${cellData.color}`;
       cell.appendChild(colorDiv);
     }
 
+    // ── Newmap: circular flag badge ──
+    if (activeMapKey === 'newmap' && cellData.color && cellData.color !== 'railroad' && cellData.color !== 'utility') {
+      const flagWrap = document.createElement('div');
+      flagWrap.className = 'cell-flag';
+      flagWrap.textContent = NEWMAP_FLAG_EMOJIS[cellData.color] || '';
+      const flagImg = document.createElement('img');
+      flagImg.className = 'cell-flag-img';
+      flagImg.src = `maps/newmap-images/flags/${cellData.color}.png`;
+      flagImg.alt = '';
+      flagImg.onerror = function () { this.style.display = 'none'; };
+      flagWrap.appendChild(flagImg);
+      cell.appendChild(flagWrap);
+    }
+
+    // ── Newmap: special cell icons (airport, jail, surprise, treasure, etc.) ──
+    if (activeMapKey === 'newmap') {
+      let iconType = null;
+      const nm = (cellData.name || '').toLowerCase();
+      // Left/right side cells are too narrow for a flow icon — skip them
+      const isSideCell = (col === 0 || col === 10) && !isCorner;
+
+      if (isCorner) {
+        if (i === 0)       iconType = 'go';
+        else if (i === 10) iconType = 'jail';
+        else if (i === 20) iconType = 'vacation';
+        else if (i === 30) iconType = 'gotojail';
+      } else if (!isSideCell) {
+        if (cellData.color === 'railroad')     iconType = 'airport';
+        else if (cellData.color === 'utility') iconType = 'utility';
+        else if (!cellData.color) {
+          if (nm.includes('discovery') || nm.includes('surprise'))                        iconType = 'surprise';
+          else if (nm.includes('fund') || nm.includes('chest') || nm.includes('heritage')) iconType = 'treasure';
+        }
+      }
+
+      if (iconType) {
+        const iconWrap = document.createElement('div');
+        // Corner icons use absolute centering; others are flex flow items
+        iconWrap.className = `cell-icon cell-icon-${iconType}${isCorner ? ' cell-icon-corner' : ''}`;
+        const iconImg = document.createElement('img');
+        iconImg.className = 'cell-icon-img';
+        iconImg.src = `maps/newmap-images/special/${iconType}.png`;
+        iconImg.alt = '';
+        iconImg.onerror = function () { this.style.display = 'none'; };
+        iconWrap.appendChild(iconImg);
+        cell.appendChild(iconWrap);
+      }
+    }
+
+    // Name appended before price so flex `order` stacks: name(1) → price(2)
     cell.appendChild(nameDiv);
+
+    // ── Newmap: price badge — appended AFTER nameDiv so it sits below ──
+    if (activeMapKey === 'newmap' && cellData.color && cellData.price) {
+      const priceTag = document.createElement('div');
+      priceTag.className = 'newmap-price';
+      priceTag.textContent = `₹${cellData.price}`;
+      cell.appendChild(priceTag);
+    }
+
+    // For non-newmap maps, name is still appended last
+    if (activeMapKey !== 'newmap') {
+      cell.appendChild(nameDiv);
+    }
     boardGrid.appendChild(cell);
   }
+
+  // Scale board proportionally to viewport after DOM is updated
+  requestAnimationFrame(scaleBoardToFit);
 }
+
+// ─── Proportional Board Scaling ──────────────────────────────────────────────
+// Uses CSS `zoom` (not transform) so the board's LAYOUT size shrinks too —
+// no overflow, no dead space, and hit-targets stay correct on touch screens.
+// Every pixel inside the board (cells, text, flags, images) scales uniformly.
+function scaleBoardToFit() {
+  const board = document.getElementById('monopoly-board');
+  if (!board) return;
+
+  const NATURAL = 750; // must match `width: 750px` in CSS
+
+  // Available square space — leave a small margin on all edges
+  const available = Math.min(
+    window.innerWidth  * 0.96,
+    window.innerHeight * 0.92
+  );
+
+  const scale = available < NATURAL ? available / NATURAL : 1;
+
+  // `zoom` shrinks both the visual size AND the layout box in one go
+  board.style.zoom = scale < 1 ? scale.toFixed(5) : '';
+
+  // Reset any leftover transform / wrapper overrides from the old approach
+  board.style.transform = '';
+  board.style.width     = '';
+  board.style.height    = '';
+  board.style.maxWidth  = '';
+  board.style.maxHeight = '';
+
+  const wrapper = board.closest('.board-wrapper');
+  if (wrapper) {
+    wrapper.style.height   = '';
+    wrapper.style.minWidth = '';
+    wrapper.style.overflow = '';
+  }
+}
+
+window.addEventListener('resize', scaleBoardToFit);
 
 // Render buildable properties UI
 function renderBuildableProperties(state) {
@@ -1438,6 +1607,8 @@ function renderState(state) {
 
   // Ensure board grid matches the active map
   initBoard();
+  // Re-scale board in case layout changed (e.g. panels appearing/disappearing)
+  requestAnimationFrame(scaleBoardToFit);
 
   gameSection.classList.remove('hidden');
   connectionScreen?.classList.add('hidden');
@@ -1642,72 +1813,79 @@ function renderState(state) {
     }
   });
 
-  // Update players list - Minimalist Design
+  // Update players list - Premium Card Design
   playersList.innerHTML = '';
   state.players.forEach((player, index) => {
-    const card = document.createElement('div');
-    card.className = 'relative py-1.5 px-2 transition-all duration-300 border-b border-white/5 last:border-0 group';
+    const isCurrentTurn = player.playerId === state.currentTurnPlayerId;
+    const isMe = player.playerId === myPlayerId;
+    const baseColor = resolvePlayerColor(player, index);
 
-    if (player.playerId === state.currentTurnPlayerId) {
-      // Simple highlight with a color for the current player
-      card.classList.add('bg-indigo-500/20', 'rounded-lg');
-    } else if (player.isBankrupt) {
-      card.classList.add('opacity-40', 'grayscale');
+    const card = document.createElement('div');
+    card.className = 'relative rounded-xl transition-all duration-300 group overflow-hidden';
+    card.style.cssText = `
+      background: rgba(15,23,42,${isCurrentTurn ? '0.9' : '0.55'});
+      border: 1px solid ${isCurrentTurn ? 'rgba(99,102,241,0.55)' : 'rgba(255,255,255,0.06)'};
+      border-left: 3px solid ${player.isBankrupt ? '#6b7280' : baseColor};
+      padding: 10px 12px;
+      ${player.isBankrupt ? 'opacity:0.45;filter:grayscale(0.6)' : ''};
+      ${isCurrentTurn ? `box-shadow:0 0 16px rgba(99,102,241,0.25),inset 0 0 20px rgba(99,102,241,0.04)` : ''};
+    `;
+
+    // Shimmer row for current turn player
+    if (isCurrentTurn) {
+      const shimmer = document.createElement('div');
+      shimmer.style.cssText = 'position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(168,85,247,0.7),rgba(236,72,153,0.7),transparent)';
+      card.appendChild(shimmer);
     }
 
     const header = document.createElement('div');
     header.className = 'flex justify-between items-center gap-2 relative z-10';
 
+    // Avatar circle
     const tokenColor = document.createElement('div');
-    tokenColor.className = 'w-6 h-6 rounded-lg border-2 border-white/20 shadow-sm flex items-center justify-center font-black text-white text-[9px]';
-    const baseColor = resolvePlayerColor(player, index);
-    tokenColor.style.background = `linear-gradient(135deg, ${baseColor}, ${adjustBrightness(baseColor, -20)})`;
+    tokenColor.style.cssText = `width:28px;height:28px;border-radius:8px;border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:10px;flex-shrink:0;background:linear-gradient(135deg,${baseColor},${adjustBrightness(baseColor,-25)});box-shadow:0 0 8px ${baseColor}55`;
     tokenColor.textContent = player.name[0].toUpperCase();
 
     const nameSpan = document.createElement('span');
-    nameSpan.className = 'font-bold text-white text-xs flex-1 ml-2 truncate';
+    nameSpan.style.cssText = 'font-weight:700;color:#e2e8f0;font-size:12px;flex:1;margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
     nameSpan.textContent = player.name;
-    if (player.playerId === myPlayerId) {
+    if (isMe) {
       const youBadge = document.createElement('span');
-      youBadge.className = 'ml-1 px-1 py-0.5 bg-indigo-500/80 text-white text-[7px] font-bold rounded-md';
+      youBadge.style.cssText = 'margin-left:5px;padding:1px 5px;background:rgba(99,102,241,0.4);border:1px solid rgba(99,102,241,0.5);color:#c7d2fe;font-size:8px;font-weight:900;border-radius:4px;letter-spacing:0.05em';
       youBadge.textContent = 'YOU';
       nameSpan.appendChild(youBadge);
     }
 
     const balanceAmount = document.createElement('div');
-    balanceAmount.className = 'text-sm font-black text-yellow-400 text-right drop-shadow-[0_0_10px_rgba(250,204,21,0.3)] shrink-0';
-    balanceAmount.textContent = `$${player.balance}`;
+    balanceAmount.style.cssText = 'font-size:13px;font-weight:900;color:#fbbf24;text-align:right;flex-shrink:0;text-shadow:0 0 10px rgba(251,191,36,0.4)';
+    balanceAmount.textContent = `₹${player.balance}`;
 
     const nameContainer = document.createElement('div');
-    nameContainer.className = 'flex items-center flex-1 min-w-0';
+    nameContainer.style.cssText = 'display:flex;align-items:center;flex:1;min-width:0';
     nameContainer.appendChild(tokenColor);
     nameContainer.appendChild(nameSpan);
 
-    // Dynamic Trade Button for other players
+    // Quick Trade button
     if (player.playerId !== myPlayerId && !player.isBankrupt && state.gameStatus === 'active') {
       const quickTradeBtn = document.createElement('button');
-      quickTradeBtn.className = 'ml-auto mr-2 p-1.5 bg-purple-500/10 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-all opacity-0 group-hover:opacity-100';
+      quickTradeBtn.style.cssText = 'margin-right:6px;padding:5px;background:rgba(168,85,247,0.12);border-radius:7px;color:#a78bfa;transition:all 0.2s;opacity:0;border:1px solid transparent';
       quickTradeBtn.title = `Trade with ${player.name}`;
-      quickTradeBtn.innerHTML = `
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-        </svg>
-      `;
-      quickTradeBtn.onclick = (e) => {
-        e.stopPropagation();
-        openTradeModal({ toPlayerId: player.playerId });
-      };
+      quickTradeBtn.innerHTML = `<svg style="width:12px;height:12px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>`;
+      quickTradeBtn.onmouseenter = () => { quickTradeBtn.style.background = 'rgba(168,85,247,0.28)'; quickTradeBtn.style.borderColor = 'rgba(168,85,247,0.4)'; };
+      quickTradeBtn.onmouseleave = () => { quickTradeBtn.style.background = 'rgba(168,85,247,0.12)'; quickTradeBtn.style.borderColor = 'transparent'; };
+      quickTradeBtn.onclick = (e) => { e.stopPropagation(); openTradeModal({ toPlayerId: player.playerId }); };
+      card.addEventListener('mouseenter', () => { quickTradeBtn.style.opacity = '1'; });
+      card.addEventListener('mouseleave', () => { quickTradeBtn.style.opacity = '0'; });
       header.appendChild(quickTradeBtn);
     }
 
     header.appendChild(nameContainer);
     header.appendChild(balanceAmount);
 
+    // Status row
     const statusDiv = document.createElement('div');
-    statusDiv.className = 'text-[9px] font-medium mt-0.5 relative z-10';
-    const statusText = player.isBankrupt ? 'Bankrupt' : 'Active';
-    const statusColor = player.isBankrupt ? 'text-rose-400' : 'text-cyan-300';
-    statusDiv.className += ` ${statusColor}`;
+    const statusText = player.isBankrupt ? '🔴 Bankrupt' : isCurrentTurn ? '🟢 Playing now' : '⚪ Waiting';
+    statusDiv.style.cssText = `font-size:9px;font-weight:700;margin-top:4px;letter-spacing:0.04em;color:${player.isBankrupt ? '#f87171' : isCurrentTurn ? '#4ade80' : '#64748b'}`;
     statusDiv.textContent = statusText;
 
     card.appendChild(header);
@@ -1724,10 +1902,22 @@ function renderState(state) {
   // Update game log
   if (gameLog) {
     gameLog.innerHTML = '';
-    state.gameLog.slice(-20).forEach(msg => {
+    state.gameLog.slice(-20).forEach((msg, i) => {
       const msgEl = document.createElement('div');
       msgEl.className = 'log-message';
-      msgEl.textContent = msg;
+      // Colorize log messages by keywords
+      const isRecent = i === state.gameLog.slice(-20).length - 1;
+      let accent = 'rgba(148,163,184,0.7)';
+      let dot = '⚪';
+      if (/buy|purchased|bought/i.test(msg)) { accent = '#34d399'; dot = '🏠'; }
+      else if (/rent|paid|pay/i.test(msg)) { accent = '#f87171'; dot = '💸'; }
+      else if (/roll|rolled|dice/i.test(msg)) { accent = '#a78bfa'; dot = '🎲'; }
+      else if (/jail/i.test(msg)) { accent = '#fb923c'; dot = '🔒'; }
+      else if (/win|winner|champion/i.test(msg)) { accent = '#fbbf24'; dot = '🏆'; }
+      else if (/bankrupt/i.test(msg)) { accent = '#ef4444'; dot = '💀'; }
+      else if (/pass.*go|collected.*200/i.test(msg)) { accent = '#4ade80'; dot = '✅'; }
+      msgEl.style.cssText = `padding:4px 8px;font-size:9.5px;line-height:1.5;color:${accent};border-left:2px solid ${accent}30;${isRecent ? 'background:rgba(255,255,255,0.04);border-radius:0 6px 6px 0;font-weight:700' : ''}`;
+      msgEl.textContent = `${dot} ${msg}`;
       gameLog.appendChild(msgEl);
     });
     gameLog.scrollTop = gameLog.scrollHeight;
@@ -2265,7 +2455,7 @@ function completeLeaveGame() {
   console.log('🧹 Completing leave game cleanup...');
   
   // Clear session FIRST to prevent auto-rejoin
-  sessionStorage.removeItem('monopolyLobby');
+  clearStoredLobbyData();
   
   currentRoomId = null;
   myPlayerId = null;
@@ -2400,15 +2590,25 @@ if (confirmColorBtn) {
 }
 
 function showToast(message, type = 'info') {
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+  const icon = icons[type] || 'ℹ️';
+
+  // Stack offset: count existing toasts
+  const existing = document.querySelectorAll('.toast');
+  const offset = existing.length * 68;
+
   const toast = document.createElement('div');
   toast.className = `toast ${type} font-semibold`;
-  toast.textContent = message;
+  toast.style.bottom = `${28 + offset}px`;
+  toast.innerHTML = `<span style="font-size:1.1em;flex-shrink:0">${icon}</span><span>${message}</span>`;
   document.body.appendChild(toast);
 
   setTimeout(() => {
-    toast.style.animation = 'slideIn 0.3s ease-out reverse';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+    toast.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    toast.style.transform = 'translateX(120%)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 320);
+  }, 3200);
 }
 
 // Helper function to adjust color brightness
@@ -2474,6 +2674,7 @@ function createTokenTrail(cell, color) {
 
 // Initialize
 initBoard();
+scaleBoardToFit();
 
 // Connection status logging
 socket.on('connect', () => {
@@ -2487,7 +2688,7 @@ socket.on('connect', () => {
   }
 
   // Re-check sessionStorage to get fresh data (not the cached lobbyData)
-  const currentSessionData = JSON.parse(sessionStorage.getItem('monopolyLobby') || '{}');
+  const currentSessionData = getStoredLobbyData();
 
   // If session data is empty (user left game), don't try to reconnect
   if (!currentSessionData || Object.keys(currentSessionData).length === 0) {

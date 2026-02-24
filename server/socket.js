@@ -72,11 +72,31 @@ export default function initSockets(io) {
       console.log(`🔍 Checking if color ${color} is taken...`);
       console.log(`👥 Room players:`, room.players.map(p => ({ name: p.name, color: p.color, id: p.playerId })));
 
-      // Check if color is already taken
-      if (color && room.players.some((p) => p.playerId !== player.playerId && p.color === color)) {
-        console.log(`❌ Color ${color} already taken`);
-        socket.emit('error_message', { message: 'This color is already taken by another player. Please choose a different color.' });
+      // Idempotent selection (same color already set for this player)
+      if (player.color && player.color === color) {
+        console.log(`ℹ️ ${player.name} re-selected same color ${color}; accepting.`);
+        socket.emit('color_selected', { color });
+        room.broadcastState();
         return;
+      }
+
+      // Check if color is already taken
+      if (color) {
+        const conflictingPlayer = room.players.find(
+          (p) => p.playerId !== player.playerId && p.color === color
+        );
+
+        if (conflictingPlayer) {
+          // In waiting lobby, free stale colors from disconnected players to avoid false conflicts
+          if (room.gameStatus === 'waiting' && !conflictingPlayer.connected) {
+            console.log(`🧹 Releasing stale color ${color} from disconnected player ${conflictingPlayer.name}`);
+            conflictingPlayer.color = null;
+          } else {
+            console.log(`❌ Color ${color} already taken by ${conflictingPlayer.name}`);
+            socket.emit('error_message', { message: 'This color is already taken by another player. Please choose a different color.' });
+            return;
+          }
+        }
       }
 
       // Assign color to player

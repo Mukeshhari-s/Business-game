@@ -11,7 +11,21 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --shadow-premium: 0 20px 60px rgba(0, 0, 0, 0.5);
   --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.4);
+  --accent-purple: #7c3aed;
+  --accent-pink: #ec4899;
+  --accent-indigo: #6366f1;
+  --accent-glow: 0 0 30px rgba(124, 58, 237, 0.35);
+  --border-glow: 0 0 0 1px rgba(124,58,237,0.4), 0 0 16px rgba(124,58,237,0.15);
 }
+
+/* ─── Global Scrollbar ─────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(15,23,42,0.4); border-radius: 8px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #7c3aed, #ec4899);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(to bottom, #6d28d9, #db2777); }
 
 .layout-wrapper {
   width: 100% !important;
@@ -51,30 +65,37 @@ html {
 
 /* Glassmorphism Cards */
 .glass-card {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 8px 32px 0 rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    var(--border-glow);
 }
 
 .glass-card-premium {
-  background: rgba(7, 10, 15, 0.85);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+  background: rgba(7, 10, 18, 0.88);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 60px 0 rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 20px 60px 0 rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   padding-left: 1.25rem !important;
   padding-right: 1.25rem !important;
 }
 
 .glass-card-premium:hover {
-  background: rgba(7, 10, 15, 0.95);
-  box-shadow: 0 30px 80px 0 rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
+  background: rgba(10, 14, 25, 0.95);
+  box-shadow:
+    0 32px 80px 0 rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(124, 58, 237, 0.25);
+  transform: translateY(-3px);
 }
 
 /* Flat variant for compact utility panels */
@@ -109,20 +130,21 @@ html {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.4) 50%,
-      transparent 100%);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
+  background: linear-gradient(105deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 80%);
+  transform: translateX(-120%);
+  transition: transform 0.55s ease;
 }
 
 .premium-btn:hover::before {
-  transform: translateX(100%);
+  transform: translateX(120%);
 }
 
 .premium-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.95);
+  filter: brightness(0.95);
 }
 
 /* Animations */
@@ -271,6 +293,7 @@ input:focus {
 
 .board-wrapper {
   width: 100%;
+  overflow: visible;   /* allow scaled board to render outside layout bounds */
 }
 
 .sidebar-panel {
@@ -310,10 +333,12 @@ input:focus {
 }
 
 #monopoly-board {
-  width: 100%;
-  height: auto;
+  /* Fixed natural size — scaleBoardToFit() zooms this down on smaller screens */
+  width: 750px;
+  height: 750px;
+  max-width: none;
+  max-height: none;
   aspect-ratio: 1 / 1;
-  max-width: 90vh;
   /* Prevent it from being taller than screen */
   box-sizing: border-box;
   background: linear-gradient(135deg, #c8e6cf 0%, #b8dcc5 25%, #a8d2bb 50%, #b8dcc5 75%, #c8e6cf 100%);
@@ -366,15 +391,17 @@ input:focus {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(20px);
-  border: 3px solid #334155;
-  border-radius: 24px;
-  padding: 18px 20px;
+  background: rgba(10, 15, 30, 0.97);
+  backdrop-filter: blur(24px) saturate(1.3);
+  border: 1.5px solid rgba(99, 102, 241, 0.35);
+  border-radius: 22px;
+  padding: 16px 18px;
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  gap: 12px;
+    0 24px 60px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(124, 58, 237, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 40px rgba(99, 102, 241, 0.1);
+  gap: 10px;
   width: 90%;
   max-width: 440px;
   position: relative;
@@ -519,8 +546,6 @@ input:focus {
   /* Board scales naturally - just reduce border on mobile */
   #monopoly-board {
     border-width: 8px;
-    width: min(95vw, 95vh);
-    height: min(95vw, 95vh);
   }
 
   .board-center {
@@ -554,13 +579,10 @@ input:focus {
     font-size: 2rem !important;
   }
 
-  /* Board scales naturally with thinner border */
+  /* Board size on small screens is handled by scaleBoardToFit() JS function */
   #monopoly-board {
     border-width: 6px;
     border-radius: 12px;
-    width: 98vw;
-    height: 98vw;
-    max-width: 98vw;
   }
 
   .board-center {
@@ -674,8 +696,11 @@ input:focus {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 4px;
+  gap: 2px;
+  padding: 6px 4px;
+  background: rgba(5, 10, 24, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 .board-log::-webkit-scrollbar {
@@ -700,75 +725,72 @@ input:focus {
 }
 
 .log-message {
-  font-size: clamp(9px, 1.2vw, 11px);
-  color: #f1f5f9;
+  font-size: clamp(9px, 1.1vw, 10.5px);
+  color: #94a3b8;
   font-family: 'Poppins', 'Segoe UI', sans-serif;
-  line-height: 1.4;
-  padding: 4px 8px;
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
+  line-height: 1.5;
+  padding: 3px 8px;
+  border-left: 2px solid rgba(148,163,184,0.2);
+  border-radius: 0 6px 6px 0;
+  transition: background 0.15s ease, transform 0.15s ease;
   font-weight: 500;
 }
 
 .log-message:hover {
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(30, 41, 59, 0.6);
   transform: translateX(2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Board Cells */
 .cell {
   position: relative;
-  background: linear-gradient(to bottom, #1e293b, #0f172a);
-  border: 2px solid #334155;
+  background: linear-gradient(160deg, #1e2d42 0%, #0f172a 100%);
+  border: 1.5px solid #2d3f55;
   display: flex;
   flex-direction: column;
   font-size: 13px;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   cursor: pointer;
   z-index: 2;
 }
 
 .cell:hover {
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-2px) scale(1.025);
   box-shadow:
-    0 8px 16px rgba(0, 0, 0, 0.4),
-    0 4px 8px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 8px 20px rgba(0, 0, 0, 0.5),
+    0 0 0 1.5px rgba(99, 102, 241, 0.7),
+    0 0 12px rgba(99, 102, 241, 0.2);
   z-index: 20;
   border-color: #6366f1;
 }
 
 .cell-name {
-  padding: 5px 3px;
+  padding: 4px 3px;
   text-align: center;
-  font-weight: 800;
-  background: linear-gradient(to bottom, #334155, #1e293b);
+  font-weight: 700;
+  background: linear-gradient(to bottom, #2a3b52, #172032);
   font-size: 0.65em;
-  line-height: 1.3;
+  line-height: 1.25;
   display: flex;
   align-items: center;
   justify-content: center;
   white-space: normal;
   word-break: break-word;
   font-family: 'Poppins', sans-serif;
-  color: #f1f5f9;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s ease;
+  color: #e2e8f0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  transition: background 0.2s ease, color 0.2s ease;
   flex: 1;
 }
 
 .cell:hover .cell-name {
-  background: linear-gradient(to bottom, #475569, #334155);
-  font-weight: 900;
-  color: #818cf8;
+  background: linear-gradient(to bottom, #3d5068, #2a3b52);
+  font-weight: 800;
+  color: #a5b4fc;
 }
 
 /* Center-only styling for neutral tiles (Treasure/Surprise/etc.) */
@@ -829,10 +851,11 @@ input:focus {
 }
 
 .cell-price {
-  font-weight: 800;
-  color: #4ade80;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-weight: 900;
+  color: #34d399;
+  text-shadow: 0 0 8px rgba(52, 211, 153, 0.5), 0 1px 2px rgba(0, 0, 0, 0.6);
   font-size: 0.85em;
+  letter-spacing: 0.01em;
 }
 
 /* Corner cells */
@@ -1163,140 +1186,10 @@ input:focus {
   box-shadow: 0 6px 12px rgba(231, 76, 60, 0.6);
 }
 
-/* Property Colors - Country Groups with Gradients */
-.color-brazil {
-  background: linear-gradient(var(--gradient-dir, to right), #009c3b 33%, #ffdf00 33% 66%, #002776 66%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-israel {
-  background: linear-gradient(var(--gradient-dir, to right), #0038b8 25%, #ffffff 25% 75%, #0038b8 75%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-italy {
-  background: linear-gradient(var(--gradient-dir, to right), #009246 33%, #ffffff 33% 66%, #ce2b37 66%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-germany {
-  background: linear-gradient(var(--gradient-dir, to right), #000000 33%, #dd0000 33% 66%, #ffce00 66%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-china {
-  background: linear-gradient(var(--gradient-dir, to right), #de2910 50%, #ffde00 50%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-france {
-  background: linear-gradient(var(--gradient-dir, to right), #0055a4 33%, #ffffff 33% 66%, #ef4135 66%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-uk {
-  background: linear-gradient(var(--gradient-dir, to right), #cf142b 20%, #ffffff 20% 40%, #00247d 40% 60%, #ffffff 60% 80%, #cf142b 80%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-usa {
-  background: linear-gradient(var(--gradient-dir, to right), #3c3b6e 33%, #ffffff 33% 66%, #b22234 66%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-japan {
-  background: linear-gradient(var(--gradient-dir, to right), #ffffff 60%, #bc002d 40%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-spain {
-  background: linear-gradient(var(--gradient-dir, to right), #aa151b 25%, #f1bf00 50%, #aa151b 25%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-canada {
-  background: linear-gradient(var(--gradient-dir, to right), #ff0000 35%, #ffffff 30%, #ff0000 35%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-india {
-  background: linear-gradient(var(--gradient-dir, to right), #ff9933 33%, #ffffff 33% 66%, #138808 66%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-australia {
-  background: linear-gradient(var(--gradient-dir, to right), #002868 33%, #ffffff 33% 66%, #ef2b2d 66%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-mexico {
-  background: linear-gradient(var(--gradient-dir, to right), #006341 33%, #ffffff 33% 66%, #ce1126 66%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-southafrica {
-  background: linear-gradient(var(--gradient-dir, to right), #000000 16%, #007749 16% 32%, #ffb612 32% 48%, #de3831 48% 64%, #002395 64% 80%, #ffffff 80%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-.color-sweden {
-  background: linear-gradient(var(--gradient-dir, to right), #006aa7 60%, #fecc00 40%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
+/* Map-specific property color styles moved to /maps/*.css */
 .left .cell-color,
 .right .cell-color {
   --gradient-dir: to bottom;
-}
-
-.cell:hover .color-brazil,
-.cell:hover .color-israel,
-.cell:hover .color-italy,
-.cell:hover .color-germany,
-.cell:hover .color-china,
-.cell:hover .color-france,
-.cell:hover .color-uk,
-.cell:hover .color-usa {
-  filter: brightness(1.2) saturate(1.2);
-  box-shadow:
-    inset 0 2px 4px rgba(255, 255, 255, 0.4),
-    0 0 8px currentColor;
-}
-
-/* Special styling for Railroads */
-.color-railroad {
-  background: linear-gradient(135deg, #34495e, #2c3e50);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.color-railroad::after {
-  content: '🚂';
-  position: absolute;
-  right: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 8px;
-  opacity: 0.4;
-}
-
-/* Special styling for Utilities */
-.color-utility {
-  background: linear-gradient(135deg, #f39c12, #e67e22);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.color-utility::after {
-  content: '⚡';
-  position: absolute;
-  right: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 8px;
-  opacity: 0.4;
 }
 
 /* Property Ownership Indicators */
@@ -1405,20 +1298,35 @@ input:focus {
 /* Toast Notifications */
 .toast {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background: rgba(15, 23, 42, 0.9);
-  backdrop-filter: blur(12px);
-  padding: 16px 24px;
-  border-radius: 16px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 6px solid #6366f1;
-  z-index: 1000;
-  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  max-width: 380px;
-  color: white;
-  font-weight: 500;
+  bottom: 28px;
+  right: 24px;
+  background: rgba(10, 15, 30, 0.92);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  padding: 14px 20px 14px 18px;
+  border-radius: 14px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid #6366f1;
+  z-index: 9999;
+  animation: toastSlide 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  max-width: 360px;
+  min-width: 220px;
+  color: #f1f5f9;
+  font-weight: 600;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@keyframes toastSlide {
+  from { transform: translateX(120%) scale(0.9); opacity: 0; }
+  to   { transform: translateX(0)   scale(1);   opacity: 1; }
 }
 
 @keyframes slideIn {
@@ -1434,18 +1342,27 @@ input:focus {
 }
 
 .toast.error {
-  border-left-color: #ef4444;
-  background: linear-gradient(to right, rgba(127, 29, 29, 0.9), rgba(15, 23, 42, 0.9));
+  border-left-color: #f87171;
+  background: rgba(20, 8, 8, 0.93);
+  box-shadow: 0 12px 40px rgba(239, 68, 68, 0.2), 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .toast.success {
-  border-left-color: #10b981;
-  background: linear-gradient(to right, rgba(6, 78, 59, 0.9), rgba(15, 23, 42, 0.9));
+  border-left-color: #34d399;
+  background: rgba(5, 20, 15, 0.93);
+  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.2), 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .toast.info {
-  border-left-color: #3b82f6;
-  background: linear-gradient(to right, rgba(30, 58, 138, 0.9), rgba(15, 23, 42, 0.9));
+  border-left-color: #60a5fa;
+  background: rgba(5, 10, 28, 0.93);
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.18), 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.toast.warning {
+  border-left-color: #fbbf24;
+  background: rgba(20, 14, 4, 0.93);
+  box-shadow: 0 12px 40px rgba(251, 191, 36, 0.18), 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 /* Premium Player Card */
@@ -1644,24 +1561,15 @@ select {
 }
 
 @media (max-width: 1536px) {
-  #monopoly-board {
-    width: clamp(450px, 100%, 900px);
-    height: clamp(450px, 100%, 900px);
-  }
+  /* Board size is controlled by scaleBoardToFit() JS */
 }
 
 @media (max-width: 1280px) {
-  #monopoly-board {
-    width: clamp(420px, 100%, 750px);
-    height: clamp(420px, 100%, 750px);
-    border-width: 14px;
-  }
+  /* Board size handled by scaleBoardToFit() */
 }
 
 @media (max-width: 768px) {
   #monopoly-board {
-    width: clamp(350px, 100%, 500px);
-    height: clamp(350px, 100%, 500px);
     border-width: 10px;
   }
 
@@ -1688,8 +1596,6 @@ select {
 
 @media (max-width: 480px) {
   #monopoly-board {
-    width: clamp(300px, 100%, 400px);
-    height: clamp(300px, 100%, 400px);
     border-width: 8px;
     gap: 2px;
     padding: 4px;
@@ -1810,23 +1716,23 @@ select {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(-10deg);
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: white;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1c0d00;
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: 22px;
-  padding: 2px 10px;
-  border-radius: 6px;
-  border: 3px solid #78350f;
+  font-size: 18px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 2px solid #92400e;
   box-shadow:
-    0 10px 20px rgba(0, 0, 0, 0.4),
-    0 0 0 2px rgba(245, 158, 11, 0.3);
+    0 6px 16px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(245, 158, 11, 0.4);
   z-index: 30;
   pointer-events: none;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
-  letter-spacing: 1px;
-  animation: mortgagePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+  letter-spacing: 1.5px;
+  animation: mortgagePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes mortgagePop {

@@ -1,0 +1,54 @@
+/* Legends map property colors */
+.color-japan {
+  background: linear-gradient(var(--gradient-dir, to right), #ffffff 60%, #bc002d 40%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.color-spain {
+  background: linear-gradient(var(--gradient-dir, to right), #aa151b 25%, #f1bf00 50%, #aa151b 25%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.color-canada {
+  background: linear-gradient(var(--gradient-dir, to right), #ff0000 35%, #ffffff 30%, #ff0000 35%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.color-india {
+  background: linear-gradient(var(--gradient-dir, to right), #ff9933 33%, #ffffff 33% 66%, #138808 66%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.color-australia {
+  background: linear-gradient(var(--gradient-dir, to right), #002868 33%, #ffffff 33% 66%, #ef2b2d 66%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.color-mexico {
+  background: linear-gradient(var(--gradient-dir, to right), #006341 33%, #ffffff 33% 66%, #ce1126 66%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.color-southafrica {
+  background: linear-gradient(var(--gradient-dir, to right), #000000 16%, #007749 16% 32%, #ffb612 32% 48%, #de3831 48% 64%, #002395 64% 80%, #ffffff 80%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.color-sweden {
+  background: linear-gradient(var(--gradient-dir, to right), #006aa7 60%, #fecc00 40%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.cell:hover .color-japan,
+.cell:hover .color-spain,
+.cell:hover .color-canada,
+.cell:hover .color-india,
+.cell:hover .color-australia,
+.cell:hover .color-mexico,
+.cell:hover .color-southafrica,
+.cell:hover .color-sweden {
+  filter: brightness(1.2) saturate(1.2);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    0 0 8px currentColor;
+}
