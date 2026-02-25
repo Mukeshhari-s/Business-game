@@ -34,12 +34,12 @@
   })();
   </script>
 
-  <div class="relative z-10 layout-wrapper py-6">
+  <div class="relative z-10 layout-wrapper py-2 md:py-6">
 
     <!-- HEADER -->
     <div class="text-center mb-6">
       <h1
-        class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-200 to-indigo-300"
+        class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-200 to-indigo-300"
         style="font-family: 'Montserrat', sans-serif; letter-spacing:-1px;">
         MONOPOLY ELITE
       </h1>
@@ -235,7 +235,8 @@
 
     <!-- Content Card -->
     <div id="property-popover-content"
-      class="absolute w-[300px] bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 pointer-events-auto flex flex-col transition-all duration-200 opacity-0 scale-95">
+      class="absolute bg-slate-900 rounded-xl shadow-2xl overflow-hidden border border-white/10 pointer-events-auto flex flex-col transition-all duration-200 opacity-0 scale-95"
+      style="width: min(300px, calc(100vw - 2rem));">
 
       <!-- Header -->
       <div id="pp-color-bar" class="h-8 w-full bg-slate-700" style="position:relative">

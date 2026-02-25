@@ -1024,7 +1024,8 @@ function openPropertyModal(index) { // Kept name for compatibility with onclick 
 
   // 7. Positioning Logic
   const cellRect = document.getElementById(`cell-${index}`).getBoundingClientRect();
-  const popoverWidth = 300;
+  // Use actual rendered width (respects the min(300px, ...) CSS on mobile)
+  const popoverWidth = Math.min(300, window.innerWidth - 32);
   const popoverHeight = 380; // Adjusted for improved layout
   const gap = 12;
 
@@ -1523,39 +1524,62 @@ function initBoard() {
 }
 
 // ─── Proportional Board Scaling ──────────────────────────────────────────────
-// Uses CSS `zoom` (not transform) so the board's LAYOUT size shrinks too —
-// no overflow, no dead space, and hit-targets stay correct on touch screens.
-// Every pixel inside the board (cells, text, flags, images) scales uniformly.
+// Strategy: keep #monopoly-board at its natural 750×750 px and use
+// CSS `transform: scale()` to shrink it visually.  Because transform does
+// NOT collapse the layout box we also shrink the .board-wrapper height to
+// `scale × 750 px`, so the page flows correctly with no dead space.
+//
+// Why transform over zoom:
+//  • Works identically in every modern browser (Chrome, Firefox, Safari, mobile)
+//  • Touch / pointer hit-targets scale with the transform
+//  • All child pixels (cells, flags, text) scale uniformly — layout never breaks
 function scaleBoardToFit() {
   const board = document.getElementById('monopoly-board');
   if (!board) return;
 
   const NATURAL = 750; // must match `width: 750px` in CSS
 
-  // Available square space — leave a small margin on all edges
-  const available = Math.min(
-    window.innerWidth  * 0.96,
-    window.innerHeight * 0.92
-  );
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
 
-  const scale = available < NATURAL ? available / NATURAL : 1;
+  // On desktop (≥1024px) the board shares space with the sidebar (~62% of vw).
+  // On smaller screens it gets nearly the full width.
+  const widthBudget  = vw >= 1024 ? vw * 0.62 * 0.97 : vw * 0.97;
+  const heightBudget = vh * 0.93;
 
-  // `zoom` shrinks both the visual size AND the layout box in one go
-  board.style.zoom = scale < 1 ? scale.toFixed(5) : '';
-
-  // Reset any leftover transform / wrapper overrides from the old approach
-  board.style.transform = '';
-  board.style.width     = '';
-  board.style.height    = '';
-  board.style.maxWidth  = '';
-  board.style.maxHeight = '';
+  // Largest square that fits both budgets
+  const available = Math.min(widthBudget, heightBudget);
+  const scale     = Math.min(available / NATURAL, 1);
 
   const wrapper = board.closest('.board-wrapper');
-  if (wrapper) {
-    wrapper.style.height   = '';
-    wrapper.style.minWidth = '';
-    wrapper.style.overflow = '';
+
+  if (scale < 1) {
+    // Scale from the top-left corner — the wrapper is sized to exactly the
+    // scaled dimensions, so there is zero clipping and zero dead space.
+    const scaledPx = (scale * NATURAL).toFixed(2);
+    board.style.transform       = `scale(${scale.toFixed(6)})`;
+    board.style.transformOrigin = 'top left';
+    board.style.zoom            = '';   // clear any legacy zoom
+    if (wrapper) {
+      wrapper.style.width    = `${scaledPx}px`;
+      wrapper.style.height   = `${scaledPx}px`;
+      wrapper.style.overflow = 'hidden';
+    }
+  } else {
+    board.style.transform       = '';
+    board.style.transformOrigin = '';
+    board.style.zoom            = '';
+    if (wrapper) {
+      wrapper.style.width    = '';
+      wrapper.style.height   = '';
+      wrapper.style.overflow = '';
+    }
   }
+
+  // Clear any stale dimension overrides from previous implementations
+  board.style.width    = '';
+  board.style.height   = '';
+  board.style.maxWidth = '';
 }
 
 window.addEventListener('resize', scaleBoardToFit);

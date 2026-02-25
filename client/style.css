@@ -30,9 +30,22 @@
 .layout-wrapper {
   width: 100% !important;
   max-width: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  padding: 0 1rem !important;
+  margin: 0 auto !important;
   display: block !important;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .layout-wrapper {
+    padding: 0 0.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-wrapper {
+    padding: 0 0.25rem !important;
+  }
 }
 
 * {
@@ -282,9 +295,9 @@ input:focus {
 .main-grid {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  align-items: flex-start;
-  min-height: 100vh;
+  gap: 1rem;
+  align-items: stretch;
+  width: 100%;
 }
 
 .main-grid>* {
@@ -292,18 +305,32 @@ input:focus {
 }
 
 .board-wrapper {
-  width: 100%;
-  overflow: visible;   /* allow scaled board to render outside layout bounds */
+  /* width + height are set dynamically by scaleBoardToFit() to scale×750px.
+     The board renders at its natural 750px and transform:scale shrinks it
+     from the top-left corner to fit exactly inside this wrapper.          */
+  display: block;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin: 0 auto;   /* center the (possibly narrower) wrapper in its column */
 }
 
+/* Sidebar: stacks below board on mobile/tablet, scrollable on desktop */
 .sidebar-panel {
   width: 100%;
 }
 
+/* Tablet (769–1023 px): still stacked but with comfortable padding */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .main-grid {
+    gap: 1.5rem;
+  }
+}
+
+/* Desktop (≥1024px): sidebar sits to the right of the board */
 @media (min-width: 1024px) {
   .main-grid {
     display: grid !important;
-    grid-template-columns: 5% 60% 5% 25% 5% !important;
+    grid-template-columns: 2% 62% 2% 30% 4% !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -314,16 +341,28 @@ input:focus {
 
   .board-wrapper {
     grid-column: 2 !important;
-    width: 100% !important;
-    display: flex !important;
-    justify-content: center !important;
+    /* width/height controlled by JS — just center it */
+    display: block !important;
+    margin: 0 auto !important;
+    overflow: hidden;
   }
 
   .sidebar-panel {
     grid-column: 4 !important;
     width: 100% !important;
     padding-right: 0.5rem;
-    /* Small safety buffer */
+    /* Make sidebar independently scrollable so it never clips the board view */
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+  }
+}
+
+/* Large desktop: give sidebar a bit more breathing room */
+@media (min-width: 1400px) {
+  .main-grid {
+    grid-template-columns: 3% 60% 2% 31% 4% !important;
   }
 }
 
@@ -333,13 +372,17 @@ input:focus {
 }
 
 #monopoly-board {
-  /* Fixed natural size — scaleBoardToFit() zooms this down on smaller screens */
+  /* ─── Fixed natural size ───────────────────────────────────────────────
+     scaleBoardToFit() in app.js applies transform:scale() to shrink this
+     proportionally on any screen.  Do NOT set max-width/max-height here —
+     those would fight the scaling logic.
+     ─────────────────────────────────────────────────────────────────── */
   width: 750px;
   height: 750px;
-  max-width: none;
-  max-height: none;
+  flex-shrink: 0;
+  transform-origin: top left;  /* matches scaleBoardToFit() */
+  will-change: transform;
   aspect-ratio: 1 / 1;
-  /* Prevent it from being taller than screen */
   box-sizing: border-box;
   background: linear-gradient(135deg, #c8e6cf 0%, #b8dcc5 25%, #a8d2bb 50%, #b8dcc5 75%, #c8e6cf 100%);
   background-size: 200% 200%;
@@ -395,14 +438,14 @@ input:focus {
   backdrop-filter: blur(24px) saturate(1.3);
   border: 1.5px solid rgba(99, 102, 241, 0.35);
   border-radius: 22px;
-  padding: 16px 18px;
+  padding: clamp(8px, 2vw, 16px) clamp(10px, 2.5vw, 18px);
   box-shadow:
     0 24px 60px rgba(0, 0, 0, 0.85),
     0 0 0 1px rgba(124, 58, 237, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 40px rgba(99, 102, 241, 0.1);
-  gap: 10px;
-  width: 90%;
+  gap: clamp(5px, 1.2vw, 10px);
+  width: clamp(160px, 72%, 440px);
   max-width: 440px;
   position: relative;
   z-index: 50;
@@ -526,57 +569,46 @@ input:focus {
   color: #0f172a;
 }
 
+/* ── 768 px and below ──────────────────────────────────────── */
 @media (max-width: 768px) {
 
-  /* Container padding reduction */
-  .container.mx-auto {
-    padding: 1rem 0.5rem !important;
-  }
-
-  /* Hide decorative background only on game screen */
-  #game .fixed.inset-0.overflow-hidden {
-    display: none;
-  }
-
-  /* Compact header */
+  /* Header */
   h1 {
-    font-size: 2.5rem !important;
+    font-size: clamp(1.8rem, 6vw, 2.5rem) !important;
+    letter-spacing: -0.5px !important;
   }
 
-  /* Board scales naturally - just reduce border on mobile */
+  /* Board border shrinks */
   #monopoly-board {
     border-width: 8px;
   }
 
-  .board-center {
-    padding: 12px;
-    gap: 8px;
-    border-width: 3px;
+  /* Sidebar: render below board, full width, not too tall */
+  .sidebar-panel {
+    max-height: none;
+    width: 100%;
+  }
+
+  /* Two-column sidebar cards on tablet */
+  .sidebar-panel .space-y-6 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Full-width items in the sidebar grid */
+  .sidebar-panel .space-y-6 > :first-child,
+  .sidebar-panel .space-y-6 > :last-child {
+    grid-column: 1 / -1;
   }
 }
 
-/* Mobile-first tightening to mimic compact richup.io board feel */
+/* ── 600 px and below ──────────────────────────────────────── */
 @media (max-width: 600px) {
 
-  /* Container padding reduction */
-  .container.mx-auto {
-    padding: 0.5rem !important;
-  }
-
-  /* Board card compact */
-  .glass-card-premium.rounded-3xl {
-    padding: 0.5rem !important;
-    border-radius: 1.5rem !important;
-  }
-
-  /* Hide decorative background */
-  .fixed.inset-0.overflow-hidden {
-    display: none;
-  }
-
-  /* Compact header */
   h1 {
-    font-size: 2rem !important;
+    font-size: clamp(1.4rem, 8vw, 1.9rem) !important;
+    letter-spacing: 0 !important;
   }
 
   /* Board size on small screens is handled by scaleBoardToFit() JS function */
@@ -585,30 +617,13 @@ input:focus {
     border-radius: 12px;
   }
 
-  .board-center {
-    padding: 8px;
-    gap: 6px;
-    border-radius: 8px;
-    border-width: 2px;
+  /* Sidebar: single column, compact cards */
+  .sidebar-panel .space-y-6 {
+    grid-template-columns: 1fr;
   }
 
-  /* Side panels - hide on very small screens to maximize board space */
-  #game .grid>.space-y-6 {
-    display: none !important;
-  }
-
-  /* Grid layout - single column on mobile */
-  .grid.grid-cols-1.xl\:grid-cols-\[70\%_30\%\] {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Compact controls above board */
-  .w-full.space-y-3.mb-4 {
-    margin-bottom: 0.5rem !important;
-  }
-
-  .bg-gradient-to-br.p-4.rounded-xl {
-    padding: 0.75rem !important;
+  .glass-card-premium {
+    border-radius: 14px !important;
   }
 
   .die {
@@ -621,7 +636,7 @@ input:focus {
   #buyBtn,
   #endTurnBtn {
     padding: 0.75rem 0.5rem !important;
-    font-size: 0.70 rem !important;
+    font-size: 0.75rem !important;
   }
 
   .from-yellow-50.rounded-2xl {
@@ -1549,15 +1564,9 @@ select {
 }
 
 /* Responsive adjustments */
+/* Sidebar scroll is handled in the min-width:1024px block above via .sidebar-panel */
 @media (min-width: 1280px) {
-
-  /* Right sidebar scrolling on larger screens */
-  #game>.grid>.space-y-6 {
-    max-height: calc(100vh - 12rem);
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 0.5rem;
-  }
+  /* (kept for future overrides) */
 }
 
 @media (max-width: 1536px) {
@@ -1568,13 +1577,14 @@ select {
   /* Board size handled by scaleBoardToFit() */
 }
 
+/* ── Board responsive breakpoints ──────────────────────────── */
 @media (max-width: 768px) {
   #monopoly-board {
-    border-width: 10px;
+    border-width: 8px;
   }
 
   .board-center h2 {
-    font-size: 1.5em;
+    font-size: clamp(1rem, 4vw, 1.5em);
   }
 
   .board-center p {
@@ -1582,7 +1592,7 @@ select {
   }
 
   .board-log {
-    max-height: 150px;
+    max-height: 120px;
   }
 
   .cell-name {
@@ -1596,13 +1606,11 @@ select {
 
 @media (max-width: 480px) {
   #monopoly-board {
-    border-width: 8px;
-    gap: 2px;
-    padding: 4px;
+    border-width: 6px;
   }
 
   .board-center h2 {
-    font-size: 1.2em;
+    font-size: clamp(0.85rem, 5vw, 1.2em);
   }
 
   .board-center p {
@@ -1610,15 +1618,26 @@ select {
   }
 
   .board-log {
-    max-height: 120px;
+    max-height: 90px;
   }
 
   .cell-name {
-    font-size: 6px;
+    font-size: 8px;
   }
 
   .corner .cell-name {
-    font-size: 8px;
+    font-size: 9px;
+  }
+}
+
+/* ── Property popover: full-width on narrow screens ─────────── */
+@media (max-width: 480px) {
+  #property-popover-content {
+    width: calc(100vw - 2rem) !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    max-height: 85vh;
+    overflow-y: auto;
   }
 }
 
